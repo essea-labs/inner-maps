@@ -262,7 +262,7 @@ export default function IndividualReport() {
           <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 12 }}>Want to see how you connect with someone?</p>
           <button
             className="cta-button"
-            onClick={() => { setActiveTab('compat'); setScreen('compatibility'); }}
+            onClick={() => { setActiveTab('compat'); setScreen('connections'); }}
             style={{ animation: 'none', fontSize: 14, padding: '14px 32px' }}
           >
             Check Your Compatibility →

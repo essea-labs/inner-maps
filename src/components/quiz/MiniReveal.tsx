@@ -80,8 +80,8 @@ export default function MiniReveal() {
     enneagram: '~1 min',
   };
   const nextTime = sectionTimes[nextSection?.id] || '~1 min';
-  const completedCount = currentSection - 1; // sections completed (not counting starsign)
-  const totalSections = SECTIONS.length - 1; // exclude starsign section
+  const completedCount = currentSection; // starsign=1 done before quiz, cognitive=2, etc.
+  const totalSections = SECTIONS.length; // all 5 dimensions
 
   return (
     <div className="mini-reveal">
