@@ -1,0 +1,80 @@
+'use client';
+
+import { useQuizStore } from '@/store/quiz-store';
+import TabBar from '@/components/ui/TabBar';
+
+export default function ConnectionsTab() {
+  const connections = useQuizStore((s) => s.connections);
+  const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
+  const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
+  const setScreen = useQuizStore((s) => s.setScreen);
+  const setActiveTab = useQuizStore((s) => s.setActiveTab);
+
+  function handleViewCompat(index: number) {
+    setActiveConnection(connections[index]);
+    setScreen('compatibility');
+    setActiveTab('compat');
+  }
+
+  return (
+    <div style={{ paddingBottom: 80 }}>
+      <div className="connections-page">
+        <div className="connections-page-header">
+          <div className="logo">✦ Inner Maps ✦</div>
+          <h1>Compatibility</h1>
+          <p>See how your worlds align</p>
+        </div>
+
+        {connections.length > 0 ? (
+          connections.map((c, i) => (
+            c.status === 'completed' ? (
+              <div
+                key={i}
+                className="connection-person-card"
+                onClick={() => handleViewCompat(i)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="connection-person-avatar">{c.name[0]}</div>
+                <div className="connection-person-info">
+                  <div className="connection-person-name">{c.name}</div>
+                  <div className="connection-person-detail">
+                    {c.results?.starSign?.sign} · {c.results?.cognitiveType} · {c.results?.enneagramDisplay}
+                  </div>
+                </div>
+                <div className="connection-person-status completed">View →</div>
+              </div>
+            ) : (
+              <div key={i} className="connection-person-card">
+                <div className="connection-person-avatar" style={{ background: 'var(--peach-pale)', color: 'var(--peach)' }}>⏳</div>
+                <div className="connection-person-info">
+                  <div className="connection-person-name">{c.name}</div>
+                  <div className="connection-person-detail">
+                    Invited {c.invitedDaysAgo} day{(c.invitedDaysAgo ?? 0) > 1 ? 's' : ''} ago
+                  </div>
+                </div>
+                <div className="connection-person-status pending">Pending</div>
+              </div>
+            )
+          ))
+        ) : (
+          <div className="connections-empty">
+            <div className="connections-empty-icon">◇</div>
+            <h3>No connections yet</h3>
+            <p>Share your Inner Maps with someone and discover how your worlds align.</p>
+          </div>
+        )}
+
+        <div
+          className="connection-invite-card"
+          onClick={() => setInviteModalOpen(true)}
+          style={{ marginTop: 16, cursor: 'pointer' }}
+        >
+          <div className="connection-invite-icon">✦</div>
+          <div className="connection-invite-text">Invite Someone</div>
+          <div className="connection-invite-sub">Share your link and discover your compatibility</div>
+        </div>
+      </div>
+      <TabBar />
+    </div>
+  );
+}

@@ -1,0 +1,235 @@
+'use client';
+
+import { useQuizStore } from '@/store/quiz-store';
+import { calculateCompatibility } from '@/lib/compatibility';
+import TabBar from '@/components/ui/TabBar';
+
+export default function CompatibilityView() {
+  const results = useQuizStore((s) => s.results);
+  const activeConnection = useQuizStore((s) => s.activeConnection);
+  const userName = useQuizStore((s) => s.userName);
+  const setScreen = useQuizStore((s) => s.setScreen);
+  const setActiveTab = useQuizStore((s) => s.setActiveTab);
+
+  if (!results || !activeConnection || !activeConnection.results) {
+    return <div>Loading...</div>;
+  }
+
+  const conn = activeConnection;
+  const compat = calculateCompatibility(results, conn.results!);
+  const myName = userName || 'You';
+
+  function handleBack() {
+    setActiveTab('compat');
+    setScreen('compatibility');
+  }
+
+  function handleShareCompat() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Inner Maps Compatibility',
+        text: `${myName} & ${conn.name} are ${compat.overall}% compatible on Inner Maps!`,
+        url: 'https://innermaps.io',
+      });
+    }
+  }
+
+  function handleUnlock() {
+    setScreen('compatibilityReport');
+  }
+
+  const myAttachFontSize = results.attachmentStyle.length > 8 ? 13 : 16;
+  const theirAttachFontSize = conn.results!.attachmentStyle.length > 8 ? 13 : 16;
+
+  return (
+    <div style={{ paddingBottom: 80 }}>
+      <div className="compat-topnav">
+        <button className="compat-topnav-back" onClick={handleBack}>←</button>
+        <span className="compat-topnav-title">{myName} & {conn.name}</span>
+      </div>
+
+      <div className="compat-page">
+        <div className="compat-header" style={{ paddingTop: 24 }}>
+          <div className="logo">✦ Inner Maps ✦</div>
+          <h1>{myName} & {conn.name}</h1>
+          <p>Here&apos;s how your inner worlds align</p>
+        </div>
+
+        {/* Shareable Card */}
+        <div className="compat-share-card">
+          <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
+          <div className="compat-share-card-names">{myName} & {conn.name}</div>
+          <div className="compat-share-card-score">{compat.overall}% compatible</div>
+          <div className="compat-share-card-grid">
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Personality</div>
+              <div className="compat-share-card-item-values">
+                <span>{results.cognitiveType}</span>
+                <span className="vs">&amp;</span>
+                <span>{conn.results!.cognitiveType}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Enneagram</div>
+              <div className="compat-share-card-item-values">
+                <span>{results.enneagramDisplay}</span>
+                <span className="vs">&amp;</span>
+                <span>{conn.results!.enneagramDisplay}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Attachment</div>
+              <div className="compat-share-card-item-values" style={{ fontSize: results.attachmentStyle.length > 10 ? 11 : 14 }}>
+                <span>{results.attachmentStyle}</span>
+                <span className="vs">&amp;</span>
+                <span>{conn.results!.attachmentStyle}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Connection</div>
+              <div className="compat-share-card-item-values" style={{ fontSize: results.topConnection.length > 12 ? 11 : 14 }}>
+                <span>{results.topConnection}</span>
+                <span className="vs">&amp;</span>
+                <span>{conn.results!.topConnection}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item-wide">
+              <div className="compat-share-card-item-label">Star Sign</div>
+              <div className="compat-share-card-item-values">
+                <span>{results.starSign?.sign} {results.starSign?.symbol}</span>
+                <span className="vs">&amp;</span>
+                <span>{conn.results!.starSign?.sign} {conn.results!.starSign?.symbol}</span>
+              </div>
+            </div>
+          </div>
+          <div className="compat-share-card-url">innermaps.io</div>
+        </div>
+        <button className="compat-share-cta" onClick={handleShareCompat} style={{ marginBottom: 24 }}>
+          Share This Compatibility ↗
+        </button>
+
+        {/* Star Sign */}
+        <div className="compat-card" style={{ animationDelay: '0.1s' }}>
+          <div className="compat-card-header">
+            <span className="compat-card-icon">✦</span>
+            <span className="compat-card-category">Star Sign</span>
+          </div>
+          <div className="compat-vs">
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{myName}</div>
+              <div className="compat-vs-value">{results.starSign?.sign} {results.starSign?.symbol}</div>
+            </div>
+            <div className="compat-vs-ampersand">&amp;</div>
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{conn.name}</div>
+              <div className="compat-vs-value">{conn.results!.starSign?.sign} {conn.results!.starSign?.symbol}</div>
+            </div>
+          </div>
+          <div className="compat-insight">{compat.zodiac.insight}</div>
+          <div className="compat-detail">💡 {compat.zodiac.detail}</div>
+        </div>
+
+        {/* Personality */}
+        <div className="compat-card" style={{ animationDelay: '0.2s' }}>
+          <div className="compat-card-header">
+            <span className="compat-card-icon">🧠</span>
+            <span className="compat-card-category">Personality Type</span>
+          </div>
+          <div className="compat-vs">
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{myName}</div>
+              <div className="compat-vs-value">{results.cognitiveType}</div>
+            </div>
+            <div className="compat-vs-ampersand">&amp;</div>
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{conn.name}</div>
+              <div className="compat-vs-value">{conn.results!.cognitiveType}</div>
+            </div>
+          </div>
+          <div className="compat-insight">{compat.personality.insight}</div>
+          <div className="compat-detail">💡 {compat.personality.detail}</div>
+        </div>
+
+        {/* Enneagram */}
+        <div className="compat-card" style={{ animationDelay: '0.3s' }}>
+          <div className="compat-card-header">
+            <span className="compat-card-icon">🔮</span>
+            <span className="compat-card-category">Enneagram</span>
+          </div>
+          <div className="compat-vs">
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{myName}</div>
+              <div className="compat-vs-value">{results.enneagramDisplay}</div>
+            </div>
+            <div className="compat-vs-ampersand">&amp;</div>
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{conn.name}</div>
+              <div className="compat-vs-value">{conn.results!.enneagramDisplay}</div>
+            </div>
+          </div>
+          <div className="compat-insight">{compat.enneagram.insight}</div>
+          <div className="compat-detail">💡 {compat.enneagram.detail}</div>
+        </div>
+
+        {/* Attachment */}
+        <div className="compat-card" style={{ animationDelay: '0.4s' }}>
+          <div className="compat-card-header">
+            <span className="compat-card-icon">💛</span>
+            <span className="compat-card-category">Attachment Style</span>
+          </div>
+          <div className="compat-vs">
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{myName}</div>
+              <div className="compat-vs-value" style={{ fontSize: myAttachFontSize }}>{results.attachmentStyle}</div>
+            </div>
+            <div className="compat-vs-ampersand">&amp;</div>
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{conn.name}</div>
+              <div className="compat-vs-value" style={{ fontSize: theirAttachFontSize }}>{conn.results!.attachmentStyle}</div>
+            </div>
+          </div>
+          <div className="compat-insight">{compat.attachment.insight}</div>
+          <div className="compat-detail">💡 {compat.attachment.detail}</div>
+        </div>
+
+        {/* Connection */}
+        <div className="compat-card" style={{ animationDelay: '0.5s' }}>
+          <div className="compat-card-header">
+            <span className="compat-card-icon">🤝</span>
+            <span className="compat-card-category">Connection Style</span>
+          </div>
+          <div className="compat-vs">
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{myName}</div>
+              <div className="compat-vs-value" style={{ fontSize: results.topConnection.length > 12 ? 12 : 16 }}>{results.topConnection}</div>
+            </div>
+            <div className="compat-vs-ampersand">&amp;</div>
+            <div className="compat-vs-item">
+              <div className="compat-vs-name">{conn.name}</div>
+              <div className="compat-vs-value" style={{ fontSize: conn.results!.topConnection.length > 12 ? 12 : 16 }}>{conn.results!.topConnection}</div>
+            </div>
+          </div>
+          <div className="compat-insight">{compat.connection.insight}</div>
+          <div className="compat-detail">💡 {compat.connection.detail}</div>
+        </div>
+
+        {/* Upsell */}
+        <div className="upsell-section" style={{ marginTop: 24 }}>
+          <h2>Go Deeper Together</h2>
+          <p className="upsell-subtitle">Unlock the full picture of how you and {conn.name} connect</p>
+          <div className="upsell-features">
+            <div className="upsell-feature"><span className="upsell-check">✓</span> Detailed breakdown of your dynamic across all 5 dimensions</div>
+            <div className="upsell-feature"><span className="upsell-check">✓</span> Your biggest strengths as a pair — and where to watch out</div>
+            <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips to deepen your connection</div>
+            <div className="upsell-feature"><span className="upsell-check">✓</span> Communication guide based on both your styles</div>
+          </div>
+          <div className="upsell-price">$4.99</div>
+          <div className="upsell-price-note">One-time purchase · PDF download</div>
+          <button className="upsell-cta" onClick={handleUnlock}>Unlock Full Compatibility Report ✦</button>
+          <button className="upsell-skip">No thanks, keep the free version</button>
+        </div>
+      </div>
+      <TabBar />
+    </div>
+  );
+}

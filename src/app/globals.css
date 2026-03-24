@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "./legacy.css";
+
+@theme inline {
+  --color-ivory: #FFF8F5;
+  --color-cream: #FFF1EB;
+  --color-peach: #E8A87C;
+  --color-peach-light: #F5C9A8;
+  --color-peach-pale: #FDE8D8;
+  --color-peach-deep: #D4845A;
+  --color-warm-brown: #8B6852;
+  --color-text-primary: #2D2217;
+  --color-text-secondary: #6B5A4E;
+  --color-text-light: #9B8A7E;
+  --color-card-bg: #FFFFFF;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
