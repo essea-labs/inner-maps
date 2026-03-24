@@ -12,8 +12,12 @@ export default function LandingPage() {
       <p className="subtitle">One quiz. Five dimensions. Understand yourself, and help the people closest to you understand you too.</p>
 
       <button className="cta-button" onClick={() => setScreen('name')}>
-        Start Your Free Profile
+        Start
       </button>
+
+      <p style={{ fontSize: 13, color: 'var(--text-light)', marginTop: -20, marginBottom: 0, letterSpacing: '0.2px' }}>
+        ⟡ Includes free compatibility with friends
+      </p>
 
       <div className="dimension-grid">
         <div className="dimension-card">

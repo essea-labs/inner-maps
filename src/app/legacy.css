@@ -347,6 +347,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   margin-top: 20px;
+  margin-bottom: 32px;
   transition: all 0.3s ease;
   animation: pulseGlow 2.5s ease-in-out infinite;
   letter-spacing: 0.3px;
