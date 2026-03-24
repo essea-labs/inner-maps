@@ -9,7 +9,7 @@ export default function LandingPage() {
     <div className="landing">
       <div className="logo">✦ Inner Maps ✦</div>
       <h1>Discover Your <em>Full Self</em> in Under 12 Minutes</h1>
-      <p className="subtitle">One quiz. Five dimensions. Understand yourself, and help the people closest to you understand you too.</p>
+      <p className="subtitle">One quiz. Five dimensions. Understand yourself — then see how you match with others.</p>
 
       <button className="cta-button" onClick={() => setScreen('name')}>
         Take the Quiz
@@ -36,12 +36,12 @@ export default function LandingPage() {
           <div className="dimension-label">Connection Style</div>
           <div className="dimension-sublabel">How you prefer to receive love</div>
         </div>
-        <div className="dimension-card-wide">
-          <span className="dimension-icon">✦</span>
+        <div className="dimension-card-wide" style={{ padding: '10px 12px' }}>
+          <span className="dimension-icon" style={{ marginBottom: 2 }}>✦</span>
           <div className="dimension-label">Star Sign</div>
-          <div className="dimension-sublabel">Your astrology profile</div>
         </div>
       </div>
+
 
       <div className="compat-teaser">
         <div className="compat-teaser-label">Then go deeper</div>

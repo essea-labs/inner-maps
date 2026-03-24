@@ -24,7 +24,7 @@ export default function SectionTracker() {
       </div>
       <div className="section-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4px 0 2px', gap: 2 }}>
         <span style={{ textTransform: 'none', fontSize: 10 }}>
-          {section.icon} {section.name}{sectionTotal > 0 ? ` · ${sectionQ} of ${sectionTotal}` : ''}
+          Section {currentSection + 1} of {SECTIONS.length} · {section.icon} {section.name}{sectionTotal > 0 ? ` · Q${sectionQ} of ${sectionTotal}` : ''}
         </span>
       </div>
       {sectionTotal > 0 && (

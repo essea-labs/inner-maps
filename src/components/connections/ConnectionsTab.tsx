@@ -25,53 +25,52 @@ export default function ConnectionsTab() {
           <p>See how your worlds align</p>
         </div>
 
-        {connections.length > 0 ? (
-          connections.map((c, i) => (
-            c.status === 'completed' ? (
-              <div
-                key={i}
-                className="connection-person-card"
-                onClick={() => handleViewCompat(i)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="connection-person-avatar">{c.name[0]}</div>
-                <div className="connection-person-info">
-                  <div className="connection-person-name">{c.name}</div>
-                  <div className="connection-person-detail">
-                    {c.results?.starSign?.sign} · {c.results?.cognitiveType} · {c.results?.enneagramDisplay}
-                  </div>
+        {connections.map((c, i) => (
+          c.status === 'completed' ? (
+            <div
+              key={i}
+              className="connection-person-card"
+              onClick={() => handleViewCompat(i)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="connection-person-avatar">{c.name[0]}</div>
+              <div className="connection-person-info">
+                <div className="connection-person-name">{c.name}</div>
+                <div className="connection-person-detail">
+                  {c.results?.starSign?.sign} · {c.results?.cognitiveType} · {c.results?.enneagramDisplay}
                 </div>
-                <div className="connection-person-status completed">View →</div>
               </div>
-            ) : (
-              <div key={i} className="connection-person-card">
-                <div className="connection-person-avatar" style={{ background: 'var(--peach-pale)', color: 'var(--peach)' }}>⏳</div>
-                <div className="connection-person-info">
-                  <div className="connection-person-name">{c.name}</div>
-                  <div className="connection-person-detail">
-                    Invited {c.invitedDaysAgo} day{(c.invitedDaysAgo ?? 0) > 1 ? 's' : ''} ago
-                  </div>
+              <div className="connection-person-status completed">View →</div>
+            </div>
+          ) : (
+            <div key={i} className="connection-person-card">
+              <div className="connection-person-avatar" style={{ background: 'var(--peach-pale)', color: 'var(--peach)' }}>⏳</div>
+              <div className="connection-person-info">
+                <div className="connection-person-name">{c.name}</div>
+                <div className="connection-person-detail">
+                  Invited {c.invitedDaysAgo} day{(c.invitedDaysAgo ?? 0) > 1 ? 's' : ''} ago
                 </div>
-                <div className="connection-person-status pending">Pending</div>
               </div>
-            )
-          ))
-        ) : (
-          <div className="connections-empty">
-            <div className="connections-empty-icon">◇</div>
-            <h3>No connections yet</h3>
-            <p>Share your Inner Maps with someone and discover how your worlds align.</p>
-          </div>
-        )}
+              <div className="connection-person-status pending">Pending</div>
+            </div>
+          )
+        ))}
 
         <div
           className="connection-invite-card"
           onClick={() => setInviteModalOpen(true)}
-          style={{ marginTop: 16, cursor: 'pointer' }}
+          style={{ marginTop: connections.length > 0 ? 16 : 0, cursor: 'pointer' }}
         >
           <div className="connection-invite-icon">✦</div>
           <div className="connection-invite-text">Invite Someone</div>
           <div className="connection-invite-sub">Share your link and discover your compatibility</div>
+          <button
+            className="share-btn"
+            onClick={(e) => { e.stopPropagation(); setInviteModalOpen(true); }}
+            style={{ marginTop: 16, display: 'block', margin: '16px auto 0' }}
+          >
+            Invite
+          </button>
         </div>
       </div>
       <TabBar />

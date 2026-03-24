@@ -11,8 +11,42 @@ export default function CompatibilityView() {
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
 
-  if (!results || !activeConnection || !activeConnection.results) {
-    return <div>Loading...</div>;
+  if (!results) {
+    return (
+      <div style={{ paddingBottom: 80 }}>
+        <div className="connections-page">
+          <div className="connections-page-header">
+            <div className="logo">✦ Inner Maps ✦</div>
+            <h1>Compatibility</h1>
+          </div>
+          <div className="connections-empty">
+            <div className="connections-empty-icon">✦</div>
+            <h3>Take the quiz first</h3>
+            <p>Complete your Inner Maps profile to see compatibility with others.</p>
+          </div>
+        </div>
+        <TabBar />
+      </div>
+    );
+  }
+
+  if (!activeConnection || !activeConnection.results) {
+    return (
+      <div style={{ paddingBottom: 80 }}>
+        <div className="connections-page">
+          <div className="connections-page-header">
+            <div className="logo">✦ Inner Maps ✦</div>
+            <h1>Compatibility</h1>
+          </div>
+          <div className="connections-empty">
+            <div className="connections-empty-icon">⟡</div>
+            <h3>Select a connection</h3>
+            <p>Choose someone from your connections to see your compatibility.</p>
+          </div>
+        </div>
+        <TabBar />
+      </div>
+    );
   }
 
   const conn = activeConnection;

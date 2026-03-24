@@ -43,7 +43,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 24px 40px;
+  padding: 32px 24px 40px;
   text-align: center;
   animation: fadeInUp 0.8s ease-out;
 }
@@ -261,7 +261,7 @@ body {
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--peach);
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .landing h1 {
@@ -270,7 +270,7 @@ body {
   font-weight: 700;
   line-height: 1.25;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   max-width: 340px;
 }
 
@@ -283,7 +283,7 @@ body {
   font-size: 15px;
   color: var(--text-secondary);
   line-height: 1.6;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   max-width: 300px;
 }
 
@@ -346,8 +346,8 @@ body {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 20px;
-  margin-bottom: 32px;
+  margin-top: 12px;
+  margin-bottom: 20px;
   transition: all 0.3s ease;
   animation: pulseGlow 2.5s ease-in-out infinite;
   letter-spacing: 0.3px;
@@ -359,6 +359,44 @@ body {
 }
 
 .cta-button:active { transform: translateY(0); }
+
+/* ===== COMPAT HINT (landing page) ===== */
+.compat-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.compat-hint-circles {
+  display: flex;
+  align-items: center;
+}
+
+.compat-hint-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--peach-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--peach);
+}
+
+.compat-hint-circle + .compat-hint-circle {
+  margin-left: -8px;
+}
+
+.compat-hint-text {
+  font-family: var(--font-dm-sans-family);
+  font-size: 11px;
+  color: var(--text-light);
+  letter-spacing: 0.3px;
+}
 
 .landing-footer {
   margin-top: 24px;
