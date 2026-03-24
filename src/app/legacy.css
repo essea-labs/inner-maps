@@ -1616,6 +1616,8 @@ body {
 .signup-cta:hover { background: var(--peach-deep); }
 
 .signup-skip {
+  display: block;
+  margin: 0 auto;
   font-size: 13px;
   color: var(--text-light);
   cursor: pointer;
