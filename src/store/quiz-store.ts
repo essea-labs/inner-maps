@@ -98,7 +98,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   currentQuestion: 0,
   answers: makeDefaultAnswers(),
   results: null,
-  connections: MOCK_CONNECTIONS,
+  connections: process.env.NODE_ENV === 'development' ? MOCK_CONNECTIONS : [],
   activeConnection: null,
   activeTab: 'mymap',
   inviteModalOpen: false,
