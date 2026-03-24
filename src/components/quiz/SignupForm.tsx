@@ -16,7 +16,7 @@ export default function SignupForm() {
   return (
     <div className="signup-screen">
       <div className="logo">✦ Inner Maps ✦</div>
-      <h2>{isLogin ? 'Welcome <em>back</em>' : <>Your results are <em>ready</em></>}</h2>
+      <h2>{isLogin ? <>Welcome <em>back</em></> : <>Your results are <em>ready</em></>}</h2>
       <p className="signup-subtitle">
         {isLogin
           ? 'Sign in to see your saved results and compatibility matches.'
@@ -67,7 +67,7 @@ export default function SignupForm() {
         </button>
 
         {isLogin && (
-          <button className="signup-skip" style={{ marginBottom: 8, fontSize: 12, color: 'var(--peach-deep)' }}>
+          <button className="signup-skip" style={{ marginBottom: 16, fontSize: 12, color: 'var(--peach-deep)' }}>
             Forgot password?
           </button>
         )}

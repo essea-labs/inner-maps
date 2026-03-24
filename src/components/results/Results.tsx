@@ -79,8 +79,7 @@ export default function Results() {
 
         {/* Share Buttons */}
         <div className="share-buttons">
-          <button className="share-btn primary" onClick={handleCopyLink}>🔗 Copy</button>
-          <button className="share-btn" onClick={handleShare}>↗ Share</button>
+          <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px' }} onClick={handleShare}>↗ Share Your Map</button>
         </div>
 
         {/* Compatibility CTA */}
