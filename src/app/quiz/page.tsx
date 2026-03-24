@@ -49,6 +49,8 @@ export default function QuizPage() {
         return <SignupForm />;
       case 'results':
         return <Results />;
+      case 'connections':
+        return <ConnectionsTab />;
       case 'inviteLanding':
         // Phase 2: deep-link invite landing page
         return <LandingPage />;

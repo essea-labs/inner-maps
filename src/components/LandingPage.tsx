@@ -11,6 +11,10 @@ export default function LandingPage() {
       <h1>Discover Your <em>Full Self</em> in Under 12 Minutes</h1>
       <p className="subtitle">One quiz. Five dimensions. Understand yourself, and help the people closest to you understand you too.</p>
 
+      <button className="cta-button" onClick={() => setScreen('name')}>
+        Start Your Free Profile
+      </button>
+
       <div className="dimension-grid">
         <div className="dimension-card">
           <span className="dimension-icon">🧠</span>
@@ -38,10 +42,6 @@ export default function LandingPage() {
           <div className="dimension-sublabel">Your astrology profile</div>
         </div>
       </div>
-
-      <button className="cta-button" onClick={() => setScreen('name')}>
-        Start Your Free Profile
-      </button>
 
       <div className="compat-teaser">
         <div className="compat-teaser-label">Then go deeper</div>

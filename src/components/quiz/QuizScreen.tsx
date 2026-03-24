@@ -125,7 +125,7 @@ function ConnectionQuestion() {
 }
 
 // ===== Enneagram Question (Likert Q1-9 + tiebreaker Q10) =====
-function EnneagramQuestion() {
+function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
   const currentQuestion = useQuizStore((s) => s.currentQuestion);
   const answers = useQuizStore((s) => s.answers);
   const answerEnneagram = useQuizStore((s) => s.answerEnneagram);
@@ -143,6 +143,7 @@ function EnneagramQuestion() {
 
     function handleAnswer(value: number) {
       answerEnneagram(currentQuestion, value);
+      if (isLastQ) return; // last Q: let the button handle advance
       if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
       autoAdvanceRef.current = setTimeout(() => nextQuestion(), 400);
     }
@@ -182,6 +183,7 @@ function EnneagramQuestion() {
 
   function handleTiebreaker(value: string) {
     answerEnneagram(9, value);
+    if (isLastQ) return; // let the "See My Results" button handle advance
     if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
     autoAdvanceRef.current = setTimeout(() => nextQuestion(), 400);
   }
@@ -210,6 +212,11 @@ export default function QuizScreen() {
   const nextQuestion = useQuizStore((s) => s.nextQuestion);
   const navigateBack = useQuizStore((s) => s.navigateBack);
 
+  // Scroll to top on every question change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentSection, currentQuestion]);
+
   const section = SECTIONS[currentSection];
   // currentSection: 1=cognitive, 2=attachment, 3=connection, 4=enneagram
   const isLastSection = currentSection === SECTIONS.length - 1;
@@ -230,7 +237,7 @@ export default function QuizScreen() {
   } else if (section.id === 'connection') {
     questionContent = <ConnectionQuestion />;
   } else {
-    questionContent = <EnneagramQuestion />;
+    questionContent = <EnneagramQuestion isLastQ={isLastQ} />;
   }
 
   return (

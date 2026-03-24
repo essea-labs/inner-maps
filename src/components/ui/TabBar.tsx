@@ -14,24 +14,24 @@ export default function TabBar() {
 
   function handleCompat() {
     setActiveTab('compat');
-    setScreen('compatibility');
+    setScreen('connections');
   }
 
   return (
     <div className="tab-bar">
       <button
-        className={`tab-btn${activeTab === 'mymap' ? ' active' : ''}`}
+        className={`tab-item${activeTab === 'mymap' ? ' active' : ''}`}
         onClick={handleMyMap}
       >
-        <span className="tab-icon">✦</span>
-        <span className="tab-label">My Map</span>
+        <span className="tab-item-icon">✦</span>
+        <span className="tab-item-label">My Map</span>
       </button>
       <button
-        className={`tab-btn${activeTab === 'compat' ? ' active' : ''}`}
+        className={`tab-item${activeTab === 'compat' ? ' active' : ''}`}
         onClick={handleCompat}
       >
-        <span className="tab-icon">⟡</span>
-        <span className="tab-label">Compatibility</span>
+        <span className="tab-item-icon">⟡</span>
+        <span className="tab-item-label">Compatibility</span>
       </button>
     </div>
   );

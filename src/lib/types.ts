@@ -8,6 +8,7 @@ export type ScreenName =
   | 'miniReveal'
   | 'signup'
   | 'results'
+  | 'connections'
   | 'inviteLanding'
   | 'compatibility'
   | 'individualReport'
