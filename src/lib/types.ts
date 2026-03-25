@@ -13,7 +13,8 @@ export type ScreenName =
   | 'compatibility'
   | 'individualReport'
   | 'compatibilityReport'
-  | 'profile';
+  | 'profile'
+  | 'resetPassword';
 
 export interface Section {
   id: string;

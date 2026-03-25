@@ -14,6 +14,7 @@ import BirthdayInput from '@/components/quiz/BirthdayInput';
 import QuizScreen from '@/components/quiz/QuizScreen';
 import MiniReveal from '@/components/quiz/MiniReveal';
 import SignupForm from '@/components/quiz/SignupForm';
+import ResetPasswordForm from '@/components/quiz/ResetPasswordForm';
 import Results from '@/components/results/Results';
 import ConnectionsTab from '@/components/connections/ConnectionsTab';
 import InviteModal from '@/components/connections/InviteModal';
@@ -125,7 +126,7 @@ export default function QuizPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle post-OAuth callback (Google sign-in)
+  // Handle post-OAuth / password-reset callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('authCallback') !== '1') return;
@@ -136,10 +137,16 @@ export default function QuizPage() {
       // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)
       const inviterCode = params.get('inviterCode') ?? sessionStorage.getItem('innerMapsInviterCode');
 
-      // Restore quiz state saved before magic link / OTP redirect
+      // Password reset flow — show the new-password form instead of normal post-auth
+      if (intent === 'recovery' && user) {
+        setScreen('resetPassword');
+        window.history.replaceState({}, '', '/quiz');
+        return;
+      }
+
+      // Restore quiz state saved before Google OAuth redirect
       const sessionPatch = restoreStateFromSession();
       if (sessionPatch) {
-        // Restore screen/tab immediately so the UI doesn't flash landing page
         useQuizStore.setState(sessionPatch);
       }
       clearSessionState();
@@ -200,6 +207,8 @@ export default function QuizPage() {
         return <MiniReveal />;
       case 'signup':
         return <SignupForm />;
+      case 'resetPassword':
+        return <ResetPasswordForm />;
       case 'results':
         return <Results />;
       case 'connections':
