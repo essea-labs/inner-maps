@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
+import { encodeProfileSlug } from '@/lib/profile-slug';
 import TabBar from '@/components/ui/TabBar';
 import SignupForm from '@/components/quiz/SignupForm';
 import useAuth from '@/hooks/useAuth';
@@ -33,9 +34,19 @@ export default function Results() {
 
   const r = results;
 
+  function getProfileUrl() {
+    const slug = encodeProfileSlug(
+      r.cognitiveType,
+      r.enneagramDisplay,
+      r.attachmentStyle,
+      r.topConnection,
+      r.starSign?.sign ?? '',
+    );
+    return `https://innermaps.io/profile/${slug}`;
+  }
+
   function handleCopyLink() {
-    const link = `innermaps.io/profile/${r.cognitiveType.toLowerCase()}-${r.enneagramDisplay}-${r.attachmentStyle.toLowerCase()}-${r.starSign?.sign.toLowerCase() ?? ''}`;
-    navigator.clipboard?.writeText(link).then(() => showToast('✓ Link copied!'));
+    navigator.clipboard?.writeText(getProfileUrl()).then(() => showToast('✓ Link copied!'));
   }
 
   function handleShare() {
@@ -43,7 +54,7 @@ export default function Results() {
       navigator.share({
         title: 'My Inner Maps Profile',
         text: `I'm a ${r.cognitiveType} ${r.enneagramDisplay} ${r.starSign?.sign} ${r.starSign?.symbol}. Discover yours:`,
-        url: 'https://innermaps.io',
+        url: getProfileUrl(),
       });
     }
   }
