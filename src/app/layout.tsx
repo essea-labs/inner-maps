@@ -21,6 +21,19 @@ export const metadata: Metadata = {
   title: "Inner Map — Discover Your Full Self",
   description:
     "Discover your full self in under 12 minutes. Personality type, attachment style, connection style, enneagram, and star sign — all in one profile.",
+  openGraph: {
+    siteName: "Inner Maps",
+    type: "website",
+    title: "Inner Maps — Discover Your Full Self",
+    description:
+      "Personality type, attachment style, connection style, enneagram, and star sign — all in one profile.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inner Maps — Discover Your Full Self",
+    description:
+      "Personality type, attachment style, connection style, enneagram, and star sign — all in one profile.",
+  },
 };
 
 export const viewport: Viewport = {
