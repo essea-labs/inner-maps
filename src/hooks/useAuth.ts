@@ -11,23 +11,30 @@ export default function useAuth() {
   const loadConnections = useQuizStore((s) => s.loadConnections);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const u = data.user ?? null;
-      setUser(u);
-      // Only load connections for real (non-anonymous) accounts
-      if (u && !u.is_anonymous) loadConnections(u.id);
-      setLoading(false);
-    });
+    let subscription: ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | null = null;
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u && !u.is_anonymous) loadConnections(u.id);
-    });
+    supabase.auth.getUser()
+      .then(({ data }) => {
+        const u = data.user ?? null;
+        setUser(u);
+        // Only load connections for real (non-anonymous) accounts
+        if (u && !u.is_anonymous) loadConnections(u.id);
+      })
+      .catch(() => { /* non-fatal — user stays null */ })
+      .finally(() => setLoading(false));
 
-    return () => subscription.unsubscribe();
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        const u = session?.user ?? null;
+        setUser(u);
+        if (u && !u.is_anonymous) loadConnections(u.id);
+      });
+      subscription = data.subscription;
+    } catch {
+      // Non-fatal — auth state changes just won't be tracked
+    }
+
+    return () => subscription?.unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

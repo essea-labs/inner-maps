@@ -1,14 +1,45 @@
 'use client';
 
 import { useState } from 'react';
+import type React from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 import { completeInvite } from '@/lib/db';
 
-const INTENT_COPY: Record<string, string> = {
-  save: 'Save your results and revisit them anytime.',
-  compatibility: 'Save your results to compare with others.',
-  invite: 'Save your results and start building connections.',
+interface IntentContent {
+  title: React.ReactNode;
+  subtitle: string;
+  benefits: string[];
+}
+
+const INTENT_CONTENT: Record<string, IntentContent> = {
+  save: {
+    title: <>Keep your <em>results</em></>,
+    subtitle: 'Free account — takes 10 seconds. Your profile stays yours forever.',
+    benefits: [
+      'Revisit your full 5-dimension profile anytime',
+      'Track how you grow and change over time',
+      'Check compatibility with the people in your life',
+    ],
+  },
+  compatibility: {
+    title: <>Check your <em>compatibility</em></>,
+    subtitle: 'Save your profile first — then compare with anyone who takes the quiz.',
+    benefits: [
+      'See how you and your friend really click',
+      'Get a breakdown across all 5 dimensions',
+      'Share results and spark real conversations',
+    ],
+  },
+  invite: {
+    title: <>Invite & <em>connect</em></>,
+    subtitle: 'Save your profile to get your personal invite link and start comparing.',
+    benefits: [
+      'Get a unique link to share with friends',
+      'See who\'s taken the quiz and how you match',
+      'Unlock compatibility insights for each connection',
+    ],
+  },
 };
 
 interface SignupFormProps {
@@ -40,11 +71,24 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
     setError('');
     // Store intent in cookie so auth callback can route correctly after redirect
     document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
-    const { error: oauthError } = await supabase.auth.linkIdentity({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (oauthError) setError(oauthError.message);
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    // If there's an active anonymous session, link Google to it (preserves user ID + quiz data).
+    // Otherwise fall back to a regular OAuth sign-in.
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser?.is_anonymous) {
+      const { error: oauthError } = await supabase.auth.linkIdentity({
+        provider: 'google',
+        options: { redirectTo },
+      });
+      if (oauthError) setError(oauthError.message);
+    } else {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      });
+      if (oauthError) setError(oauthError.message);
+    }
   }
 
   async function handleEmailPassword() {
@@ -64,7 +108,9 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
           await completeInvite(inviterCode, userId).catch(console.warn);
           sessionStorage.removeItem('innerMapsInviterCode');
         }
-        if (onClose) onClose();
+        // For 'invite' intent, handlePostAuth already manages modal state via
+        // setInviteModalOpen. Calling onClose here would close it again.
+        if (onClose && intent !== 'invite') onClose();
       };
 
       if (isLogin) {
@@ -85,23 +131,25 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
     }
   }
 
-  const contextCopy = INTENT_COPY[intent] ?? INTENT_COPY.save;
+  const content = INTENT_CONTENT[intent] ?? INTENT_CONTENT.save;
 
   return (
-    <div className="signup-screen">
+    <div className={`signup-screen${!isFullScreen ? ' signup-screen--modal' : ''}`}>
       <div className="logo">✦ Inner Maps ✦</div>
-      <h2>{isLogin ? <>Welcome <em>back</em></> : <>Your results are <em>ready</em></>}</h2>
+      <h2>{isLogin ? <>Welcome <em>back</em></> : content.title}</h2>
       <p className="signup-subtitle">
         {isLogin
           ? 'Sign in to see your saved results and compatibility matches.'
-          : contextCopy}
+          : content.subtitle}
       </p>
 
       {!isLogin && (
         <div className="signup-benefits">
-          <div className="signup-benefit"><span className="signup-benefit-icon">✦</span> See your complete 5-dimension profile</div>
-          <div className="signup-benefit"><span className="signup-benefit-icon">✦</span> Save results &amp; track changes over time</div>
-          <div className="signup-benefit"><span className="signup-benefit-icon">✦</span> Invite friends and check compatibility</div>
+          {content.benefits.map((b, i) => (
+            <div key={i} className="signup-benefit">
+              <span className="signup-benefit-icon">✦</span> {b}
+            </div>
+          ))}
         </div>
       )}
 

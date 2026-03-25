@@ -62,9 +62,15 @@ export async function saveQuizResults(
 
 // ===== INVITES =====
 
-/** Create an invite — called only when user taps Share. Returns the invite_code UUID. */
+/** Generate a short, human-readable invite code (8 chars, no ambiguous characters). */
+function generateInviteCode(): string {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+/** Create an invite — called only when the modal opens for a real user. Returns the invite_code. */
 export async function createInvite(inviterId: string): Promise<string> {
-  const code = crypto.randomUUID();
+  const code = generateInviteCode();
   const { error } = await supabase.from('invites').insert({
     inviter_id: inviterId,
     invite_code: code,

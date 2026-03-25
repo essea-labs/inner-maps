@@ -14,7 +14,7 @@ export default function Results() {
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
   const showToast = useQuizStore((s) => s.showToast);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [signupOpen, setSignupOpen] = useState(false);
   const [signupIntent, setSignupIntent] = useState('save');
@@ -24,8 +24,9 @@ export default function Results() {
     setSignupOpen(true);
   }
 
-  // True when the user has a real (non-anonymous) account
-  const isRealUser = !!user && !user.is_anonymous;
+  // True when the user has a real (non-anonymous) account.
+  // Only evaluate once auth has resolved to avoid a brief flash of the save CTA.
+  const isRealUser = !authLoading && !!user && !user.is_anonymous;
 
   if (!results) return null;
 
@@ -96,19 +97,6 @@ export default function Results() {
         <div className="share-buttons">
           <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleShare}>Share</button>
         </div>
-
-        {/* Save my results CTA — shown only when not a real account yet */}
-        {!isRealUser && (
-          <div style={{ marginBottom: 16 }}>
-            <button
-              className="cta-button"
-              style={{ animation: 'none', width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}
-              onClick={() => openSignup('save')}
-            >
-              Save my results
-            </button>
-          </div>
-        )}
 
         {/* Compatibility CTA */}
         <div
@@ -212,7 +200,6 @@ export default function Results() {
           <div className="upsell-price">$9.99</div>
           <div className="upsell-price-note">One-time purchase · PDF download + saved to your profile</div>
           <button className="upsell-cta" onClick={handleUpsell}>Get My Full Report ✦</button>
-          <button className="upsell-skip">No thanks, I&apos;ll keep the free version</button>
         </div>
 
         <div className="disclaimer">
