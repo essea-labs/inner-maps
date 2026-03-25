@@ -42,8 +42,7 @@ export default function InviteModal() {
           &ldquo;{message}&rdquo;
         </div>
         <div className="invite-share-buttons">
-          <button className="share-btn primary" onClick={handleShare}>↗ Share</button>
-          <button className="share-btn" onClick={handleCopy}>🔗 Copy</button>
+          <button className="share-btn primary" onClick={handleShare} style={{ width: '100%', textAlign: 'center', justifyContent: 'center' }}>Share</button>
         </div>
       </div>
     </div>
