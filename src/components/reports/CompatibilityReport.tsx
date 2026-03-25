@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { calculateCompatibility, ZODIAC_ELEMENTS } from '@/lib/compatibility';
 import { TYPE_DEEP_DIVE, ATTACHMENT_DEEP_DIVE, CONNECTION_DEEP_DIVE, COMPAT_DEEP, generatePairStrengths, generatePairChallenges } from '@/lib/deep-dive-data';
@@ -10,8 +11,19 @@ export default function CompatibilityReport() {
   const activeConnection = useQuizStore((s) => s.activeConnection);
   const userName = useQuizStore((s) => s.userName);
   const setScreen = useQuizStore((s) => s.setScreen);
+  const purchasedCompatibility = useQuizStore((s) => s.purchasedCompatibility);
 
-  if (!results || !activeConnection?.results) return null;
+  const connectionId = activeConnection?.id;
+  const isPurchased = !!(connectionId && purchasedCompatibility[connectionId]);
+
+  // Purchase gate — redirect back to compat view if not purchased (useEffect avoids render-time setState)
+  useEffect(() => {
+    if (results && activeConnection?.results && !isPurchased) {
+      setScreen('compatibility');
+    }
+  }, [results, activeConnection, isPurchased, setScreen]);
+
+  if (!results || !activeConnection?.results || !isPurchased) return null;
 
   const r = results;
   const tr = activeConnection.results!;

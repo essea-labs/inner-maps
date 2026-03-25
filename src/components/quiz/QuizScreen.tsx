@@ -221,13 +221,11 @@ export default function QuizScreen() {
   // currentSection: 1=cognitive, 2=attachment, 3=connection, 4=enneagram
   const isLastSection = currentSection === SECTIONS.length - 1;
   const isLastQ = isLastSection && currentQuestion === section.questions - 1;
-  const isFirstQ = currentSection === 1 && currentQuestion === 0;
-
   // Get current answer
   const sectionKey = section.id as keyof typeof answers;
   const currentAnswer = answers[sectionKey]?.[currentQuestion] ?? null;
-  // Don't show back on the very first question of cognitive
-  const showBack = !isFirstQ;
+  // Always show back — navigateBack handles returning to birthday from Q1
+  const showBack = true;
 
   let questionContent: React.ReactNode;
   if (section.id === 'cognitive') {

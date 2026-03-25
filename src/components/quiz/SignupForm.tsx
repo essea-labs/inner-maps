@@ -40,26 +40,45 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
       'Unlock compatibility insights for each connection',
     ],
   },
+  purchase_individual: {
+    title: <>Unlock your <em>full report</em></>,
+    subtitle: 'Create a free account to purchase and keep your report forever.',
+    benefits: [
+      'Deep dive into all 5 dimensions of your personality',
+      'Personalised growth strategies and tips',
+      'Access your report anytime from any device',
+    ],
+  },
+  purchase_compatibility: {
+    title: <>Unlock <em>compatibility</em></>,
+    subtitle: 'Create a free account to purchase your compatibility report.',
+    benefits: [
+      'Full breakdown of your dynamic across all 5 dimensions',
+      'Personalised tips to deepen your connection',
+      'Communication guide based on both your styles',
+    ],
+  },
 };
 
 interface SignupFormProps {
-  /** What the user was trying to do — drives context copy + post-auth routing */
   intent?: string;
-  /** Called when the modal should be dismissed (Skip / after email/password success) */
   onClose?: () => void;
+  defaultMode?: 'login' | 'signup';
 }
 
-export default function SignupForm({ intent = 'save', onClose }: SignupFormProps) {
+export default function SignupForm({ intent = 'save', onClose, defaultMode = 'signup' }: SignupFormProps) {
   const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
   const setScreen = useQuizStore((s) => s.setScreen);
+  const loadConnections = useQuizStore((s) => s.loadConnections);
+  const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
+  const setActiveTab = useQuizStore((s) => s.setActiveTab);
 
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(defaultMode === 'login');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  // Used when SignupForm is rendered as a full screen (legacy 'signup' route)
   const isFullScreen = !onClose;
 
   function handleSkip() {
@@ -69,61 +88,50 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
 
   async function handleGoogle() {
     setError('');
-    // Store intent in cookie so auth callback can route correctly after redirect
     document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
     const redirectTo = `${window.location.origin}/auth/callback`;
-
-    // If there's an active anonymous session, link Google to it (preserves user ID + quiz data).
-    // Otherwise fall back to a regular OAuth sign-in.
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser?.is_anonymous) {
-      const { error: oauthError } = await supabase.auth.linkIdentity({
-        provider: 'google',
-        options: { redirectTo },
-      });
-      if (oauthError) setError(oauthError.message);
+      const { error: e } = await supabase.auth.linkIdentity({ provider: 'google', options: { redirectTo } });
+      if (e) setError(e.message);
     } else {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo },
-      });
-      if (oauthError) setError(oauthError.message);
+      const { error: e } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+      if (e) setError(e.message);
     }
   }
 
-  async function handleEmailPassword() {
-    if (!email.trim() || !password.trim()) {
-      setError('Please enter your email and password.');
-      return;
-    }
-    setLoading(true);
-    setError('');
+  async function handleMagicLink() {
+    const trimmed = email.trim();
+    if (!trimmed) { setError('Please enter your email.'); return; }
+    setLoading(true); setError('');
 
     try {
-      const afterAuth = async (userId: string, userEmail: string) => {
-        await handlePostAuth(userId, userEmail, intent);
-        // Complete invite if user arrived via an invite link
-        const inviterCode = sessionStorage.getItem('innerMapsInviterCode');
-        if (inviterCode) {
-          await completeInvite(inviterCode, userId).catch(console.warn);
-          sessionStorage.removeItem('innerMapsInviterCode');
-        }
-        // For 'invite' intent, handlePostAuth already manages modal state via
-        // setInviteModalOpen. Calling onClose here would close it again.
-        if (onClose && intent !== 'invite') onClose();
-      };
+      document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
 
-      if (isLogin) {
-        // Sign in existing user
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-        if (data.user) await afterAuth(data.user.id, data.user.email ?? email);
-      } else {
-        // Upgrade anonymous account → real account (email + password)
-        const { data, error: updateError } = await supabase.auth.updateUser({ email, password });
-        if (updateError) throw updateError;
-        if (data.user) await afterAuth(data.user.id, data.user.email ?? email);
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      if (currentUser?.is_anonymous) {
+        // Save quiz state to sessionStorage — restored after the magic link redirect
+        const store = useQuizStore.getState();
+        if (store.results) {
+          sessionStorage.setItem('im_results', JSON.stringify(store.results));
+          sessionStorage.setItem('im_userName', store.userName);
+          sessionStorage.setItem('im_birthMonth', String(store.birthMonth ?? ''));
+          sessionStorage.setItem('im_birthDay', String(store.birthDay ?? ''));
+          sessionStorage.setItem('im_starSign', JSON.stringify(store.starSign));
+          if (store.activeConnection) {
+            sessionStorage.setItem('im_activeConnection', JSON.stringify(store.activeConnection));
+          }
+        }
       }
+
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (otpError) throw otpError;
+
+      setSent(true);
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong. Please try again.');
     } finally {
@@ -133,6 +141,33 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
 
   const content = INTENT_CONTENT[intent] ?? INTENT_CONTENT.save;
 
+  // ── "Check your email" state ───────────────────────────────────────────────
+  if (sent) {
+    return (
+      <div className={`signup-screen${!isFullScreen ? ' signup-screen--modal' : ''}`} style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
+        <h2>Check your <em>email</em></h2>
+        <p className="signup-subtitle">
+          We sent a magic link to <strong>{email}</strong>.<br />
+          Tap it to sign in — no password needed.
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--text-light)', marginTop: 24 }}>
+          Wrong email?{' '}
+          <button
+            onClick={() => { setSent(false); setError(''); }}
+            style={{ background: 'none', border: 'none', color: 'var(--peach-deep)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+          >
+            Change it
+          </button>
+        </p>
+        {!isFullScreen && (
+          <button className="signup-skip" onClick={onClose} style={{ marginTop: 8 }}>Close</button>
+        )}
+      </div>
+    );
+  }
+
+  // ── Main form ──────────────────────────────────────────────────────────────
   return (
     <div className={`signup-screen${!isFullScreen ? ' signup-screen--modal' : ''}`}>
       <div className="logo">✦ Inner Maps ✦</div>
@@ -154,7 +189,6 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
       )}
 
       <div className="signup-form">
-        {/* Google OAuth */}
         <button className="signup-social-btn google" onClick={handleGoogle} disabled={loading}>
           <svg className="signup-social-icon" width="18" height="18" viewBox="0 0 18 18">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -173,42 +207,32 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
           placeholder="Email address"
           value={email}
           onChange={(e) => { setEmail(e.target.value); setError(''); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleMagicLink(); }}
           autoComplete="email"
-        />
-        <input
-          type="password"
-          className="signup-input"
-          placeholder={isLogin ? 'Password' : 'Create a password'}
-          value={password}
-          onChange={(e) => { setPassword(e.target.value); setError(''); }}
-          autoComplete={isLogin ? 'current-password' : 'new-password'}
+          autoFocus
         />
 
         {error && (
-          <p style={{ color: 'var(--peach-deep)', fontSize: 13, margin: '4px 0 8px', textAlign: 'center' }}>
-            {error}
-          </p>
+          <p style={{ color: 'var(--peach-deep)', fontSize: 13, margin: '4px 0 8px', textAlign: 'center' }}>{error}</p>
         )}
 
-        <button
-          className="signup-cta"
-          onClick={handleEmailPassword}
-          disabled={loading}
-          style={{ opacity: loading ? 0.6 : 1 }}
-        >
-          {loading ? '...' : isLogin ? 'Sign In ✦' : 'Create Account ✦'}
+        <button className="signup-cta" onClick={handleMagicLink} disabled={loading}
+          style={{ opacity: loading ? 0.6 : 1 }}>
+          {loading ? '...' : 'Send login link ✦'}
         </button>
 
-        <button className="signup-skip" onClick={handleSkip}>
-          Skip for now
-        </button>
+        <button className="signup-skip" onClick={handleSkip}>Skip for now</button>
       </div>
 
       <div className="signup-toggle">
         {isLogin ? (
-          <>Don&apos;t have an account? <button className="signup-toggle-link" onClick={() => { setIsLogin(false); setError(''); }}>Sign up</button></>
+          <>Don&apos;t have an account?{' '}
+            <button className="signup-toggle-link" onClick={() => { setIsLogin(false); setError(''); }}>Sign up</button>
+          </>
         ) : (
-          <>Already have an account? <button className="signup-toggle-link" onClick={() => { setIsLogin(true); setError(''); }}>Sign in</button></>
+          <>Already have an account?{' '}
+            <button className="signup-toggle-link" onClick={() => { setIsLogin(true); setError(''); }}>Sign in</button>
+          </>
         )}
       </div>
 

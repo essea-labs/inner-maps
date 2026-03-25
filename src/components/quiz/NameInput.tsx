@@ -7,6 +7,7 @@ export default function NameInput() {
   const userName = useQuizStore((s) => s.userName);
   const setUserName = useQuizStore((s) => s.setUserName);
   const setScreen = useQuizStore((s) => s.setScreen);
+  const navigateBack = useQuizStore((s) => s.navigateBack);
   const [value, setValue] = useState(userName);
 
   function handleContinue() {
@@ -21,7 +22,7 @@ export default function NameInput() {
   }
 
   return (
-    <div className="name-screen">
+    <div className="name-screen" style={{ paddingBottom: 120 }}>
       <div className="logo">✦ Inner Maps ✦</div>
       <h2>First, <em>what&apos;s your name?</em></h2>
       <p className="name-subtitle">So your results feel personal to you.</p>
@@ -37,13 +38,16 @@ export default function NameInput() {
         autoCapitalize="words"
         autoFocus
       />
-      <button
-        className="cta-button"
-        onClick={handleContinue}
-        style={{ animation: 'none', opacity: value.trim() ? 1 : 0.4, cursor: value.trim() ? 'pointer' : 'not-allowed' }}
-      >
-        Continue
-      </button>
+      <div className="nav-buttons" style={{ flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
+        <button
+          className="nav-next"
+          onClick={handleContinue}
+          disabled={!value.trim()}
+        >
+          Continue
+        </button>
+        <button className="quiz-back-bottom" onClick={navigateBack}>Back</button>
+      </div>
     </div>
   );
 }

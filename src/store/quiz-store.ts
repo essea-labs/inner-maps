@@ -3,7 +3,7 @@ import type { ScreenName, QuizAnswers, QuizResults, Connection, StarSign } from 
 import { SECTIONS, getStarSign, calculateResults } from '@/lib/quiz-data';
 import { MOCK_CONNECTIONS } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
-import { saveUserProfile, saveQuizResults, fetchConnections } from '@/lib/db';
+import { saveUserProfile, saveQuizResults, fetchConnections, hasPurchase, fetchUserQuizResults } from '@/lib/db';
 
 // ===== STATE SHAPE =====
 // currentSection matches the original:
@@ -38,12 +38,17 @@ interface QuizStore {
   // Connections / compatibility
   connections: Connection[];
   activeConnection: Connection | null;
-  activeTab: 'mymap' | 'compat';
+  activeTab: 'mymap' | 'compat' | 'profile';
 
   // Modals
   inviteModalOpen: boolean;
   shareModalOpen: boolean;
   reportModalOpen: boolean;
+
+  // Purchases
+  purchasedIndividual: boolean;
+  purchasedCompatibility: Record<string, boolean>; // keyed by connection id
+  purchaseIntent: string | null; // 'purchase_individual' | 'purchase_compatibility'
 
   // Toast
   toastMessage: string | null;
@@ -54,7 +59,7 @@ interface QuizStore {
   setUserName: (name: string) => void;
   setBirthday: (month: number, day: number) => void;
   setEmail: (email: string) => void;
-  setActiveTab: (tab: 'mymap' | 'compat') => void;
+  setActiveTab: (tab: 'mymap' | 'compat' | 'profile') => void;
 
   answerCognitive: (qIndex: number, value: string) => void;
   answerAttachment: (qIndex: number, value: number) => void;
@@ -75,8 +80,15 @@ interface QuizStore {
   showToast: (message: string) => void;
   dismissToast: () => void;
 
+  // Purchases
+  setPurchased: (productType: string, connectionId?: string) => void;
+  setPurchaseIntent: (intent: string | null) => void;
+  checkPurchases: (userId: string) => Promise<void>;
+  startCheckout: (productType: string, userId: string, connectionId?: string) => Promise<void>;
+
   // Phase 2: Supabase
   loadConnections: (userId: string) => Promise<void>;
+  restoreUserState: (userId: string) => Promise<void>;
   handlePostAuth: (userId: string, email: string, intent: string) => Promise<void>;
 }
 
@@ -110,6 +122,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   inviteModalOpen: false,
   shareModalOpen: false,
   reportModalOpen: false,
+  purchasedIndividual: false,
+  purchasedCompatibility: {},
+  purchaseIntent: null,
   toastMessage: null,
 
   // ===== NAVIGATION =====
@@ -314,6 +329,69 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   dismissToast: () => set({ toastMessage: null }),
 
+  // ===== PURCHASES =====
+
+  setPurchased: (productType, connectionId) => {
+    if (productType === 'individual_report') {
+      set({ purchasedIndividual: true });
+    } else if (productType === 'compatibility_report' && connectionId) {
+      set((s) => ({
+        purchasedCompatibility: { ...s.purchasedCompatibility, [connectionId]: true },
+      }));
+    }
+  },
+
+  setPurchaseIntent: (intent) => set({ purchaseIntent: intent }),
+
+  checkPurchases: async (userId: string) => {
+    try {
+      const hasIndividual = await hasPurchase(userId, 'individual_report');
+      if (hasIndividual) set({ purchasedIndividual: true });
+    } catch (err) {
+      console.warn('checkPurchases failed:', err);
+    }
+  },
+
+  startCheckout: async (productType: string, userId: string, connectionId?: string) => {
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_type: productType, user_id: userId, connection_id: connectionId }),
+      });
+      const data = await res.json();
+
+      if (data.already_purchased) {
+        // Already purchased — go straight to report
+        get().setPurchased(productType, connectionId);
+        if (productType === 'individual_report') {
+          get().setScreen('individualReport');
+        } else {
+          get().setScreen('compatibilityReport');
+        }
+        get().showToast('Report already unlocked!');
+        return;
+      }
+
+      if (data.url) {
+        // Persist quiz state to sessionStorage so it survives the Stripe redirect
+        const { results, userName, birthMonth, birthDay, starSign, activeConnection } = get();
+        sessionStorage.setItem('im_results', JSON.stringify(results));
+        sessionStorage.setItem('im_userName', userName);
+        sessionStorage.setItem('im_birthMonth', String(birthMonth ?? ''));
+        sessionStorage.setItem('im_birthDay', String(birthDay ?? ''));
+        sessionStorage.setItem('im_starSign', JSON.stringify(starSign));
+        if (activeConnection) {
+          sessionStorage.setItem('im_activeConnection', JSON.stringify(activeConnection));
+        }
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Checkout failed:', err);
+      get().showToast('Something went wrong. Please try again.');
+    }
+  },
+
   // ===== PHASE 2: SUPABASE =====
 
   loadConnections: async (userId: string) => {
@@ -325,14 +403,57 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     }
   },
 
+  restoreUserState: async (userId: string) => {
+    try {
+      const data = await fetchUserQuizResults(userId);
+      if (!data) return; // User hasn't taken the quiz yet
+      const { results, name, birthMonth, birthDay } = data;
+      // Reconstruct full StarSign from birthday if available, fall back to stored sign
+      const starSign = (birthMonth && birthDay) ? getStarSign(birthMonth, birthDay) : results.starSign;
+      set({ results, userName: name, birthMonth, birthDay, starSign });
+      get().setScreen('results');
+      // Load connections and check purchases in parallel (non-blocking)
+      await Promise.all([
+        get().loadConnections(userId),
+        get().checkPurchases(userId),
+      ]);
+    } catch (err) {
+      console.warn('restoreUserState failed:', err);
+    }
+  },
+
   handlePostAuth: async (userId: string, email: string, intent: string) => {
     try {
-      await saveUserProfile(userId, { email, isAnonymous: false });
+      const { results, answers, userName, birthMonth, birthDay } = get();
+      // If quiz results are in memory (e.g. magic link sign-up after taking quiz),
+      // save them under the new user ID in case the anonymous account was replaced.
+      if (results) {
+        await saveUserProfile(userId, { name: userName, email, birthMonth, birthDay, isAnonymous: false });
+        await saveQuizResults(userId, results, answers);
+      } else {
+        await saveUserProfile(userId, { email, isAnonymous: false });
+      }
       await get().loadConnections(userId);
+      await get().checkPurchases(userId);
     } catch (err) {
       console.warn('handlePostAuth save failed:', err);
     }
-    get().showToast('Results saved ✓');
+
+    // Handle purchase intents — redirect to Stripe checkout
+    if (intent === 'purchase_individual') {
+      await get().startCheckout('individual_report', userId);
+      return;
+    }
+    if (intent === 'purchase_compatibility') {
+      const connectionId = get().activeConnection?.id;
+      await get().startCheckout('compatibility_report', userId, connectionId);
+      return;
+    }
+
+    // Only toast for basic save flows — purchase/invite intents have their own feedback
+    if (intent !== 'invite' && !intent.startsWith('purchase')) {
+      get().showToast('Results saved ✓');
+    }
     if (intent === 'compatibility') {
       get().setScreen('connections');
     } else if (intent === 'invite') {

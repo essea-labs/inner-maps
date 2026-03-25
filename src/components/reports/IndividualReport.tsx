@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import {
   TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE,
@@ -15,11 +15,19 @@ export default function IndividualReport() {
   const userName = useQuizStore((s) => s.userName);
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
+  const purchasedIndividual = useQuizStore((s) => s.purchasedIndividual);
   const { user } = useAuth();
   const [signupOpen, setSignupOpen] = useState(false);
   const isRealUser = !!user && !user.is_anonymous;
 
-  if (!results) return null;
+  // Purchase gate — redirect back to results if not purchased (useEffect avoids render-time setState)
+  useEffect(() => {
+    if (results && !purchasedIndividual) {
+      setScreen('results');
+    }
+  }, [results, purchasedIndividual, setScreen]);
+
+  if (!results || !purchasedIndividual) return null;
 
   const r = results;
   const dd = TYPE_DEEP_DIVE[r.cognitiveType];

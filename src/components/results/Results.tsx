@@ -47,8 +47,22 @@ export default function Results() {
     }
   }
 
+  const purchasedIndividual = useQuizStore((s) => s.purchasedIndividual);
+  const startCheckout = useQuizStore((s) => s.startCheckout);
+
   function handleUpsell() {
-    setScreen('individualReport');
+    // Already purchased — go straight to report
+    if (purchasedIndividual) {
+      setScreen('individualReport');
+      return;
+    }
+    // Anonymous user — need to sign up first
+    if (!isRealUser) {
+      openSignup('purchase_individual');
+      return;
+    }
+    // Authenticated — go to Stripe checkout
+    startCheckout('individual_report', user!.id);
   }
 
   const avoidancePct = (parseFloat(r.avoidance) / 5 * 100).toFixed(0);

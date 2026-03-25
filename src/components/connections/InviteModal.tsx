@@ -13,13 +13,12 @@ export default function InviteModal() {
   const showToast = useQuizStore((s) => s.showToast);
   const { user, loading: authLoading } = useAuth();
 
-  // Cache the invite code so multiple shares reuse the same row
   const [cachedCode, setCachedCode] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isRealUser = !!user && !user.is_anonymous;
 
-  // Auto-generate the invite code as soon as the modal opens for a real user
   useEffect(() => {
     if (!inviteModalOpen || !isRealUser || cachedCode || generating) return;
     setGenerating(true);
@@ -31,31 +30,57 @@ export default function InviteModal() {
   }, [inviteModalOpen, isRealUser]);
 
   if (!inviteModalOpen) return null;
-
-  // Wait for auth to resolve before deciding which UI to show (prevents flash)
   if (authLoading) return null;
 
-  // Not authenticated → show signup prompt
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.4)',
+    zIndex: 200,
+    display: 'flex',
+    alignItems: 'flex-end',
+  };
+
+  const sheetStyle: React.CSSProperties = {
+    width: '100%',
+    maxWidth: 440,
+    margin: '0 auto',
+    background: 'var(--bg)',
+    borderRadius: '20px 20px 0 0',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  };
+
+  // ── Logged-out: reuse the same bottom-sheet sign-in pattern as TabBar ──────
   if (!isRealUser) {
     return (
-      <div className="invite-modal-overlay" onClick={() => setInviteModalOpen(false)}>
-        <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="invite-modal-handle" />
+      <div
+        style={overlayStyle}
+        onClick={() => setInviteModalOpen(false)}
+      >
+        <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
           <SignupForm intent="invite" onClose={() => setInviteModalOpen(false)} />
         </div>
       </div>
     );
   }
 
-  const message = `${userName ? userName + ' here! ' : ''}I just mapped my inner world — personality, attachment, enneagram and more. Take the quiz and let's see how we connect ✦`;
+  // ── Logged-in: simple link + share ─────────────────────────────────────────
   const inviteUrl = cachedCode ? `https://innermaps.io/i/${cachedCode}` : null;
-  const displayLink = cachedCode ? `innermaps.io/i/${cachedCode}` : generating ? 'Generating link…' : 'innermaps.io/i/…';
+  const displayLink = cachedCode
+    ? `innermaps.io/i/${cachedCode}`
+    : generating
+    ? 'Generating link…'
+    : 'innermaps.io/i/…';
+
+  const shareText = `${userName ? userName + ' here! ' : ''}I just mapped my inner world — personality, attachment, enneagram and more. Take the quiz and let's see how we connect ✦`;
 
   async function handleCopyLink() {
     if (!inviteUrl) return;
     try {
       await navigator.clipboard.writeText(inviteUrl);
-      showToast('✓ Link copied!');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       showToast('Could not copy — try selecting the link manually.');
     }
@@ -65,7 +90,7 @@ export default function InviteModal() {
     if (!inviteUrl) return;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Inner Maps Invite', text: message, url: inviteUrl });
+        await navigator.share({ title: 'Inner Maps Invite', text: shareText, url: inviteUrl });
       } else {
         await handleCopyLink();
       }
@@ -77,33 +102,72 @@ export default function InviteModal() {
   }
 
   return (
-    <div className="invite-modal-overlay" onClick={() => setInviteModalOpen(false)}>
-      <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="invite-modal-handle" />
-        <h3>Invite Someone</h3>
-        <p className="invite-modal-sub">Send your link so they can take the quiz and unlock your compatibility</p>
-        <div className="invite-link-box">
-          <span className="invite-link-text">{displayLink}</span>
+    <div style={overlayStyle} onClick={() => setInviteModalOpen(false)}>
+      <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
+        {/* Handle + close row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 16px 0', position: 'relative' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--peach-pale)', margin: '0 auto' }} />
           <button
-            className="invite-link-copy"
-            onClick={handleCopyLink}
-            disabled={!cachedCode}
-            style={{ opacity: !cachedCode ? 0.4 : 1 }}
+            onClick={() => setInviteModalOpen(false)}
+            style={{
+              position: 'absolute',
+              right: 16,
+              top: 8,
+              background: 'none',
+              border: 'none',
+              fontSize: 20,
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              lineHeight: 1,
+              padding: 4,
+            }}
+            aria-label="Close"
           >
-            Copy
+            ×
           </button>
         </div>
-        <div className="invite-message-preview">
-          &ldquo;{message}&rdquo;
-        </div>
-        <div className="invite-share-buttons">
+
+        <div style={{ padding: '16px 24px 32px' }}>
+          <h3 style={{ margin: '0 0 6px', fontSize: 22 }}>
+            Invite &amp; <em>connect</em>
+          </h3>
+          <p style={{ margin: '0 0 20px', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            Share your link — when they take the quiz, you'll both see your compatibility.
+          </p>
+
+          {/* Link box */}
+          <div className="invite-link-box">
+            <span className="invite-link-text">{displayLink}</span>
+            <button
+              className="invite-link-copy"
+              onClick={handleCopyLink}
+              disabled={!cachedCode}
+              style={{
+                opacity: !cachedCode ? 0.4 : 1,
+                background: copied ? 'var(--peach)' : undefined,
+                color: copied ? '#fff' : undefined,
+                transition: 'background 0.2s, color 0.2s',
+                flexShrink: 0,
+              }}
+            >
+              {copied ? '✓ Copied!' : 'Copy'}
+            </button>
+          </div>
+
+          {/* Share button */}
           <button
             className="share-btn primary"
             onClick={handleShare}
             disabled={!cachedCode}
-            style={{ width: '100%', textAlign: 'center', justifyContent: 'center', opacity: !cachedCode ? 0.6 : 1 }}
+            style={{
+              width: '100%',
+              textAlign: 'center',
+              justifyContent: 'center',
+              opacity: !cachedCode ? 0.6 : 1,
+              marginTop: 12,
+            }}
           >
-            {generating ? 'Getting your link…' : 'Invite'}
+            {generating ? 'Getting your link…' : 'Share invite ✦'}
           </button>
         </div>
       </div>

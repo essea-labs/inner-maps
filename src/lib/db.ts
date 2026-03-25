@@ -105,71 +105,189 @@ export async function completeInvite(
   if (error) console.error('completeInvite error:', error.message);
 }
 
-// ===== CONNECTIONS =====
+// ===== FETCH USER QUIZ RESULTS (for state restoration) =====
 
-/** Fetch completed connections for a user, joined with their quiz_results. */
-export async function fetchConnections(userId: string): Promise<Connection[]> {
+export async function fetchUserQuizResults(
+  userId: string
+): Promise<{ results: QuizResults; name: string; birthMonth: number | null; birthDay: number | null } | null> {
   const { data, error } = await supabase
-    .from('invites')
+    .from('quiz_results')
     .select(`
-      invite_code,
-      status,
-      created_at,
-      invitee:invitee_id (
+      cognitive_type,
+      enneagram_type,
+      enneagram_wing,
+      enneagram_display,
+      attachment_style,
+      anxiety_score,
+      avoidance_score,
+      connection_scores,
+      top_connection,
+      star_sign,
+      user:user_id (
         name,
-        quiz_results (
-          cognitive_type,
-          enneagram_type,
-          enneagram_wing,
-          enneagram_display,
-          attachment_style,
-          anxiety_score,
-          avoidance_score,
-          connection_scores,
-          top_connection,
-          star_sign
-        )
+        birthday_month,
+        birthday_day
       )
     `)
-    .eq('inviter_id', userId)
-    .eq('status', 'completed');
+    .eq('user_id', userId)
+    .single();
 
-  if (error || !data) return [];
+  if (error || !data) return null;
 
-  return data.map((row: any) => {
-    const invitee = row.invitee as any;
-    const qr = invitee?.quiz_results?.[0];
-    return {
-      name: invitee?.name ?? 'Someone',
+  const qr = data as any;
+  const user = qr.user as any;
+
+  return {
+    name: user?.name ?? '',
+    birthMonth: user?.birthday_month ?? null,
+    birthDay: user?.birthday_day ?? null,
+    results: {
+      cognitiveType: qr.cognitive_type,
+      cognitiveTypeName: '',
+      cognitiveTypeDesc: '',
+      attachmentStyle: qr.attachment_style,
+      attachmentDesc: '',
+      anxiety: String(qr.anxiety_score),
+      avoidance: String(qr.avoidance_score),
+      connectionScores: qr.connection_scores ?? {},
+      connectionSorted: Object.entries(qr.connection_scores ?? {}).sort(
+        (a: any, b: any) => b[1] - a[1]
+      ) as [string, number][],
+      connectionNames: {},
+      connectionDescs: {},
+      topConnection: qr.top_connection,
+      enneagramType: qr.enneagram_type,
+      enneagramWing: qr.enneagram_wing,
+      enneagramName: '',
+      enneagramDisplay: qr.enneagram_display,
+      starSign: qr.star_sign
+        ? { sign: qr.star_sign, symbol: '', emoji: '', dates: '', tagline: '', desc: '', month: [] }
+        : null,
+    },
+  };
+}
+
+// ===== PURCHASES =====
+
+export async function hasPurchase(
+  userId: string,
+  productType: 'individual_report' | 'compatibility_report',
+  connectionId?: string
+): Promise<boolean> {
+  let query = supabase
+    .from('purchases')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('product_type', productType)
+    .limit(1);
+
+  if (connectionId) {
+    query = query.eq('connection_id', connectionId);
+  }
+
+  const { data } = await query;
+  return (data?.length ?? 0) > 0;
+}
+
+// ===== CONNECTIONS =====
+
+/** Maps a raw quiz_results DB row to QuizResults shape */
+function mapQR(qr: any) {
+  return {
+    cognitiveType: qr.cognitive_type,
+    cognitiveTypeName: '',
+    cognitiveTypeDesc: '',
+    attachmentStyle: qr.attachment_style,
+    attachmentDesc: '',
+    anxiety: String(qr.anxiety_score),
+    avoidance: String(qr.avoidance_score),
+    connectionScores: qr.connection_scores ?? {},
+    connectionSorted: Object.entries(qr.connection_scores ?? {}).sort(
+      (a: any, b: any) => b[1] - a[1]
+    ) as [string, number][],
+    connectionNames: {},
+    connectionDescs: {},
+    topConnection: qr.top_connection,
+    enneagramType: qr.enneagram_type,
+    enneagramWing: qr.enneagram_wing,
+    enneagramName: '',
+    enneagramDisplay: qr.enneagram_display,
+    starSign: qr.star_sign
+      ? { sign: qr.star_sign, symbol: '', emoji: '', dates: '', tagline: '', desc: '', month: [] }
+      : null,
+  };
+}
+
+/** Fetch completed connections for a user — both as inviter AND as invitee. */
+export async function fetchConnections(userId: string): Promise<Connection[]> {
+  const SELECT = `
+    id,
+    invite_code,
+    status,
+    created_at,
+    invitee:invitee_id (
+      name,
+      quiz_results (
+        cognitive_type, enneagram_type, enneagram_wing, enneagram_display,
+        attachment_style, anxiety_score, avoidance_score,
+        connection_scores, top_connection, star_sign
+      )
+    ),
+    inviter:inviter_id (
+      name,
+      quiz_results (
+        cognitive_type, enneagram_type, enneagram_wing, enneagram_display,
+        attachment_style, anxiety_score, avoidance_score,
+        connection_scores, top_connection, star_sign
+      )
+    )
+  `;
+
+  // Run both queries in parallel
+  const [inviterRes, inviteeRes] = await Promise.all([
+    supabase.from('invites').select(SELECT).eq('inviter_id', userId).eq('status', 'completed'),
+    supabase.from('invites').select(SELECT).eq('invitee_id', userId).eq('status', 'completed'),
+  ]);
+
+  const seenIds = new Set<string>();
+  const connections: Connection[] = [];
+
+  // Supabase returns quiz_results as an object (not array) when user_id has a UNIQUE constraint.
+  // Handle both shapes to be safe.
+  function extractQR(raw: any) {
+    if (!raw) return null;
+    return Array.isArray(raw) ? (raw[0] ?? null) : raw;
+  }
+
+  // Inviter side — show invitee's results
+  for (const row of (inviterRes.data ?? [])) {
+    if (seenIds.has(row.id)) continue;
+    seenIds.add(row.id);
+    const other = (row as any).invitee as any;
+    const qr = extractQR(other?.quiz_results);
+    connections.push({
+      id: row.id,
+      name: other?.name ?? 'Someone',
       status: 'completed' as const,
-      invitedDaysAgo: Math.floor(
-        (Date.now() - new Date(row.created_at).getTime()) / 86400000
-      ),
-      results: qr
-        ? {
-            cognitiveType: qr.cognitive_type,
-            cognitiveTypeName: '',
-            cognitiveTypeDesc: '',
-            attachmentStyle: qr.attachment_style,
-            attachmentDesc: '',
-            anxiety: String(qr.anxiety_score),
-            avoidance: String(qr.avoidance_score),
-            connectionScores: qr.connection_scores ?? {},
-            connectionSorted: Object.entries(qr.connection_scores ?? {}).sort(
-              (a: any, b: any) => b[1] - a[1]
-            ) as [string, number][],
-            connectionNames: {},
-            connectionDescs: {},
-            topConnection: qr.top_connection,
-            enneagramType: qr.enneagram_type,
-            enneagramWing: qr.enneagram_wing,
-            enneagramName: '',
-            enneagramDisplay: qr.enneagram_display,
-            starSign: qr.star_sign
-              ? { sign: qr.star_sign, symbol: '', emoji: '', dates: '', tagline: '', desc: '', month: [] }
-              : null,
-          }
-        : undefined,
-    } satisfies Connection;
-  });
+      invitedDaysAgo: Math.floor((Date.now() - new Date(row.created_at).getTime()) / 86400000),
+      results: qr ? mapQR(qr) : undefined,
+    });
+  }
+
+  // Invitee side — show inviter's results
+  for (const row of (inviteeRes.data ?? [])) {
+    if (seenIds.has(row.id)) continue;
+    seenIds.add(row.id);
+    const other = (row as any).inviter as any;
+    const qr = extractQR(other?.quiz_results);
+    connections.push({
+      id: row.id,
+      name: other?.name ?? 'Someone',
+      status: 'completed' as const,
+      invitedDaysAgo: Math.floor((Date.now() - new Date(row.created_at).getTime()) / 86400000),
+      results: qr ? mapQR(qr) : undefined,
+    });
+  }
+
+  return connections;
 }

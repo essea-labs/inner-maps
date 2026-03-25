@@ -14,6 +14,7 @@ export default function BirthdayInput() {
   const starSign = useQuizStore((s) => s.starSign);
   const setBirthday = useQuizStore((s) => s.setBirthday);
   const setScreen = useQuizStore((s) => s.setScreen);
+  const navigateBack = useQuizStore((s) => s.navigateBack);
 
   const [month, setMonth] = useState<number>(birthMonth ?? 0);
   const [day, setDay] = useState<number>(birthDay ?? 0);
@@ -32,7 +33,7 @@ export default function BirthdayInput() {
   const canContinue = month > 0 && day > 0;
 
   return (
-    <div className="birthday-screen">
+    <div className="birthday-screen" style={{ paddingBottom: 120 }}>
       <div className="logo">✦ Inner Maps ✦</div>
       <h2>When&apos;s your <em>birthday?</em></h2>
       <p className="birthday-subtitle">We&apos;ll use this to reveal your star sign.</p>
@@ -71,13 +72,16 @@ export default function BirthdayInput() {
         </div>
       )}
 
-      <button
-        className="cta-button"
-        onClick={handleContinue}
-        style={{ animation: 'none', opacity: canContinue ? 1 : 0.4, cursor: canContinue ? 'pointer' : 'not-allowed' }}
-      >
-        Continue
-      </button>
+      <div className="nav-buttons" style={{ flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
+        <button
+          className="nav-next"
+          onClick={handleContinue}
+          disabled={!canContinue}
+        >
+          Continue
+        </button>
+        <button className="quiz-back-bottom" onClick={navigateBack}>Back</button>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { calculateCompatibility } from '@/lib/compatibility';
 import TabBar from '@/components/ui/TabBar';
+import SignupForm from '@/components/quiz/SignupForm';
+import useAuth from '@/hooks/useAuth';
 
 export default function CompatibilityView() {
   const results = useQuizStore((s) => s.results);
@@ -10,6 +13,11 @@ export default function CompatibilityView() {
   const userName = useQuizStore((s) => s.userName);
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
+  const purchasedCompatibility = useQuizStore((s) => s.purchasedCompatibility);
+  const startCheckout = useQuizStore((s) => s.startCheckout);
+  const { user, loading: authLoading } = useAuth();
+  const isRealUser = !authLoading && !!user && !user.is_anonymous;
+  const [signupOpen, setSignupOpen] = useState(false);
 
   if (!results) {
     return (
@@ -69,7 +77,19 @@ export default function CompatibilityView() {
   }
 
   function handleUnlock() {
-    setScreen('compatibilityReport');
+    const connectionId = conn.id;
+    // Already purchased
+    if (connectionId && purchasedCompatibility[connectionId]) {
+      setScreen('compatibilityReport');
+      return;
+    }
+    // Anonymous — sign up first
+    if (!isRealUser) {
+      setSignupOpen(true);
+      return;
+    }
+    // Authenticated — go to Stripe
+    startCheckout('compatibility_report', user!.id, connectionId);
   }
 
   const myAttachFontSize = results.attachmentStyle.length > 8 ? 13 : 16;
@@ -264,6 +284,17 @@ export default function CompatibilityView() {
         </div>
       </div>
       <TabBar />
+
+      {signupOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSignupOpen(false); }}
+        >
+          <div style={{ width: '100%', maxWidth: 440, margin: '0 auto', background: 'var(--bg)', borderRadius: '20px 20px 0 0', maxHeight: '90vh', overflowY: 'auto' }}>
+            <SignupForm intent="purchase_compatibility" onClose={() => setSignupOpen(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

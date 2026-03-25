@@ -12,7 +12,8 @@ export type ScreenName =
   | 'inviteLanding'
   | 'compatibility'
   | 'individualReport'
-  | 'compatibilityReport';
+  | 'compatibilityReport'
+  | 'profile';
 
 export interface Section {
   id: string;
@@ -100,6 +101,7 @@ export interface CompatibilityResult {
 }
 
 export interface Connection {
+  id?: string;
   name: string;
   status: 'completed' | 'pending';
   results?: QuizResults;
