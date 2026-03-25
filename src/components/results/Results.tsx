@@ -18,6 +18,7 @@ export default function Results() {
 
   const [signupOpen, setSignupOpen] = useState(false);
   const [signupIntent, setSignupIntent] = useState('save');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   function openSignup(intent: string) {
     setSignupIntent(intent);
@@ -50,7 +51,7 @@ export default function Results() {
   const purchasedIndividual = useQuizStore((s) => s.purchasedIndividual);
   const startCheckout = useQuizStore((s) => s.startCheckout);
 
-  function handleUpsell() {
+  async function handleUpsell() {
     // Already purchased — go straight to report
     if (purchasedIndividual) {
       setScreen('individualReport');
@@ -62,7 +63,9 @@ export default function Results() {
       return;
     }
     // Authenticated — go to Stripe checkout
-    startCheckout('individual_report', user!.id);
+    setCheckoutLoading(true);
+    await startCheckout('individual_report', user!.id);
+    setCheckoutLoading(false);
   }
 
   const avoidancePct = (parseFloat(r.avoidance) / 5 * 100).toFixed(0);
@@ -213,7 +216,9 @@ export default function Results() {
           </div>
           <div className="upsell-price">$9.99</div>
           <div className="upsell-price-note">One-time purchase · PDF download + saved to your profile</div>
-          <button className="upsell-cta" onClick={handleUpsell}>Get My Full Report ✦</button>
+          <button className="upsell-cta" onClick={handleUpsell} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
+            {checkoutLoading ? 'Loading checkout…' : 'Get My Full Report ✦'}
+          </button>
         </div>
 
         <div className="disclaimer">

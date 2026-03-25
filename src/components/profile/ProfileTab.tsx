@@ -9,7 +9,8 @@ export default function ProfileTab() {
   const results = useQuizStore((s) => s.results);
   const userName = useQuizStore((s) => s.userName);
   const resetQuiz = useQuizStore((s) => s.resetQuiz);
-  const { user } = useAuth();
+  const restoringState = useQuizStore((s) => s.restoringState);
+  const { user, loading: authLoading } = useAuth();
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -52,6 +53,11 @@ export default function ProfileTab() {
                 <div className="share-card-item-value">{results.starSign?.sign} {results.starSign?.symbol}</div>
               </div>
             </div>
+          </div>
+        ) : (authLoading || restoringState) ? (
+          <div className="connections-empty" style={{ marginBottom: 24 }}>
+            <div className="connections-empty-icon" style={{ animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
+            <h3>Loading your profile…</h3>
           </div>
         ) : (
           <div className="connections-empty" style={{ marginBottom: 24 }}>

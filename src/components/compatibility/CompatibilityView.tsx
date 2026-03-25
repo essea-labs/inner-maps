@@ -18,6 +18,7 @@ export default function CompatibilityView() {
   const { user, loading: authLoading } = useAuth();
   const isRealUser = !authLoading && !!user && !user.is_anonymous;
   const [signupOpen, setSignupOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   if (!results) {
     return (
@@ -76,7 +77,7 @@ export default function CompatibilityView() {
     }
   }
 
-  function handleUnlock() {
+  async function handleUnlock() {
     const connectionId = conn.id;
     // Already purchased
     if (connectionId && purchasedCompatibility[connectionId]) {
@@ -89,7 +90,9 @@ export default function CompatibilityView() {
       return;
     }
     // Authenticated — go to Stripe
-    startCheckout('compatibility_report', user!.id, connectionId);
+    setCheckoutLoading(true);
+    await startCheckout('compatibility_report', user!.id, connectionId);
+    setCheckoutLoading(false);
   }
 
   const myAttachFontSize = results.attachmentStyle.length > 8 ? 13 : 16;
@@ -294,7 +297,9 @@ export default function CompatibilityView() {
           </div>
           <div className="upsell-price">$4.99</div>
           <div className="upsell-price-note">One-time purchase · PDF download</div>
-          <button className="upsell-cta" onClick={handleUnlock}>Unlock Full Compatibility Report ✦</button>
+          <button className="upsell-cta" onClick={handleUnlock} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
+            {checkoutLoading ? 'Loading checkout…' : 'Unlock Full Compatibility Report ✦'}
+          </button>
           <button className="upsell-skip">No thanks, keep the free version</button>
         </div>
       </div>

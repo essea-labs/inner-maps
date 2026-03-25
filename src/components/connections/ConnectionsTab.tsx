@@ -4,6 +4,7 @@ import { useQuizStore } from '@/store/quiz-store';
 import TabBar from '@/components/ui/TabBar';
 
 export default function ConnectionsTab() {
+  const results = useQuizStore((s) => s.results);
   const connections = useQuizStore((s) => s.connections);
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
   const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
@@ -14,6 +15,26 @@ export default function ConnectionsTab() {
     setActiveConnection(connections[index]);
     setScreen('compatibility');
     setActiveTab('compat');
+  }
+
+  // User hasn't taken the quiz yet
+  if (!results) {
+    return (
+      <div style={{ paddingBottom: 80 }}>
+        <div className="connections-page">
+          <div className="connections-page-header">
+            <div className="logo">✦ Inner Maps ✦</div>
+            <h1>Compatibility</h1>
+          </div>
+          <div className="connections-empty">
+            <div className="connections-empty-icon">✦</div>
+            <h3>Take the quiz first</h3>
+            <p>Complete your Inner Maps profile to see compatibility with others.</p>
+          </div>
+        </div>
+        <TabBar />
+      </div>
+    );
   }
 
   return (

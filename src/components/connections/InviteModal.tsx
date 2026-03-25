@@ -59,7 +59,7 @@ export default function InviteModal() {
         onClick={() => setInviteModalOpen(false)}
       >
         <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
-          <SignupForm intent="invite" defaultMode="login" onClose={() => setInviteModalOpen(false)} />
+          <SignupForm intent="invite" onClose={() => setInviteModalOpen(false)} />
         </div>
       </div>
     );
@@ -104,69 +104,43 @@ export default function InviteModal() {
   return (
     <div style={overlayStyle} onClick={() => setInviteModalOpen(false)}>
       <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
-        {/* Handle + close row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 16px 0', position: 'relative' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--peach-pale)', margin: '0 auto' }} />
-          <button
-            onClick={() => setInviteModalOpen(false)}
-            style={{
-              position: 'absolute',
-              right: 16,
-              top: 8,
-              background: 'none',
-              border: 'none',
-              fontSize: 20,
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              lineHeight: 1,
-              padding: 4,
-            }}
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </div>
-
-        <div style={{ padding: '12px 24px 36px' }}>
-          <h3 style={{ margin: '0 0 6px', fontSize: 20 }}>
-            Invite &amp; <em>connect</em>
-          </h3>
-          <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--text-secondary)' }}>
-            Share your link — when they take the quiz, you&apos;ll both see your free compatibility breakdown.
+        <div className="signup-screen signup-screen--modal">
+          <div className="logo">✦ Inner Maps ✦</div>
+          <h2>Invite & <em>connect</em></h2>
+          <p className="signup-subtitle">
+            Share your link and see compatibility with anyone who takes the quiz.
           </p>
 
-          <div className="invite-link-box">
-            <span className="invite-link-text">{displayLink}</span>
-            <button
-              className="invite-link-copy"
-              onClick={handleCopyLink}
-              disabled={!cachedCode}
-              style={{
-                opacity: !cachedCode ? 0.4 : 1,
-                background: copied ? 'var(--peach)' : undefined,
-                color: copied ? '#fff' : undefined,
-                transition: 'background 0.2s, color 0.2s',
-                flexShrink: 0,
-              }}
-            >
-              {copied ? '✓ Copied!' : 'Copy'}
-            </button>
-          </div>
+          <div className="signup-form">
+            <div className="invite-link-box">
+              <span className="invite-link-text">{displayLink}</span>
+              <button
+                className="invite-link-copy"
+                onClick={handleCopyLink}
+                disabled={!cachedCode}
+                style={{
+                  opacity: !cachedCode ? 0.4 : 1,
+                  background: copied ? 'var(--peach)' : undefined,
+                  color: copied ? '#fff' : undefined,
+                  transition: 'background 0.2s, color 0.2s',
+                  flexShrink: 0,
+                }}
+              >
+                {copied ? '✓ Copied!' : 'Copy'}
+              </button>
+            </div>
 
-          <button
-            className="share-btn primary"
-            onClick={handleShare}
-            disabled={!cachedCode}
-            style={{
-              width: '100%',
-              textAlign: 'center',
-              justifyContent: 'center',
-              opacity: !cachedCode ? 0.6 : 1,
-              marginTop: 12,
-            }}
-          >
-            {generating ? 'Getting your link…' : 'Share invite ✦'}
-          </button>
+            <button
+              className="signup-cta"
+              onClick={handleShare}
+              disabled={!cachedCode}
+              style={{ opacity: !cachedCode ? 0.6 : 1 }}
+            >
+              {generating ? 'Getting your link…' : 'Share invite ✦'}
+            </button>
+
+            <button className="signup-skip" onClick={() => setInviteModalOpen(false)}>Close</button>
+          </div>
         </div>
       </div>
     </div>

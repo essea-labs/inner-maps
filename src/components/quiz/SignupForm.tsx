@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type React from 'react';
-import { useQuizStore } from '@/store/quiz-store';
+import { useQuizStore, saveStateToSession } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 import { completeInvite } from '@/lib/db';
 
@@ -33,10 +33,13 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
   },
   invite: {
     title: <>Invite & <em>connect</em></>,
-    subtitle: 'Save your profile to get your personal invite link.',
-    benefits: [
-      'Share your link — when they take the quiz, you both see your compatibility',
-    ],
+    subtitle: 'Sign up to get your personal invite link and see compatibility with anyone who takes the quiz.',
+    benefits: [],
+  },
+  profile: {
+    title: <>Your <em>profile</em></>,
+    subtitle: 'Sign in to save your results and track your compatibility.',
+    benefits: [],
   },
   purchase_individual: {
     title: <>Unlock your <em>full report</em></>,
@@ -87,6 +90,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
   async function handleGoogle() {
     setError('');
     document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
+    saveStateToSession();
     const redirectTo = `${window.location.origin}/auth/callback`;
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser?.is_anonymous) {
@@ -105,23 +109,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
 
     try {
       document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
-
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-      if (currentUser?.is_anonymous) {
-        // Save quiz state to sessionStorage — restored after the magic link redirect
-        const store = useQuizStore.getState();
-        if (store.results) {
-          sessionStorage.setItem('im_results', JSON.stringify(store.results));
-          sessionStorage.setItem('im_userName', store.userName);
-          sessionStorage.setItem('im_birthMonth', String(store.birthMonth ?? ''));
-          sessionStorage.setItem('im_birthDay', String(store.birthDay ?? ''));
-          sessionStorage.setItem('im_starSign', JSON.stringify(store.starSign));
-          if (store.activeConnection) {
-            sessionStorage.setItem('im_activeConnection', JSON.stringify(store.activeConnection));
-          }
-        }
-      }
+      saveStateToSession();
 
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: trimmed,
@@ -176,7 +164,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           : content.subtitle}
       </p>
 
-      {!isLogin && (
+      {!isLogin && content.benefits.length > 0 && (
         <div className="signup-benefits">
           {content.benefits.map((b, i) => (
             <div key={i} className="signup-benefit">

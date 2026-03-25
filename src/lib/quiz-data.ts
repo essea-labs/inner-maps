@@ -125,6 +125,44 @@ export function getStarSign(month: number, day: number): StarSign {
   return STAR_SIGNS[0];
 }
 
+/**
+ * Rehydrate derived fields (names, descriptions, symbols) on a QuizResults object
+ * that was restored from the DB (which only stores raw scores/types, not the text).
+ */
+export function rehydrateResults(r: QuizResults, starSign: StarSign | null): QuizResults {
+  const connectionNames: Record<string, string> = {
+    words: 'Words of Affirmation',
+    acts: 'Acts of Service',
+    gifts: 'Gifts',
+    quality: 'Quality Time',
+    touch: 'Physical Touch',
+  };
+  const connectionDescs: Record<string, string> = {
+    words: "You feel most loved when people express their feelings in words. Compliments, encouragement, a heartfelt \"I love you\", or a thoughtful message. Hearing what someone appreciates about you fills your cup like nothing else.",
+    acts: "Actions speak louder than words for you. When someone goes out of their way to make your life easier, cooking, helping, taking something off your plate, that's when you feel truly cared for.",
+    gifts: "It's not about the price tag. It's the thought behind it. A meaningful gift tells you someone was thinking about you when you weren't around, and that's what makes you feel loved.",
+    quality: "You feel most connected when someone gives you their full, undivided attention. Phones down, eyes on you, fully present. That's your version of being truly seen.",
+    touch: "Physical closeness is how you feel safe and connected. A hug, a hand on your shoulder, sitting close together. These small moments of contact speak volumes to you.",
+  };
+  const attachmentDescriptions: Record<string, string> = {
+    'Secure': "You're comfortable with closeness and confident in your relationships. You trust easily and communicate openly.",
+    'Anxious': "You crave deep connection but sometimes worry it's not reciprocated. You're sensitive to shifts in closeness.",
+    'Avoidant': "You value your independence highly and can feel overwhelmed by too much emotional closeness.",
+    'Fearful-Avoidant': "You want deep connection but find it hard to trust fully. You may push and pull in relationships.",
+  };
+
+  return {
+    ...r,
+    cognitiveTypeName: TYPE_NAMES[r.cognitiveType] || r.cognitiveTypeName || 'Unknown',
+    cognitiveTypeDesc: TYPE_DESCRIPTIONS[r.cognitiveType] || r.cognitiveTypeDesc || '',
+    attachmentDesc: attachmentDescriptions[r.attachmentStyle] || r.attachmentDesc || '',
+    connectionNames: Object.keys(r.connectionNames ?? {}).length > 0 ? r.connectionNames : connectionNames,
+    connectionDescs: Object.keys(r.connectionDescs ?? {}).length > 0 ? r.connectionDescs : connectionDescs,
+    enneagramName: ENNEAGRAM_QS[r.enneagramType - 1]?.name || r.enneagramName || '',
+    starSign: starSign ?? r.starSign,
+  };
+}
+
 export function calculateResults(answers: QuizAnswers, starSign: StarSign | null): QuizResults {
   // Cognitive Type
   const dims = [

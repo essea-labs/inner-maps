@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { QuizResults, QuizAnswers, Connection } from './types';
+import { rehydrateResults, getStarSign, STAR_SIGNS } from './quiz-data';
 
 // ===== USER PROFILE =====
 
@@ -137,33 +138,39 @@ export async function fetchUserQuizResults(
   const qr = data as any;
   const user = qr.user as any;
 
+  const birthMonth = user?.birthday_month ?? null;
+  const birthDay = user?.birthday_day ?? null;
+  const starSign = (birthMonth && birthDay) ? getStarSign(birthMonth, birthDay)
+    : qr.star_sign ? (STAR_SIGNS.find(s => s.sign === qr.star_sign) ?? null)
+    : null;
+
+  const rawResults: QuizResults = {
+    cognitiveType: qr.cognitive_type,
+    cognitiveTypeName: '',
+    cognitiveTypeDesc: '',
+    attachmentStyle: qr.attachment_style,
+    attachmentDesc: '',
+    anxiety: String(qr.anxiety_score),
+    avoidance: String(qr.avoidance_score),
+    connectionScores: qr.connection_scores ?? {},
+    connectionSorted: Object.entries(qr.connection_scores ?? {}).sort(
+      (a: any, b: any) => b[1] - a[1]
+    ) as [string, number][],
+    connectionNames: {},
+    connectionDescs: {},
+    topConnection: qr.top_connection,
+    enneagramType: qr.enneagram_type,
+    enneagramWing: qr.enneagram_wing,
+    enneagramName: '',
+    enneagramDisplay: qr.enneagram_display,
+    starSign,
+  };
+
   return {
     name: user?.name ?? '',
-    birthMonth: user?.birthday_month ?? null,
-    birthDay: user?.birthday_day ?? null,
-    results: {
-      cognitiveType: qr.cognitive_type,
-      cognitiveTypeName: '',
-      cognitiveTypeDesc: '',
-      attachmentStyle: qr.attachment_style,
-      attachmentDesc: '',
-      anxiety: String(qr.anxiety_score),
-      avoidance: String(qr.avoidance_score),
-      connectionScores: qr.connection_scores ?? {},
-      connectionSorted: Object.entries(qr.connection_scores ?? {}).sort(
-        (a: any, b: any) => b[1] - a[1]
-      ) as [string, number][],
-      connectionNames: {},
-      connectionDescs: {},
-      topConnection: qr.top_connection,
-      enneagramType: qr.enneagram_type,
-      enneagramWing: qr.enneagram_wing,
-      enneagramName: '',
-      enneagramDisplay: qr.enneagram_display,
-      starSign: qr.star_sign
-        ? { sign: qr.star_sign, symbol: '', emoji: '', dates: '', tagline: '', desc: '', month: [] }
-        : null,
-    },
+    birthMonth,
+    birthDay,
+    results: rehydrateResults(rawResults, starSign),
   };
 }
 
@@ -191,9 +198,13 @@ export async function hasPurchase(
 
 // ===== CONNECTIONS =====
 
-/** Maps a raw quiz_results DB row to QuizResults shape */
-function mapQR(qr: any) {
-  return {
+/** Maps a raw quiz_results DB row to QuizResults shape with full rehydration */
+function mapQR(qr: any): QuizResults {
+  const starSign = qr.star_sign
+    ? (STAR_SIGNS.find(s => s.sign === qr.star_sign) ?? null)
+    : null;
+
+  const raw: QuizResults = {
     cognitiveType: qr.cognitive_type,
     cognitiveTypeName: '',
     cognitiveTypeDesc: '',
@@ -212,10 +223,10 @@ function mapQR(qr: any) {
     enneagramWing: qr.enneagram_wing,
     enneagramName: '',
     enneagramDisplay: qr.enneagram_display,
-    starSign: qr.star_sign
-      ? { sign: qr.star_sign, symbol: '', emoji: '', dates: '', tagline: '', desc: '', month: [] }
-      : null,
+    starSign,
   };
+
+  return rehydrateResults(raw, starSign);
 }
 
 /** Fetch completed connections for a user — both as inviter AND as invitee. */

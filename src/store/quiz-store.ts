@@ -5,6 +5,55 @@ import { MOCK_CONNECTIONS } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
 import { saveUserProfile, saveQuizResults, fetchConnections, hasPurchase, fetchUserQuizResults } from '@/lib/db';
 
+// ===== SESSION PERSISTENCE HELPERS =====
+// Save navigation + quiz state to sessionStorage before external redirects (Stripe, OAuth, magic link).
+// This ensures the user lands back on the correct screen when they return.
+
+const SESSION_KEYS = ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection','im_screen','im_activeTab'] as const;
+
+export function saveStateToSession() {
+  const s = useQuizStore.getState();
+  if (s.results) sessionStorage.setItem('im_results', JSON.stringify(s.results));
+  if (s.userName) sessionStorage.setItem('im_userName', s.userName);
+  if (s.birthMonth != null) sessionStorage.setItem('im_birthMonth', String(s.birthMonth));
+  if (s.birthDay != null) sessionStorage.setItem('im_birthDay', String(s.birthDay));
+  if (s.starSign) sessionStorage.setItem('im_starSign', JSON.stringify(s.starSign));
+  if (s.activeConnection) sessionStorage.setItem('im_activeConnection', JSON.stringify(s.activeConnection));
+  // Save current screen/tab so we can return to the right place
+  sessionStorage.setItem('im_screen', s.screen);
+  sessionStorage.setItem('im_activeTab', s.activeTab);
+}
+
+export function restoreStateFromSession(): Record<string, any> | null {
+  try {
+    const savedResults = sessionStorage.getItem('im_results');
+    if (!savedResults) return null; // No saved state
+    const patch: Record<string, any> = {};
+    patch.results = JSON.parse(savedResults);
+    const savedUserName = sessionStorage.getItem('im_userName');
+    const savedBirthMonth = sessionStorage.getItem('im_birthMonth');
+    const savedBirthDay = sessionStorage.getItem('im_birthDay');
+    const savedStarSign = sessionStorage.getItem('im_starSign');
+    const savedConnection = sessionStorage.getItem('im_activeConnection');
+    const savedScreen = sessionStorage.getItem('im_screen');
+    const savedTab = sessionStorage.getItem('im_activeTab');
+    if (savedUserName) patch.userName = savedUserName;
+    if (savedBirthMonth) patch.birthMonth = Number(savedBirthMonth) || null;
+    if (savedBirthDay) patch.birthDay = Number(savedBirthDay) || null;
+    if (savedStarSign) patch.starSign = JSON.parse(savedStarSign);
+    if (savedConnection) patch.activeConnection = JSON.parse(savedConnection);
+    if (savedScreen) patch.screen = savedScreen;
+    if (savedTab) patch.activeTab = savedTab;
+    return patch;
+  } catch {
+    return null;
+  }
+}
+
+export function clearSessionState() {
+  SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
+}
+
 // ===== STATE SHAPE =====
 // currentSection matches the original:
 //   0 = starsign (birthday, 0 questions)
@@ -49,6 +98,9 @@ interface QuizStore {
   purchasedIndividual: boolean;
   purchasedCompatibility: Record<string, boolean>; // keyed by connection id
   purchaseIntent: string | null; // 'purchase_individual' | 'purchase_compatibility'
+
+  // Loading
+  restoringState: boolean;
 
   // Toast
   toastMessage: string | null;
@@ -125,6 +177,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   purchasedIndividual: false,
   purchasedCompatibility: {},
   purchaseIntent: null,
+  restoringState: false,
   toastMessage: null,
 
   // ===== NAVIGATION =====
@@ -305,6 +358,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       currentQuestion: 0,
       answers: makeDefaultAnswers(),
       results: null,
+      connections: [],
+      activeConnection: null,
+      activeTab: 'mymap',
+      purchasedIndividual: false,
+      purchasedCompatibility: {},
+      purchaseIntent: null,
+      inviteModalOpen: false,
     });
   },
 
@@ -381,15 +441,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
       if (data.url) {
         // Persist quiz state to sessionStorage so it survives the Stripe redirect
-        const { results, userName, birthMonth, birthDay, starSign, activeConnection } = get();
-        sessionStorage.setItem('im_results', JSON.stringify(results));
-        sessionStorage.setItem('im_userName', userName);
-        sessionStorage.setItem('im_birthMonth', String(birthMonth ?? ''));
-        sessionStorage.setItem('im_birthDay', String(birthDay ?? ''));
-        sessionStorage.setItem('im_starSign', JSON.stringify(starSign));
-        if (activeConnection) {
-          sessionStorage.setItem('im_activeConnection', JSON.stringify(activeConnection));
-        }
+        saveStateToSession();
         window.location.href = data.url;
       }
     } catch (err) {
@@ -410,21 +462,23 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   restoreUserState: async (userId: string) => {
+    set({ restoringState: true });
     try {
       const data = await fetchUserQuizResults(userId);
-      if (!data) return; // User hasn't taken the quiz yet
+      if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
       const { results, name, birthMonth, birthDay } = data;
-      // Reconstruct full StarSign from birthday if available, fall back to stored sign
-      const starSign = (birthMonth && birthDay) ? getStarSign(birthMonth, birthDay) : results.starSign;
-      set({ results, userName: name, birthMonth, birthDay, starSign });
+      // results are already rehydrated (names, descriptions, star sign) by fetchUserQuizResults
+      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign });
       get().setScreen('results');
       // Load connections and check purchases in parallel (non-blocking)
+      set({ restoringState: false });
       await Promise.all([
         get().loadConnections(userId),
         get().checkPurchases(userId),
       ]);
     } catch (err) {
       console.warn('restoreUserState failed:', err);
+      set({ restoringState: false });
     }
   },
 
@@ -441,10 +495,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         try {
           const data = await fetchUserQuizResults(userId);
           if (data) {
-            const starSign = (data.birthMonth && data.birthDay)
-              ? getStarSign(data.birthMonth, data.birthDay)
-              : data.results.starSign;
-            set({ results: data.results, userName: data.name, birthMonth: data.birthMonth, birthDay: data.birthDay, starSign });
+            // results are already rehydrated by fetchUserQuizResults
+            set({ results: data.results, userName: data.name, birthMonth: data.birthMonth, birthDay: data.birthDay, starSign: data.results.starSign });
           }
         } catch { /* non-fatal */ }
       }

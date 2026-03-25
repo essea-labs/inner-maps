@@ -4,7 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect } from 'react';
-import { useQuizStore } from '@/store/quiz-store';
+import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 import { completeInvite } from '@/lib/db';
 
@@ -26,6 +26,16 @@ import Toast from '@/components/ui/Toast';
 import useSwipeBack from '@/hooks/useSwipeBack';
 import useKeyboardNav from '@/hooks/useKeyboardNav';
 
+// Pre-hydrate store from sessionStorage before first render.
+// This prevents the landing page from flashing when returning from OAuth/Stripe.
+if (typeof window !== 'undefined') {
+  const patch = restoreStateFromSession();
+  if (patch) {
+    useQuizStore.setState(patch);
+    // Don't clear yet — the auth/purchase effects will clear after they run
+  }
+}
+
 export default function QuizPage() {
   const screen = useQuizStore((s) => s.screen);
   const inviteModalOpen = useQuizStore((s) => s.inviteModalOpen);
@@ -35,6 +45,7 @@ export default function QuizPage() {
   const setPurchased = useQuizStore((s) => s.setPurchased);
   const checkPurchases = useQuizStore((s) => s.checkPurchases);
   const restoreUserState = useQuizStore((s) => s.restoreUserState);
+  const restoringState = useQuizStore((s) => s.restoringState);
 
   // Navigation hooks
   useSwipeBack();
@@ -51,11 +62,19 @@ export default function QuizPage() {
     // Skip if other handlers will take over
     if (params.get('authCallback') === '1' || params.get('purchase') === 'success') return;
 
+    // If pre-hydration already restored from sessionStorage, just clear and stop
+    const store = useQuizStore.getState();
+    if (store.results !== null) {
+      clearSessionState();
+      return;
+    }
+
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const store = useQuizStore.getState();
       // Only restore if: real (non-anonymous) user + no results in memory
-      if (user && !user.is_anonymous && store.results === null) {
+      if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
+        // Set restoringState immediately so components show loading instead of empty states
+        useQuizStore.setState({ restoringState: true });
         await restoreUserState(user.id);
       }
     })();
@@ -81,28 +100,14 @@ export default function QuizPage() {
     const connectionId = params.get('connection_id') ?? undefined;
 
     // Restore quiz state saved before Stripe redirect (page reloads on return)
-    const store = useQuizStore.getState();
-    try {
-      const savedResults = sessionStorage.getItem('im_results');
-      const savedUserName = sessionStorage.getItem('im_userName');
-      const savedBirthMonth = sessionStorage.getItem('im_birthMonth');
-      const savedBirthDay = sessionStorage.getItem('im_birthDay');
-      const savedStarSign = sessionStorage.getItem('im_starSign');
-      const savedConnection = sessionStorage.getItem('im_activeConnection');
-
-      if (savedResults) store.results = JSON.parse(savedResults);
-      if (savedUserName) store.userName = savedUserName;
-      if (savedBirthMonth) store.birthMonth = Number(savedBirthMonth) || null;
-      if (savedBirthDay) store.birthDay = Number(savedBirthDay) || null;
-      if (savedStarSign) store.starSign = JSON.parse(savedStarSign);
-      if (savedConnection) store.activeConnection = JSON.parse(savedConnection);
-
-      // Clean up sessionStorage
-      ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection']
-        .forEach(k => sessionStorage.removeItem(k));
-    } catch {
-      // Non-fatal — worst case user sees results page without report content
+    const sessionPatch = restoreStateFromSession();
+    if (sessionPatch) {
+      // Don't restore screen/tab — purchase handler navigates to the report screen
+      delete sessionPatch.screen;
+      delete sessionPatch.activeTab;
+      useQuizStore.setState(sessionPatch);
     }
+    clearSessionState();
 
     // Unlock the report and navigate
     setPurchased(product, connectionId);
@@ -137,24 +142,13 @@ export default function QuizPage() {
       // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)
       const inviterCode = params.get('inviterCode') ?? sessionStorage.getItem('innerMapsInviterCode');
 
-      // Restore quiz state saved before magic link / OTP redirect (same pattern as Stripe)
-      try {
-        const store = useQuizStore.getState();
-        const savedResults = sessionStorage.getItem('im_results');
-        const savedUserName = sessionStorage.getItem('im_userName');
-        const savedBirthMonth = sessionStorage.getItem('im_birthMonth');
-        const savedBirthDay = sessionStorage.getItem('im_birthDay');
-        const savedStarSign = sessionStorage.getItem('im_starSign');
-        const savedConnection = sessionStorage.getItem('im_activeConnection');
-        if (savedResults) store.results = JSON.parse(savedResults);
-        if (savedUserName) store.userName = savedUserName;
-        if (savedBirthMonth) store.birthMonth = Number(savedBirthMonth) || null;
-        if (savedBirthDay) store.birthDay = Number(savedBirthDay) || null;
-        if (savedStarSign) store.starSign = JSON.parse(savedStarSign);
-        if (savedConnection) store.activeConnection = JSON.parse(savedConnection);
-        ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection']
-          .forEach(k => sessionStorage.removeItem(k));
-      } catch { /* non-fatal */ }
+      // Restore quiz state saved before magic link / OTP redirect
+      const sessionPatch = restoreStateFromSession();
+      if (sessionPatch) {
+        // Restore screen/tab immediately so the UI doesn't flash landing page
+        useQuizStore.setState(sessionPatch);
+      }
+      clearSessionState();
 
       if (user) {
         await handlePostAuth(user.id, user.email ?? '', intent);
@@ -185,6 +179,17 @@ export default function QuizPage() {
   }, []);
 
   function renderScreen() {
+    // While restoring a returning user's state from DB, show a loading screen
+    // instead of briefly flashing the landing page
+    if (restoringState && screen === 'landing') {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
+          <p style={{ fontSize: 14, color: 'var(--text-light)' }}>Loading your profile…</p>
+        </div>
+      );
+    }
+
     switch (screen) {
       case 'landing':
         return <LandingPage />;
