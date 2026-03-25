@@ -529,7 +529,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
       if (existingData) {
         // Existing results in DB — restore them (don't overwrite with new quiz)
-        await saveUserProfile(userId, { email, isAnonymous: false });
+        // Pass the current in-memory name so it's preserved if the user just entered it
+        await saveUserProfile(userId, { name: userName || existingData.name || undefined, email, isAnonymous: false });
         set({ results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, starSign: existingData.results.starSign });
       } else if (results) {
         // First time saving — persist current in-memory results

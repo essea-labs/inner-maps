@@ -87,6 +87,12 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
   async function handleGoogle() {
     setError('');
     document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
+    // Persist inviterCode as a cookie so it survives the OAuth redirect
+    // (sessionStorage is wiped when navigating to Google's consent screen)
+    const inviterCode = sessionStorage.getItem('innerMapsInviterCode');
+    if (inviterCode) {
+      document.cookie = `innerMapsInviterCode=${inviterCode}; path=/; max-age=600; SameSite=Lax`;
+    }
     saveStateToSession();
     const redirectTo = `${window.location.origin}/auth/callback`;
     const { data: { user: currentUser } } = await supabase.auth.getUser();
