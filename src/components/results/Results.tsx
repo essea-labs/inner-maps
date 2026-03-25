@@ -47,7 +47,15 @@ export default function Results() {
 
   async function handleSaveImage() {
     try {
-      const res = await fetch(getProfileUrl() + '/opengraph-image');
+      const slug = encodeProfileSlug(
+        r.cognitiveType,
+        r.enneagramDisplay,
+        r.attachmentStyle,
+        r.topConnection,
+        r.starSign?.sign ?? '',
+      );
+      const res = await fetch(`/profile/${slug}/opengraph-image`);
+      if (!res.ok) throw new Error('fetch failed');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
