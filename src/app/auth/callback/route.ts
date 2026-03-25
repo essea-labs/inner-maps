@@ -4,27 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
-  const code = searchParams.get('code');
+  const code = searchParams.get('code');           // Google OAuth (PKCE)
+  const token_hash = searchParams.get('token_hash'); // Magic link OTP
+  const type = searchParams.get('type');             // e.g. "email" | "magiclink"
+
   const cookieStore = await cookies();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {
-          // Session cookies are set by the browser-side client after redirect
-        },
-      },
-    }
-  );
-
-  if (code) {
-    await supabase.auth.exchangeCodeForSession(code);
-  }
-
-  // Read intent + inviter code cookies set before OAuth redirect
+  // Read intent + inviter code cookies set before the auth redirect
   const intent = cookieStore.get('innerMapsIntent')?.value ?? 'save';
   const inviterCode = cookieStore.get('innerMapsInviterCode')?.value;
 
@@ -34,9 +20,35 @@ export async function GET(request: NextRequest) {
   if (inviterCode) redirectUrl.searchParams.set('inviterCode', inviterCode);
 
   const response = NextResponse.redirect(redirectUrl);
-  // Clear the cookies we just consumed
+
+  // Clear the one-time cookies we just consumed
   response.cookies.delete('innerMapsIntent');
   if (inviterCode) response.cookies.delete('innerMapsInviterCode');
+
+  // Exchange the token and write session cookies onto the redirect response
+  if (code || (token_hash && type)) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          // Write session cookies directly onto the redirect response
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    if (code) {
+      await supabase.auth.exchangeCodeForSession(code);
+    } else if (token_hash && type) {
+      await supabase.auth.verifyOtp({ token_hash, type: type as any });
+    }
+  }
 
   return response;
 }
