@@ -83,6 +83,7 @@ export interface QuizResults {
   enneagramWing: number;
   enneagramName: string;
   enneagramDisplay: string;
+  dimensionScores?: Record<string, number>;
   starSign: StarSign | null;
 }
 
