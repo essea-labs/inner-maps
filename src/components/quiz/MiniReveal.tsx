@@ -27,10 +27,11 @@ export default function MiniReveal() {
     let type = '';
     dims.forEach((d) => {
       let aCount = 0;
+      const total = d.range[1] - d.range[0];
       for (let i = d.range[0]; i < d.range[1]; i++) {
         if (answers.cognitive[i] === 'a') aCount++;
       }
-      type += aCount >= 2 ? d.letters[0] : d.letters[1];
+      type += aCount >= Math.ceil(total / 2) ? d.letters[0] : d.letters[1];
     });
     emoji = '🧠';
     title = 'Personality Type';

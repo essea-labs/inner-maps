@@ -26,9 +26,9 @@ export const COGNITIVE_QS: CognitiveQuestion[] = [
   { q: "When you're telling a story, you tend to...", a: "Include the details — who was there, what was said, exactly how it happened.", b: "Jump to the point — the meaning or punchline, not all the specifics." },
   { q: "You just finished a really good book or show. You think about...", a: "The scenes that stuck with you — specific moments, lines, images.", b: "What it was really about underneath — the themes, the message." },
   { q: "When you meet someone new, you first pick up on...", a: "The facts — what they do, where they're from, how you're connected.", b: "The vibe — their energy, whether you click, what's beneath the surface." },
-  { q: "When you disagree with a close friend's decision, your instinct is to...", a: "Be direct — say what you think, even if it's uncomfortable. That's what actually helps.", b: "Lead with support first — you can share your view gently once they feel heard." },
+  { q: "A friend asks for your honest opinion on a tough situation. You lean toward...", a: "Giving the most accurate assessment, even if it's not what they want to hear.", b: "Framing your thoughts carefully — honesty matters, but so does how they feel." },
   { q: "When you're processing a big life decision, you mostly...", a: "Make a mental list of outcomes and pick the smartest one.", b: "Sit with how each option feels until one clicks." },
-  { q: "When you're telling someone you care about them, it comes out as...", a: "Something specific — \"I noticed you did X and I think that's brilliant.\"", b: "Something felt — \"I just want you to know you mean so much to me.\"" },
+  { q: "When you need to make a group decision, you focus on...", a: "What makes the most logical sense for everyone — fairness through reason.", b: "How everyone feels about the options — fairness through making sure nobody's upset." },
   { q: "Your approach to a weekend trip:", a: "Itinerary first. I like knowing what's happening.", b: "Wing it. The best stuff is unplanned anyway." },
   { q: "When you've got a deadline:", a: "Steady progress. I aim to finish early.", b: "Last-minute magic. Pressure is my fuel." },
   { q: "When making plans with people, you prefer...", a: "To lock it in early — you like having something confirmed.", b: "To keep it loose — closer to the time, see what feels right." },
@@ -62,15 +62,15 @@ export const CONNECTION_QS: ConnectionQuestion[] = [
 
 // ===== ENNEAGRAM QUESTIONS (9 statements + dynamic Q10 tiebreaker) =====
 export const ENNEAGRAM_QS: EnneagramQuestion[] = [
-  { q: "I have strong internal standards — when something's done wrong, I feel a real pull to fix it, even when I probably shouldn't.", type: 1, name: 'The Perfectionist', desc: "You're driven by a deep desire to be good and to do things right. Your inner critic is loud, but it's also what makes you incredibly principled and reliable. You hold the world to a high standard, starting with yourself." },
-  { q: "I'm wired to notice what people need. I give a lot, and honestly I sometimes wonder if people would show up for me the same way.", type: 2, name: 'The Giver', desc: "You're wired to nurture and support the people around you. You show love through action and generosity, sometimes before anyone even asks. Your challenge is remembering that your own needs matter just as much." },
-  { q: "I'm motivated by achieving and being seen as capable. I adapt to what's expected — sometimes I lose track of who I am underneath the role.", type: 3, name: 'The Achiever', desc: "You're a natural performer who thrives on goals, recognition, and forward momentum. You adapt effortlessly to what's needed, but your deepest growth comes from knowing you're enough, even without the wins." },
+  { q: "There's a voice in my head that always knows how things should be done. I hold myself to high standards — sometimes impossibly high — and I can't easily let things slide when they're not right.", type: 1, name: 'The Perfectionist', desc: "You're driven by a deep desire to be good and to do things right. Your inner critic is loud, but it's also what makes you incredibly principled and reliable. You hold the world to a high standard, starting with yourself." },
+  { q: "I naturally tune into what the people around me need, often before they ask. I pour a lot into my relationships, and if I'm honest, I sometimes wish people noticed how much I give without being asked.", type: 2, name: 'The Giver', desc: "You're wired to nurture and support the people around you. You show love through action and generosity, sometimes before anyone even asks. Your challenge is remembering that your own needs matter just as much." },
+  { q: "I care more than I'd like to admit about how I come across. I'm driven to succeed and I naturally adapt to what each situation calls for — but sometimes I catch myself wondering who I actually am when I'm not performing.", type: 3, name: 'The Achiever', desc: "You're a natural performer who thrives on goals, recognition, and forward momentum. You adapt effortlessly to what's needed, but your deepest growth comes from knowing you're enough, even without the wins." },
   { q: "I feel things more intensely than most. I want to be truly understood, not just liked — surface connections leave me cold.", type: 4, name: 'The Individualist', desc: "You experience life at a depth most people never reach. You're drawn to meaning, beauty, and authentic self-expression. What makes you different isn't a flaw. It's your greatest gift." },
-  { q: "I'd rather observe and understand before I engage. The world is draining — I need space to think and recharge, and I'd rather go deep than spread myself thin.", type: 5, name: 'The Investigator', desc: "You move through the world by observing, analyzing, and understanding. You guard your energy carefully because your inner world is rich and vast. When you share your knowledge, people are always struck by how much you see." },
-  { q: "My mind naturally scans for what could go wrong — not pessimism, just preparation. I feel safer when I've thought it through and I know I can trust the people around me.", type: 6, name: 'The Loyalist', desc: "You're the person everyone counts on when things get tough. Your ability to anticipate problems makes you incredibly valuable, and your loyalty runs deep. Learning to trust yourself as much as others trust you is your superpower." },
+  { q: "I need to understand things deeply before I feel comfortable acting on them. I'm selective with my energy and my time — I'd rather know a lot about a few things than a little about everything.", type: 5, name: 'The Investigator', desc: "You move through the world by observing, analyzing, and understanding. You guard your energy carefully because your inner world is rich and vast. When you share your knowledge, people are always struck by how much you see." },
+  { q: "My mind is always running through what-ifs — not to be negative, but because I feel better when I've thought things through. Trust matters a lot to me, and once someone earns it, I'm one of the most loyal people you'll meet.", type: 6, name: 'The Loyalist', desc: "You're the person everyone counts on when things get tough. Your ability to anticipate problems makes you incredibly valuable, and your loyalty runs deep. Learning to trust yourself as much as others trust you is your superpower." },
   { q: "I keep things moving and stay upbeat. I'd rather find the next interesting thing than sit with something heavy — I get restless when options close off.", type: 7, name: 'The Enthusiast', desc: "You bring infectious energy and optimism everywhere you go. You see possibility where others see limitation, and your zest for life is genuinely contagious. Your growth edge is sitting with discomfort instead of outrunning it." },
-  { q: "I take up space and say what I think. I'd rather have a real confrontation than fake niceness — vulnerability doesn't come easily, and I learned early that strength is safer.", type: 8, name: 'The Challenger', desc: "You lead with strength, directness, and a fierce protective instinct. People feel safe around you because you say what you mean and mean what you say. Beneath that tough exterior is someone who cares more deeply than most." },
-  { q: "I go along more than I push my own agenda. I'm good at seeing all sides — sometimes so good I lose track of what I actually want.", type: 9, name: 'The Peacemaker', desc: "You have a rare gift for seeing all sides and creating harmony. Your steady, calming presence makes people feel at ease. Your growth journey is about realising your own voice and desires matter just as much as everyone else's." },
+  { q: "I'd rather be honest and direct than polite and fake. I have strong instincts about power and fairness, and when someone I care about is being treated badly, I don't hesitate to step in. Letting my guard down doesn't come naturally.", type: 8, name: 'The Challenger', desc: "You lead with strength, directness, and a fierce protective instinct. People feel safe around you because you say what you mean and mean what you say. Beneath that tough exterior is someone who cares more deeply than most." },
+  { q: "I'm the person who can genuinely see every side of an argument. I tend to go with the flow more than push my own agenda — and if I'm being honest, sometimes I realize I've been so focused on keeping things smooth that I've lost track of what I actually want.", type: 9, name: 'The Peacemaker', desc: "You have a rare gift for seeing all sides and creating harmony. Your steady, calming presence makes people feel at ease. Your growth journey is about realising your own voice and desires matter just as much as everyone else's." },
 ];
 
 // ===== STAR SIGNS =====
@@ -164,7 +164,7 @@ export function rehydrateResults(r: QuizResults, starSign: StarSign | null): Qui
 }
 
 export function calculateResults(answers: QuizAnswers, starSign: StarSign | null): QuizResults {
-  // Cognitive Type
+  // Cognitive Type — with continuous dimension scores
   const dims = [
     { letters: ['E', 'I'] as const, range: [0, 3] },
     { letters: ['S', 'N'] as const, range: [3, 6] },
@@ -172,12 +172,15 @@ export function calculateResults(answers: QuizAnswers, starSign: StarSign | null
     { letters: ['J', 'P'] as const, range: [9, 12] },
   ];
   let type = '';
+  const dimensionScores: Record<string, number> = {};
   dims.forEach(d => {
     let aCount = 0;
+    const total = d.range[1] - d.range[0];
     for (let i = d.range[0]; i < d.range[1]; i++) {
       if (answers.cognitive[i] === 'a') aCount++;
     }
-    type += aCount >= 2 ? d.letters[0] : d.letters[1];
+    dimensionScores[`${d.letters[0]}/${d.letters[1]}`] = aCount / total;
+    type += aCount >= Math.ceil(total / 2) ? d.letters[0] : d.letters[1];
   });
 
   // Attachment
@@ -221,19 +224,35 @@ export function calculateResults(answers: QuizAnswers, starSign: StarSign | null
   };
   const sortedConnection = Object.entries(connectionScores).sort((a, b) => b[1] - a[1]);
 
-  // Enneagram — Q1-9 Likert + Q10 tiebreaker
-  const ennScores = Array(10).fill(0); // index 1-9 used
-  answers.enneagram.slice(0, 9).forEach((v, i) => { ennScores[i + 1] = Number(v) || 0; });
-  // Q10: add bonus point to winner of tiebreaker
-  const tbTop2 = [1,2,3,4,5,6,7,8,9].sort((a, b) => ennScores[b] - ennScores[a]).slice(0, 2);
+  // Enneagram — Q1-9 Likert + Q10 tiebreaker (with ipsative normalization)
+  const rawEnnScores = Array(10).fill(0); // index 1-9 used
+  answers.enneagram.slice(0, 9).forEach((v, i) => { rawEnnScores[i + 1] = Number(v) || 0; });
+
+  // Ipsative normalization: subtract user's mean so only relative preferences matter
+  // This eliminates response style bias (e.g., rating everything high vs moderate)
+  const ennMean = rawEnnScores.slice(1).reduce((a, b) => a + b, 0) / 9;
+  const ennScores = Array(10).fill(0);
+  for (let t = 1; t <= 9; t++) { ennScores[t] = rawEnnScores[t] - ennMean; }
+
+  // Q10: 3-way tiebreaker — compare top 3 types, winner gets +2
+  const tbTop3 = [1,2,3,4,5,6,7,8,9].sort((a, b) => ennScores[b] - ennScores[a]).slice(0, 3);
   const tbAnswer = answers.enneagram[9];
-  if (tbAnswer === 'a') ennScores[tbTop2[0]] += 1;
-  else if (tbAnswer === 'b') ennScores[tbTop2[1]] += 1;
-  let maxScore = 0, coreType = 1;
+  if (tbAnswer === 'a') ennScores[tbTop3[0]] += 2;
+  else if (tbAnswer === 'b') ennScores[tbTop3[1]] += 2;
+  else if (tbAnswer === 'c') ennScores[tbTop3[2]] += 2;
+
+  let maxScore = -Infinity, coreType = 1;
   for (let t = 1; t <= 9; t++) { if (ennScores[t] > maxScore) { maxScore = ennScores[t]; coreType = t; } }
+
+  // Wing: compare adjacent types, with threshold — if both are below mean, no wing
   const adjLeft = coreType === 1 ? 9 : coreType - 1;
   const adjRight = coreType === 9 ? 1 : coreType + 1;
-  const wing = ennScores[adjLeft] >= ennScores[adjRight] ? adjLeft : adjRight;
+  const leftScore = ennScores[adjLeft];
+  const rightScore = ennScores[adjRight];
+  const hasWing = leftScore > 0 || rightScore > 0; // at least one adjacent above mean
+  const wing = hasWing
+    ? (leftScore >= rightScore ? adjLeft : adjRight)
+    : coreType; // fallback: no wing (display as just the type)
   const enneagramName = ENNEAGRAM_QS[coreType - 1].name;
 
   return {
@@ -252,7 +271,8 @@ export function calculateResults(answers: QuizAnswers, starSign: StarSign | null
     enneagramType: coreType,
     enneagramWing: wing,
     enneagramName,
-    enneagramDisplay: `${coreType}w${wing}`,
+    enneagramDisplay: hasWing && wing !== coreType ? `${coreType}w${wing}` : `Type ${coreType}`,
+    dimensionScores,
     starSign,
   };
 }

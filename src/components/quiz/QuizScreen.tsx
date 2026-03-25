@@ -137,7 +137,7 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
   }, []);
 
   if (currentQuestion < 9) {
-    // Q1-9: Likert scale
+    // Q1-9: Likert scale (1-7)
     const q = ENNEAGRAM_QS[currentQuestion];
     const sel = answers.enneagram[currentQuestion];
 
@@ -153,7 +153,7 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
         <div className="question-instruction">How much does this resonate with who you naturally are?</div>
         <div className="enneagram-statement">&ldquo;{q.q}&rdquo;</div>
         <div className="scale-options">
-          {[1, 2, 3, 4, 5].map((n) => (
+          {[1, 2, 3, 4, 5, 6, 7].map((n) => (
             <button
               key={n}
               className={`scale-btn${sel === n ? ' selected' : ''}`}
@@ -165,20 +165,24 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
         </div>
         <div className="scale-labels">
           <span>Not me at all</span>
-          <span>This is exactly me</span>
+          <span>This IS me</span>
         </div>
       </>
     );
   }
 
-  // Q10: Dynamic tiebreaker
-  const ennScores = Array(10).fill(0);
-  answers.enneagram.slice(0, 9).forEach((v, i) => { ennScores[i + 1] = Number(v) || 0; });
-  const top2 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    .sort((a, b) => ennScores[b] - ennScores[a])
-    .slice(0, 2);
-  const typeA = top2[0];
-  const typeB = top2[1];
+  // Q10: Dynamic 3-way tiebreaker — compare top 3 types with ipsative normalization
+  const rawEnn = Array(10).fill(0);
+  answers.enneagram.slice(0, 9).forEach((v, i) => { rawEnn[i + 1] = Number(v) || 0; });
+  const ennMean = rawEnn.slice(1).reduce((a, b) => a + b, 0) / 9;
+  const ennNorm = Array(10).fill(0);
+  for (let t = 1; t <= 9; t++) { ennNorm[t] = rawEnn[t] - ennMean; }
+  const top3 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    .sort((a, b) => ennNorm[b] - ennNorm[a])
+    .slice(0, 3);
+  const typeA = top3[0];
+  const typeB = top3[1];
+  const typeC = top3[2];
   const sel = answers.enneagram[9];
 
   function handleTiebreaker(value: string) {
@@ -190,7 +194,7 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
 
   return (
     <>
-      <div className="question-instruction">Last one — between these two, which feels most like your home base?</div>
+      <div className="question-instruction">Last one — which of these feels most like your home base?</div>
       <div className="pair-options">
         <div className={`pair-card${sel === 'a' ? ' selected' : ''}`} onClick={() => handleTiebreaker('a')}>
           <div className="pair-card-text">{ENNEAGRAM_QS[typeA - 1].q}</div>
@@ -198,6 +202,10 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
         <div className="pair-divider">or</div>
         <div className={`pair-card${sel === 'b' ? ' selected' : ''}`} onClick={() => handleTiebreaker('b')}>
           <div className="pair-card-text">{ENNEAGRAM_QS[typeB - 1].q}</div>
+        </div>
+        <div className="pair-divider">or</div>
+        <div className={`pair-card${sel === 'c' ? ' selected' : ''}`} onClick={() => handleTiebreaker('c')}>
+          <div className="pair-card-text">{ENNEAGRAM_QS[typeC - 1].q}</div>
         </div>
       </div>
     </>
