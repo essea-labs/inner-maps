@@ -73,7 +73,7 @@ export default function InviteModal() {
     ? 'Generating link…'
     : 'innermaps.io/i/…';
 
-  const shareText = `${userName ? userName + ' here! ' : ''}I just mapped my inner world — personality, attachment, enneagram and more. Take the quiz and let's see how we connect ✦`;
+  const shareText = `${userName ? userName + ': ' : ''}Let's see how compatible we are — take the quiz ✦`;
 
   async function handleCopyLink() {
     if (!inviteUrl) return;

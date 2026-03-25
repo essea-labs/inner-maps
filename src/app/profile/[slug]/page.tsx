@@ -106,10 +106,10 @@ export default async function ProfilePage({ params }: Props) {
           className="cta-btn"
           style={{ display: 'inline-block', fontSize: 16, padding: '16px 32px' }}
         >
-          Discover Your Full Self
+          Take the Quiz ✦
         </a>
         <p style={{ marginTop: 12, fontSize: 13, color: 'var(--text-light)' }}>
-          5 dimensions · Under 12 minutes · Always free
+          Discover your personality in under 12 minutes — it&apos;s free
         </p>
       </div>
     </div>
