@@ -1,15 +1,27 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import useAuth from '@/hooks/useAuth';
 import TabBar from '@/components/ui/TabBar';
 
 export default function ConnectionsTab() {
   const results = useQuizStore((s) => s.results);
   const connections = useQuizStore((s) => s.connections);
+  const loadConnections = useQuizStore((s) => s.loadConnections);
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
   const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
+  const { user } = useAuth();
+
+  // Refresh connections from DB each time this tab mounts
+  useEffect(() => {
+    if (user && !user.is_anonymous) {
+      loadConnections(user.id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   function handleViewCompat(index: number) {
     setActiveConnection(connections[index]);

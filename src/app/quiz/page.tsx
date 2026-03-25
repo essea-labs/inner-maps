@@ -26,16 +26,6 @@ import Toast from '@/components/ui/Toast';
 import useSwipeBack from '@/hooks/useSwipeBack';
 import useKeyboardNav from '@/hooks/useKeyboardNav';
 
-// Pre-hydrate store from sessionStorage before first render.
-// This prevents the landing page from flashing when returning from OAuth/Stripe.
-if (typeof window !== 'undefined') {
-  const patch = restoreStateFromSession();
-  if (patch) {
-    useQuizStore.setState(patch);
-    // Don't clear yet — the auth/purchase effects will clear after they run
-  }
-}
-
 export default function QuizPage() {
   const screen = useQuizStore((s) => s.screen);
   const inviteModalOpen = useQuizStore((s) => s.inviteModalOpen);
@@ -56,26 +46,30 @@ export default function QuizPage() {
     window.scrollTo(0, 0);
   }, [screen]);
 
-  // Auto-restore returning user's quiz state from DB on load
+  // Auto-restore returning user's quiz state on load.
+  // For returning users, restoringState starts true (set in store init), so the
+  // first render shows a loading screen instead of flashing the landing page.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    // Skip if other handlers will take over
+    // Skip if other handlers will take over (they handle restoringState themselves)
     if (params.get('authCallback') === '1' || params.get('purchase') === 'success') return;
 
-    // If pre-hydration already restored from sessionStorage, just clear and stop
-    const store = useQuizStore.getState();
-    if (store.results !== null) {
+    // Check sessionStorage first — covers browser-back from Stripe/OAuth
+    const sessionPatch = restoreStateFromSession();
+    if (sessionPatch) {
+      useQuizStore.setState({ ...sessionPatch, restoringState: false });
       clearSessionState();
       return;
     }
 
+    // Otherwise try DB restore for logged-in users
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      // Only restore if: real (non-anonymous) user + no results in memory
       if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
-        // Set restoringState immediately so components show loading instead of empty states
-        useQuizStore.setState({ restoringState: true });
         await restoreUserState(user.id);
+      } else {
+        // Not a returning user or already have results — clear loading
+        useQuizStore.setState({ restoringState: false });
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -179,9 +173,9 @@ export default function QuizPage() {
   }, []);
 
   function renderScreen() {
-    // While restoring a returning user's state from DB, show a loading screen
-    // instead of briefly flashing the landing page
-    if (restoringState && screen === 'landing') {
+    // While restoring a returning user's state, show a loading screen
+    // instead of briefly flashing the landing page or wrong content
+    if (restoringState) {
       return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>

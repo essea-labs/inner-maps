@@ -153,6 +153,23 @@ function makeDefaultAnswers(): QuizAnswers {
   };
 }
 
+// ===== RETURNING USER DETECTION =====
+// Check localStorage synchronously on store creation to know whether to show
+// loading screen on first render (prevents landing page flash for returning users).
+
+function isReturningUser(): boolean {
+  try { return typeof window !== 'undefined' && localStorage.getItem('im_returning') === '1'; }
+  catch { return false; }
+}
+
+export function markReturningUser() {
+  try { localStorage.setItem('im_returning', '1'); } catch { /* non-fatal */ }
+}
+
+export function clearReturningUser() {
+  try { localStorage.removeItem('im_returning'); } catch { /* non-fatal */ }
+}
+
 // ===== STORE =====
 
 export const useQuizStore = create<QuizStore>((set, get) => ({
@@ -177,7 +194,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   purchasedIndividual: false,
   purchasedCompatibility: {},
   purchaseIntent: null,
-  restoringState: false,
+  // Start with restoringState=true for returning users so the first render
+  // shows loading instead of landing page flash
+  restoringState: isReturningUser(),
   toastMessage: null,
 
   // ===== NAVIGATION =====
@@ -285,6 +304,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       // Final question of final section → calculate results, show immediately, persist anonymously
       const { answers, starSign, userName, birthMonth, birthDay } = get();
       const results = calculateResults(answers, starSign);
+      markReturningUser();
       set({
         results,
         screen: 'results',
@@ -346,6 +366,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   resetQuiz: () => {
+    clearReturningUser();
+    clearSessionState();
     set({
       screen: 'landing',
       prevScreens: [],
@@ -483,6 +505,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   handlePostAuth: async (userId: string, email: string, intent: string) => {
+    markReturningUser();
     try {
       const { results, answers, userName, birthMonth, birthDay } = get();
       if (results) {
@@ -522,16 +545,16 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       get().showToast('Results saved ✓');
     }
 
+    // Navigate based on intent and clear loading state
     if (intent === 'compatibility') {
-      get().setScreen('connections');
+      set({ screen: 'connections', restoringState: false });
     } else if (intent === 'invite') {
-      get().setScreen('connections');
-      get().setInviteModalOpen(true);
+      set({ screen: 'connections', inviteModalOpen: true, restoringState: false });
     } else if (intent === 'profile') {
-      get().setScreen('profile');
+      set({ screen: 'profile', restoringState: false });
     } else {
       // 'save' or anything else — go to results if we have them, else landing
-      get().setScreen(get().results ? 'results' : 'landing');
+      set({ screen: get().results ? 'results' : 'landing', restoringState: false });
     }
   },
 }));
