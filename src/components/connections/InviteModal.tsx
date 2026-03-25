@@ -27,7 +27,7 @@ export default function InviteModal() {
       .catch(() => showToast('Could not generate link — please try again.'))
       .finally(() => setGenerating(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inviteModalOpen, isRealUser]);
+  }, [inviteModalOpen, isRealUser, user?.id]);
 
   if (!inviteModalOpen) return null;
   if (authLoading) return null;

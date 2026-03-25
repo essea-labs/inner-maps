@@ -105,6 +105,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
   async function handleMagicLink() {
     const trimmed = email.trim();
     if (!trimmed) { setError('Please enter your email.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) { setError('Please enter a valid email address.'); return; }
     setLoading(true); setError('');
 
     try {

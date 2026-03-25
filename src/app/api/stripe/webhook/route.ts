@@ -22,7 +22,11 @@ export async function POST(req: Request) {
     const metadata = session.metadata ?? {};
     const { user_id, product_type, connection_id } = metadata;
 
-    if (user_id && product_type) {
+    if (!user_id || !product_type) {
+      console.error('Webhook missing required metadata:', { user_id, product_type });
+      return new Response('Missing metadata', { status: 400 });
+    }
+    {
       const { error } = await supabaseAdmin.from('purchases').upsert(
         {
           user_id,

@@ -94,16 +94,20 @@ export async function getInviteByCode(
   return data as { inviter_id: string };
 }
 
-/** Mark invite as completed when invitee signs up. */
+/** Mark invite as completed when invitee signs up. Returns true on success. */
 export async function completeInvite(
   inviteCode: string,
   inviteeId: string
-): Promise<void> {
+): Promise<boolean> {
   const { error } = await supabase
     .from('invites')
     .update({ status: 'completed', invitee_id: inviteeId })
     .eq('invite_code', inviteCode);
-  if (error) console.error('completeInvite error:', error.message);
+  if (error) {
+    console.error('completeInvite error:', error.message);
+    return false;
+  }
+  return true;
 }
 
 // ===== FETCH USER QUIZ RESULTS (for state restoration) =====

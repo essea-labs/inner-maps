@@ -147,8 +147,11 @@ export default function QuizPage() {
       if (user) {
         await handlePostAuth(user.id, user.email ?? '', intent);
         if (inviterCode) {
-          await completeInvite(inviterCode, user.id).catch(console.warn);
+          const linked = await completeInvite(inviterCode, user.id);
           sessionStorage.removeItem('innerMapsInviterCode');
+          if (!linked) {
+            showToast('Invite link expired — but your results are saved!');
+          }
           // Reload connections so the inviter appears, then navigate invitee to compat
           try {
             const store = useQuizStore.getState();

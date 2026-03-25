@@ -61,12 +61,12 @@ export default function ConnectionsTab() {
         {connections.map((c, i) => (
           c.status === 'completed' ? (
             <div
-              key={i}
+              key={c.id ?? i}
               className="connection-person-card"
               onClick={() => handleViewCompat(i)}
               style={{ cursor: 'pointer' }}
             >
-              <div className="connection-person-avatar">{c.name[0]}</div>
+              <div className="connection-person-avatar">{c.name?.[0] ?? '?'}</div>
               <div className="connection-person-info">
                 <div className="connection-person-name">{c.name}</div>
                 <div className="connection-person-detail">
@@ -76,7 +76,7 @@ export default function ConnectionsTab() {
               <div className="connection-person-status completed">View →</div>
             </div>
           ) : (
-            <div key={i} className="connection-person-card">
+            <div key={c.id ?? i} className="connection-person-card">
               <div className="connection-person-avatar" style={{ background: 'var(--peach-pale)', color: 'var(--peach)' }}>⏳</div>
               <div className="connection-person-info">
                 <div className="connection-person-name">{c.name}</div>
