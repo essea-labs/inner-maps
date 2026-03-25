@@ -107,6 +107,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
 
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const inviterCode = sessionStorage.getItem('innerMapsInviterCode');
 
       if (isLogin) {
         // ── Sign In ──
@@ -116,7 +117,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         });
         if (signInError) throw signInError;
         if (data.user) {
-          await handlePostAuth(data.user.id, data.user.email ?? '', intent);
+          // Force cookie sync so the session persists across refreshes
+          await supabase.auth.getUser();
+          await handlePostAuth(data.user.id, data.user.email ?? '', intent, inviterCode);
         }
       } else if (currentUser?.is_anonymous) {
         // ── Sign Up (anonymous → permanent) ──
@@ -133,7 +136,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           throw updateError;
         }
         if (data.user) {
-          await handlePostAuth(data.user.id, data.user.email ?? trimmedEmail, intent);
+          // Force session refresh after converting anonymous → permanent
+          await supabase.auth.refreshSession();
+          await handlePostAuth(data.user.id, data.user.email ?? trimmedEmail, intent, inviterCode);
         }
       } else {
         // ── Sign Up (fresh, no anonymous session) ──
@@ -149,7 +154,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           throw signUpError;
         }
         if (data.user) {
-          await handlePostAuth(data.user.id, data.user.email ?? trimmedEmail, intent);
+          // Force cookie sync so the session persists across refreshes
+          await supabase.auth.getUser();
+          await handlePostAuth(data.user.id, data.user.email ?? trimmedEmail, intent, inviterCode);
         }
       }
     } catch (err: any) {

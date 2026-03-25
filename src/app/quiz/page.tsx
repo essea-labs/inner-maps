@@ -6,7 +6,6 @@ export const dynamic = 'force-dynamic';
 import { useEffect } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
-import { completeInvite } from '@/lib/db';
 
 import LandingPage from '@/components/LandingPage';
 import NameInput from '@/components/quiz/NameInput';
@@ -118,10 +117,20 @@ export default function QuizPage() {
     // Clean URL
     window.history.replaceState({}, '', '/quiz');
 
-    // Background DB check — confirm purchase once webhook lands
+    // Background DB check — retry a few times in case webhook is slow
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) await checkPurchases(user.id);
+      if (!user) return;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        await checkPurchases(user.id);
+        const store = useQuizStore.getState();
+        const confirmed = product === 'individual_report'
+          ? store.purchasedIndividual
+          : !!(connectionId && store.purchasedCompatibility[connectionId]);
+        if (confirmed) break;
+        // Wait before retrying (2s, 4s, 6s, 8s, 10s)
+        await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+      }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -152,25 +161,8 @@ export default function QuizPage() {
       clearSessionState();
 
       if (user) {
-        await handlePostAuth(user.id, user.email ?? '', intent);
-        if (inviterCode) {
-          const linked = await completeInvite(inviterCode, user.id);
-          sessionStorage.removeItem('innerMapsInviterCode');
-          if (!linked) {
-            showToast('Invite link expired — but your results are saved!');
-          }
-          // Reload connections so the inviter appears, then navigate invitee to compat
-          try {
-            const store = useQuizStore.getState();
-            await store.loadConnections(user.id);
-            const conns = useQuizStore.getState().connections;
-            if (conns.length > 0) {
-              store.setActiveConnection(conns[0]);
-              store.setActiveTab('compat');
-              store.setScreen('compatibility');
-            }
-          } catch { /* non-fatal — invitee still lands on results */ }
-        }
+        // Pass inviterCode to handlePostAuth — it handles completeInvite + navigation
+        await handlePostAuth(user.id, user.email ?? '', intent, inviterCode);
       } else {
         showToast('Signed in! Take the quiz to save your results.');
         setScreen('landing');

@@ -3,7 +3,7 @@ import type { ScreenName, QuizAnswers, QuizResults, Connection, StarSign } from 
 import { SECTIONS, getStarSign, calculateResults } from '@/lib/quiz-data';
 import { MOCK_CONNECTIONS } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
-import { saveUserProfile, saveQuizResults, fetchConnections, hasPurchase, fetchUserQuizResults } from '@/lib/db';
+import { saveUserProfile, saveQuizResults, fetchConnections, hasPurchase, fetchUserQuizResults, completeInvite } from '@/lib/db';
 
 // ===== SESSION PERSISTENCE HELPERS =====
 // Save navigation + quiz state to sessionStorage before external redirects (Stripe, OAuth, magic link).
@@ -141,7 +141,7 @@ interface QuizStore {
   // Phase 2: Supabase
   loadConnections: (userId: string) => Promise<void>;
   restoreUserState: (userId: string) => Promise<void>;
-  handlePostAuth: (userId: string, email: string, intent: string) => Promise<void>;
+  handlePostAuth: (userId: string, email: string, intent: string, inviterCode?: string | null) => Promise<void>;
 }
 
 function makeDefaultAnswers(): QuizAnswers {
@@ -429,6 +429,19 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     try {
       const hasIndividual = await hasPurchase(userId, 'individual_report');
       if (hasIndividual) set({ purchasedIndividual: true });
+
+      // Check compatibility purchases for all active connections
+      const conns = get().connections;
+      for (const conn of conns) {
+        if (!conn.id) continue;
+        const connId = conn.id;
+        const hasCompat = await hasPurchase(userId, 'compatibility_report', connId);
+        if (hasCompat) {
+          set((s) => ({
+            purchasedCompatibility: { ...s.purchasedCompatibility, [connId]: true },
+          }));
+        }
+      }
     } catch (err) {
       console.warn('checkPurchases failed:', err);
     }
@@ -504,7 +517,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     }
   },
 
-  handlePostAuth: async (userId: string, email: string, intent: string) => {
+  handlePostAuth: async (userId: string, email: string, intent: string, inviterCode?: string | null) => {
     markReturningUser();
     try {
       const { results, answers, userName, birthMonth, birthDay } = get();
@@ -526,8 +539,26 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         // No results anywhere — just save profile
         await saveUserProfile(userId, { email, isAnonymous: false });
       }
+
+      // Complete invite if inviterCode was passed (works for both OAuth and email+password)
+      if (inviterCode) {
+        await completeInvite(inviterCode, userId).catch(console.warn);
+        sessionStorage.removeItem('innerMapsInviterCode');
+      }
+
       await get().loadConnections(userId);
       await get().checkPurchases(userId);
+
+      // If invite was just completed, auto-navigate to compatibility
+      if (inviterCode) {
+        const conns = get().connections;
+        if (conns.length > 0) {
+          get().setActiveConnection(conns[0]);
+          get().setActiveTab('compat');
+          set({ screen: 'compatibility', restoringState: false });
+          return;
+        }
+      }
     } catch (err) {
       console.warn('handlePostAuth save failed:', err);
     }
