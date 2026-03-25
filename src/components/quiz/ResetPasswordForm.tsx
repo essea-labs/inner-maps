@@ -1,0 +1,67 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuizStore } from '@/store/quiz-store';
+import { supabase } from '@/lib/supabase';
+
+export default function ResetPasswordForm() {
+  const restoreUserState = useQuizStore((s) => s.restoreUserState);
+  const setScreen = useQuizStore((s) => s.setScreen);
+  const showToast = useQuizStore((s) => s.showToast);
+
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    setLoading(true); setError('');
+
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) throw updateError;
+
+      // Restore their quiz state and navigate to results
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await restoreUserState(user.id);
+      }
+      showToast('Password updated ✓');
+      setScreen(useQuizStore.getState().results ? 'results' : 'landing');
+    } catch (err: any) {
+      setError(err.message ?? 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="signup-screen" style={{ textAlign: 'center' }}>
+      <div className="logo">✦ Inner Maps ✦</div>
+      <h2>Set new <em>password</em></h2>
+      <p className="signup-subtitle">Choose a new password for your account.</p>
+
+      <div className="signup-form">
+        <input
+          type="password"
+          className="signup-input"
+          placeholder="New password"
+          value={password}
+          onChange={(e) => { setPassword(e.target.value); setError(''); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+          autoComplete="new-password"
+          autoFocus
+        />
+
+        {error && (
+          <p style={{ color: 'var(--peach-deep)', fontSize: 13, margin: '4px 0 8px', textAlign: 'center' }}>{error}</p>
+        )}
+
+        <button className="signup-cta" onClick={handleSubmit} disabled={loading}
+          style={{ opacity: loading ? 0.6 : 1 }}>
+          {loading ? '...' : 'Save password ✦'}
+        </button>
+      </div>
+    </div>
+  );
+}

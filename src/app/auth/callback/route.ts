@@ -5,13 +5,15 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');           // Google OAuth (PKCE)
-  const token_hash = searchParams.get('token_hash'); // Magic link OTP
-  const type = searchParams.get('type');             // e.g. "email" | "magiclink"
+  const token_hash = searchParams.get('token_hash'); // OTP / password reset
+  const type = searchParams.get('type');             // e.g. "email" | "magiclink" | "recovery"
 
   const cookieStore = await cookies();
 
   // Read intent + inviter code cookies set before the auth redirect
-  const intent = cookieStore.get('innerMapsIntent')?.value ?? 'save';
+  // For password reset, override intent to 'recovery' so the client shows the new-password form
+  const isRecovery = type === 'recovery';
+  const intent = isRecovery ? 'recovery' : (cookieStore.get('innerMapsIntent')?.value ?? 'save');
   const inviterCode = cookieStore.get('innerMapsInviterCode')?.value;
 
   const redirectUrl = new URL('/quiz', origin);

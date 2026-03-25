@@ -14,6 +14,7 @@ import BirthdayInput from '@/components/quiz/BirthdayInput';
 import QuizScreen from '@/components/quiz/QuizScreen';
 import MiniReveal from '@/components/quiz/MiniReveal';
 import SignupForm from '@/components/quiz/SignupForm';
+import ResetPasswordForm from '@/components/quiz/ResetPasswordForm';
 import Results from '@/components/results/Results';
 import ConnectionsTab from '@/components/connections/ConnectionsTab';
 import InviteModal from '@/components/connections/InviteModal';
@@ -126,7 +127,7 @@ export default function QuizPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle post-OAuth callback (Google sign-in)
+  // Handle post-OAuth / password-reset callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('authCallback') !== '1') return;
@@ -137,24 +138,12 @@ export default function QuizPage() {
       // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)
       const inviterCode = params.get('inviterCode') ?? sessionStorage.getItem('innerMapsInviterCode');
 
-      // Restore quiz state saved before magic link / OTP redirect (same pattern as Stripe)
-      try {
-        const store = useQuizStore.getState();
-        const savedResults = sessionStorage.getItem('im_results');
-        const savedUserName = sessionStorage.getItem('im_userName');
-        const savedBirthMonth = sessionStorage.getItem('im_birthMonth');
-        const savedBirthDay = sessionStorage.getItem('im_birthDay');
-        const savedStarSign = sessionStorage.getItem('im_starSign');
-        const savedConnection = sessionStorage.getItem('im_activeConnection');
-        if (savedResults) store.results = JSON.parse(savedResults);
-        if (savedUserName) store.userName = savedUserName;
-        if (savedBirthMonth) store.birthMonth = Number(savedBirthMonth) || null;
-        if (savedBirthDay) store.birthDay = Number(savedBirthDay) || null;
-        if (savedStarSign) store.starSign = JSON.parse(savedStarSign);
-        if (savedConnection) store.activeConnection = JSON.parse(savedConnection);
-        ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection']
-          .forEach(k => sessionStorage.removeItem(k));
-      } catch { /* non-fatal */ }
+      // Password reset flow — show the new-password form instead of normal post-auth
+      if (intent === 'recovery' && user) {
+        setScreen('resetPassword');
+        window.history.replaceState({}, '', '/quiz');
+        return;
+      }
 
       if (user) {
         await handlePostAuth(user.id, user.email ?? '', intent);
@@ -198,6 +187,8 @@ export default function QuizPage() {
         return <MiniReveal />;
       case 'signup':
         return <SignupForm />;
+      case 'resetPassword':
+        return <ResetPasswordForm />;
       case 'results':
         return <Results />;
       case 'connections':

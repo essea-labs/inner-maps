@@ -4,7 +4,6 @@ import { useState } from 'react';
 import type React from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
-import { completeInvite } from '@/lib/db';
 
 interface IntentContent {
   title: React.ReactNode;
@@ -67,15 +66,13 @@ interface SignupFormProps {
 export default function SignupForm({ intent = 'save', onClose, defaultMode = 'signup' }: SignupFormProps) {
   const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
   const setScreen = useQuizStore((s) => s.setScreen);
-  const loadConnections = useQuizStore((s) => s.loadConnections);
-  const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
-  const setActiveTab = useQuizStore((s) => s.setActiveTab);
 
   const [isLogin, setIsLogin] = useState(defaultMode === 'login');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const isFullScreen = !onClose;
 
@@ -98,38 +95,77 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
     }
   }
 
-  async function handleMagicLink() {
-    const trimmed = email.trim();
-    if (!trimmed) { setError('Please enter your email.'); return; }
+  async function handleEmailPassword() {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) { setError('Please enter your email.'); return; }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     setLoading(true); setError('');
 
     try {
-      document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
-
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-      if (currentUser?.is_anonymous) {
-        // Save quiz state to sessionStorage — restored after the magic link redirect
-        const store = useQuizStore.getState();
-        if (store.results) {
-          sessionStorage.setItem('im_results', JSON.stringify(store.results));
-          sessionStorage.setItem('im_userName', store.userName);
-          sessionStorage.setItem('im_birthMonth', String(store.birthMonth ?? ''));
-          sessionStorage.setItem('im_birthDay', String(store.birthDay ?? ''));
-          sessionStorage.setItem('im_starSign', JSON.stringify(store.starSign));
-          if (store.activeConnection) {
-            sessionStorage.setItem('im_activeConnection', JSON.stringify(store.activeConnection));
+      if (isLogin) {
+        // ── Sign In ──
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
+        });
+        if (signInError) throw signInError;
+        if (data.user) {
+          await handlePostAuth(data.user.id, data.user.email ?? '', intent);
+        }
+      } else if (currentUser?.is_anonymous) {
+        // ── Sign Up (anonymous → permanent) ──
+        // updateUser preserves the user ID so quiz data stays linked
+        const { data, error: updateError } = await supabase.auth.updateUser({
+          email: trimmedEmail,
+          password,
+        });
+        if (updateError) {
+          if (updateError.message?.toLowerCase().includes('already registered')
+              || updateError.message?.toLowerCase().includes('already been registered')) {
+            throw new Error('This email is already in use. Try signing in instead.');
           }
+          throw updateError;
+        }
+        if (data.user) {
+          await handlePostAuth(data.user.id, data.user.email ?? trimmedEmail, intent);
+        }
+      } else {
+        // ── Sign Up (fresh, no anonymous session) ──
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password,
+        });
+        if (signUpError) {
+          if (signUpError.message?.toLowerCase().includes('already registered')
+              || signUpError.message?.toLowerCase().includes('already been registered')) {
+            throw new Error('This email is already in use. Try signing in instead.');
+          }
+          throw signUpError;
+        }
+        if (data.user) {
+          await handlePostAuth(data.user.id, data.user.email ?? trimmedEmail, intent);
         }
       }
+    } catch (err: any) {
+      setError(err.message ?? 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: trimmed,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+  async function handleForgotPassword() {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) { setError('Enter your email first, then tap "Reset password".'); return; }
+    setLoading(true); setError('');
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+        redirectTo: `${window.location.origin}/auth/callback`,
       });
-      if (otpError) throw otpError;
-
-      setSent(true);
+      if (resetError) throw resetError;
+      setResetSent(true);
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong. Please try again.');
     } finally {
@@ -139,20 +175,20 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
 
   const content = INTENT_CONTENT[intent] ?? INTENT_CONTENT.save;
 
-  // ── "Check your email" state ───────────────────────────────────────────────
-  if (sent) {
+  // ── "Check your email" state (forgot password) ──────────────────────────────
+  if (resetSent) {
     return (
       <div className={`signup-screen${!isFullScreen ? ' signup-screen--modal' : ''}`} style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
         <h2>Check your <em>email</em></h2>
         <p className="signup-subtitle">
-          We sent a magic link to <strong>{email}</strong>.<br />
-          Tap it to sign in — no password needed.
+          We sent a password reset link to <strong>{email}</strong>.<br />
+          Tap it to set a new password.
         </p>
         <p style={{ fontSize: 13, color: 'var(--text-light)', marginTop: 24 }}>
           Wrong email?{' '}
           <button
-            onClick={() => { setSent(false); setError(''); }}
+            onClick={() => { setResetSent(false); setError(''); }}
             style={{ background: 'none', border: 'none', color: 'var(--peach-deep)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
           >
             Change it
@@ -205,18 +241,44 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           placeholder="Email address"
           value={email}
           onChange={(e) => { setEmail(e.target.value); setError(''); }}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleMagicLink(); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') document.getElementById('im-password')?.focus(); }}
           autoComplete="email"
           autoFocus
         />
+
+        <input
+          id="im-password"
+          type="password"
+          className="signup-input"
+          placeholder={isLogin ? 'Password' : 'Create a password'}
+          value={password}
+          onChange={(e) => { setPassword(e.target.value); setError(''); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleEmailPassword(); }}
+          autoComplete={isLogin ? 'current-password' : 'new-password'}
+          style={{ marginTop: 8 }}
+        />
+
+        {isLogin && (
+          <button
+            onClick={handleForgotPassword}
+            disabled={loading}
+            style={{
+              background: 'none', border: 'none', color: 'var(--peach-deep)',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0,
+              textDecoration: 'underline', marginTop: -4, marginBottom: 8, alignSelf: 'flex-end',
+            }}
+          >
+            Forgot password?
+          </button>
+        )}
 
         {error && (
           <p style={{ color: 'var(--peach-deep)', fontSize: 13, margin: '4px 0 8px', textAlign: 'center' }}>{error}</p>
         )}
 
-        <button className="signup-cta" onClick={handleMagicLink} disabled={loading}
+        <button className="signup-cta" onClick={handleEmailPassword} disabled={loading}
           style={{ opacity: loading ? 0.6 : 1 }}>
-          {loading ? '...' : 'Send login link ✦'}
+          {loading ? '...' : isLogin ? 'Sign in ✦' : 'Create account ✦'}
         </button>
 
         <button className="signup-skip" onClick={handleSkip}>Skip for now</button>
@@ -225,11 +287,11 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
       <div className="signup-toggle">
         {isLogin ? (
           <>Don&apos;t have an account?{' '}
-            <button className="signup-toggle-link" onClick={() => { setIsLogin(false); setError(''); }}>Sign up</button>
+            <button className="signup-toggle-link" onClick={() => { setIsLogin(false); setError(''); setPassword(''); }}>Sign up</button>
           </>
         ) : (
           <>Already have an account?{' '}
-            <button className="signup-toggle-link" onClick={() => { setIsLogin(true); setError(''); }}>Sign in</button>
+            <button className="signup-toggle-link" onClick={() => { setIsLogin(true); setError(''); setPassword(''); }}>Sign in</button>
           </>
         )}
       </div>
