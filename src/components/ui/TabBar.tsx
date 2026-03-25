@@ -18,9 +18,8 @@ export default function TabBar() {
 
   function handleMyMap() {
     setActiveTab('mymap');
-    // If no results yet, start the quiz
     if (!results) {
-      setScreen('name');
+      setScreen('landing');
     } else {
       setScreen('results');
     }
@@ -76,7 +75,7 @@ export default function TabBar() {
           onClick={(e) => { if (e.target === e.currentTarget) setSignInOpen(false); }}
         >
           <div style={{ width: '100%', maxWidth: 440, margin: '0 auto', background: 'var(--bg)', borderRadius: '20px 20px 0 0', maxHeight: '90vh', overflowY: 'auto' }}>
-            <SignupForm defaultMode="login" onClose={() => setSignInOpen(false)} />
+            <SignupForm intent="profile" defaultMode="login" onClose={() => setSignInOpen(false)} />
           </div>
         </div>
       )}

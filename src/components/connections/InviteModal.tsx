@@ -127,15 +127,11 @@ export default function InviteModal() {
           </button>
         </div>
 
-        <div style={{ padding: '16px 24px 32px' }}>
-          <h3 style={{ margin: '0 0 6px', fontSize: 22 }}>
+        <div style={{ padding: '12px 24px 36px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 20 }}>
             Invite &amp; <em>connect</em>
           </h3>
-          <p style={{ margin: '0 0 20px', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Share your link — when they take the quiz, you'll both see your compatibility.
-          </p>
 
-          {/* Link box */}
           <div className="invite-link-box">
             <span className="invite-link-text">{displayLink}</span>
             <button
@@ -154,7 +150,6 @@ export default function InviteModal() {
             </button>
           </div>
 
-          {/* Share button */}
           <button
             className="share-btn primary"
             onClick={handleShare}

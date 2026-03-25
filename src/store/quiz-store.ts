@@ -425,13 +425,22 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   handlePostAuth: async (userId: string, email: string, intent: string) => {
     try {
       const { results, answers, userName, birthMonth, birthDay } = get();
-      // If quiz results are in memory (e.g. magic link sign-up after taking quiz),
-      // save them under the new user ID in case the anonymous account was replaced.
       if (results) {
+        // Results in memory — save them under this user ID
         await saveUserProfile(userId, { name: userName, email, birthMonth, birthDay, isAnonymous: false });
         await saveQuizResults(userId, results, answers);
       } else {
+        // No results in memory — save profile, then try to restore existing results from DB
         await saveUserProfile(userId, { email, isAnonymous: false });
+        try {
+          const data = await fetchUserQuizResults(userId);
+          if (data) {
+            const starSign = (data.birthMonth && data.birthDay)
+              ? getStarSign(data.birthMonth, data.birthDay)
+              : data.results.starSign;
+            set({ results: data.results, userName: data.name, birthMonth: data.birthMonth, birthDay: data.birthDay, starSign });
+          }
+        } catch { /* non-fatal */ }
       }
       await get().loadConnections(userId);
       await get().checkPurchases(userId);
@@ -450,17 +459,21 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       return;
     }
 
-    // Only toast for basic save flows — purchase/invite intents have their own feedback
-    if (intent !== 'invite' && !intent.startsWith('purchase')) {
+    // Only toast for the basic "save results" flow
+    if (intent === 'save') {
       get().showToast('Results saved ✓');
     }
+
     if (intent === 'compatibility') {
       get().setScreen('connections');
     } else if (intent === 'invite') {
       get().setScreen('connections');
       get().setInviteModalOpen(true);
+    } else if (intent === 'profile') {
+      get().setScreen('profile');
     } else {
-      get().setScreen('results');
+      // 'save' or anything else — go to results if we have them, else landing
+      get().setScreen(get().results ? 'results' : 'landing');
     }
   },
 }));
