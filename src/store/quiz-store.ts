@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import type { ScreenName, QuizAnswers, QuizResults, Connection, StarSign } from '@/lib/types';
 import { SECTIONS, getStarSign, calculateResults } from '@/lib/quiz-data';
 import { MOCK_CONNECTIONS } from '@/lib/compatibility';
+import { supabase } from '@/lib/supabase';
+import { saveUserProfile, saveQuizResults, fetchConnections } from '@/lib/db';
 
 // ===== STATE SHAPE =====
 // currentSection matches the original:
@@ -72,6 +74,10 @@ interface QuizStore {
   setReportModalOpen: (open: boolean) => void;
   showToast: (message: string) => void;
   dismissToast: () => void;
+
+  // Phase 2: Supabase
+  loadConnections: (userId: string) => Promise<void>;
+  handlePostAuth: (userId: string, email: string, intent: string) => Promise<void>;
 }
 
 function makeDefaultAnswers(): QuizAnswers {
@@ -208,14 +214,32 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       // Advance within section
       set({ currentQuestion: currentQuestion + 1 });
     } else if (isLastSection) {
-      // Final question of final section → calculate results, go to signup
-      const { answers, starSign } = get();
+      // Final question of final section → calculate results, show immediately, persist anonymously
+      const { answers, starSign, userName, birthMonth, birthDay } = get();
       const results = calculateResults(answers, starSign);
       set({
         results,
-        screen: 'signup',
+        screen: 'results',
         prevScreens: [...prevScreens, current],
       });
+      // Sign in anonymously and persist quiz data to Supabase
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.signInAnonymously();
+          if (user) {
+            await saveUserProfile(user.id, {
+              name: userName,
+              birthMonth,
+              birthDay,
+              isAnonymous: true,
+            });
+            await saveQuizResults(user.id, results, answers);
+          }
+        } catch (err) {
+          // Non-fatal: user still sees results even if DB write fails
+          console.warn('Anon save failed:', err);
+        }
+      })();
     } else {
       // End of non-final section → show miniReveal, increment section
       set({
@@ -289,4 +313,33 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   dismissToast: () => set({ toastMessage: null }),
+
+  // ===== PHASE 2: SUPABASE =====
+
+  loadConnections: async (userId: string) => {
+    try {
+      const conns = await fetchConnections(userId);
+      set({ connections: conns });
+    } catch (err) {
+      console.warn('loadConnections failed:', err);
+    }
+  },
+
+  handlePostAuth: async (userId: string, email: string, intent: string) => {
+    try {
+      await saveUserProfile(userId, { email, isAnonymous: false });
+      await get().loadConnections(userId);
+    } catch (err) {
+      console.warn('handlePostAuth save failed:', err);
+    }
+    get().showToast('Results saved ✓');
+    if (intent === 'compatibility') {
+      get().setScreen('connections');
+    } else if (intent === 'invite') {
+      get().setScreen('connections');
+      get().setInviteModalOpen(true);
+    } else {
+      get().setScreen('results');
+    }
+  },
 }));

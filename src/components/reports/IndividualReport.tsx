@@ -1,17 +1,23 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import {
   TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE,
   CONNECTION_DEEP_DIVE, STARSIGN_DEEP_DIVE, generateIntersectionInsights,
 } from '@/lib/deep-dive-data';
 import { ZODIAC_ELEMENTS } from '@/lib/compatibility';
+import SignupForm from '@/components/quiz/SignupForm';
+import useAuth from '@/hooks/useAuth';
 
 export default function IndividualReport() {
   const results = useQuizStore((s) => s.results);
   const userName = useQuizStore((s) => s.userName);
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
+  const { user } = useAuth();
+  const [signupOpen, setSignupOpen] = useState(false);
+  const isRealUser = !!user && !user.is_anonymous;
 
   if (!results) return null;
 
@@ -262,7 +268,10 @@ export default function IndividualReport() {
           <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 12 }}>Want to see how you connect with someone?</p>
           <button
             className="cta-button"
-            onClick={() => { setActiveTab('compat'); setScreen('connections'); }}
+            onClick={() => {
+              if (isRealUser) { setActiveTab('compat'); setScreen('connections'); }
+              else setSignupOpen(true);
+            }}
             style={{ animation: 'none', fontSize: 14, padding: '14px 32px' }}
           >
             Check Your Compatibility →
@@ -274,6 +283,17 @@ export default function IndividualReport() {
           For entertainment and self-reflection purposes. Not a clinical assessment.
         </div>
       </div>
+
+      {signupOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSignupOpen(false); }}
+        >
+          <div style={{ width: '100%', maxWidth: 440, margin: '0 auto', background: 'var(--bg)', borderRadius: '20px 20px 0 0', maxHeight: '90vh', overflowY: 'auto' }}>
+            <SignupForm intent="compatibility" onClose={() => setSignupOpen(false)} />
+          </div>
+        </div>
+      )}
     </>
   );
 }

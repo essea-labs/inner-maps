@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
 import TabBar from '@/components/ui/TabBar';
+import SignupForm from '@/components/quiz/SignupForm';
+import useAuth from '@/hooks/useAuth';
 
 export default function Results() {
   const results = useQuizStore((s) => s.results);
@@ -11,6 +14,18 @@ export default function Results() {
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
   const showToast = useQuizStore((s) => s.showToast);
+  const { user } = useAuth();
+
+  const [signupOpen, setSignupOpen] = useState(false);
+  const [signupIntent, setSignupIntent] = useState('save');
+
+  function openSignup(intent: string) {
+    setSignupIntent(intent);
+    setSignupOpen(true);
+  }
+
+  // True when the user has a real (non-anonymous) account
+  const isRealUser = !!user && !user.is_anonymous;
 
   if (!results) return null;
 
@@ -82,9 +97,22 @@ export default function Results() {
           <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleShare}>Share</button>
         </div>
 
+        {/* Save my results CTA — shown only when not a real account yet */}
+        {!isRealUser && (
+          <div style={{ marginBottom: 16 }}>
+            <button
+              className="cta-button"
+              style={{ animation: 'none', width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}
+              onClick={() => openSignup('save')}
+            >
+              Save my results
+            </button>
+          </div>
+        )}
+
         {/* Compatibility CTA */}
         <div
-          onClick={() => setInviteModalOpen(true)}
+          onClick={() => isRealUser ? setInviteModalOpen(true) : openSignup('compatibility')}
           style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: 20, marginBottom: 28, boxShadow: 'var(--card-shadow)', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.2s' }}
         >
           <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,var(--peach-light),var(--peach))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>⟡</div>
@@ -193,6 +221,18 @@ export default function Results() {
         </div>
       </div>
       <TabBar />
+
+      {/* Signup modal — triggered by locked actions */}
+      {signupOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSignupOpen(false); }}
+        >
+          <div style={{ width: '100%', maxWidth: 440, margin: '0 auto', background: 'var(--bg)', borderRadius: '20px 20px 0 0', maxHeight: '90vh', overflowY: 'auto' }}>
+            <SignupForm intent={signupIntent} onClose={() => setSignupOpen(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

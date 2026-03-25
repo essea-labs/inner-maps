@@ -2,16 +2,90 @@
 
 import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { supabase } from '@/lib/supabase';
+import { completeInvite } from '@/lib/db';
 
-export default function SignupForm() {
+const INTENT_COPY: Record<string, string> = {
+  save: 'Save your results and revisit them anytime.',
+  compatibility: 'Save your results to compare with others.',
+  invite: 'Save your results and start building connections.',
+};
+
+interface SignupFormProps {
+  /** What the user was trying to do — drives context copy + post-auth routing */
+  intent?: string;
+  /** Called when the modal should be dismissed (Skip / after email/password success) */
+  onClose?: () => void;
+}
+
+export default function SignupForm({ intent = 'save', onClose }: SignupFormProps) {
+  const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
   const setScreen = useQuizStore((s) => s.setScreen);
+
   const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Used when SignupForm is rendered as a full screen (legacy 'signup' route)
+  const isFullScreen = !onClose;
 
   function handleSkip() {
-    setScreen('results');
+    if (onClose) onClose();
+    else setScreen('results');
   }
+
+  async function handleGoogle() {
+    setError('');
+    // Store intent in cookie so auth callback can route correctly after redirect
+    document.cookie = `innerMapsIntent=${intent}; path=/; max-age=600; SameSite=Lax`;
+    const { error: oauthError } = await supabase.auth.linkIdentity({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (oauthError) setError(oauthError.message);
+  }
+
+  async function handleEmailPassword() {
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter your email and password.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+
+    try {
+      const afterAuth = async (userId: string, userEmail: string) => {
+        await handlePostAuth(userId, userEmail, intent);
+        // Complete invite if user arrived via an invite link
+        const inviterCode = sessionStorage.getItem('innerMapsInviterCode');
+        if (inviterCode) {
+          await completeInvite(inviterCode, userId).catch(console.warn);
+          sessionStorage.removeItem('innerMapsInviterCode');
+        }
+        if (onClose) onClose();
+      };
+
+      if (isLogin) {
+        // Sign in existing user
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        if (data.user) await afterAuth(data.user.id, data.user.email ?? email);
+      } else {
+        // Upgrade anonymous account → real account (email + password)
+        const { data, error: updateError } = await supabase.auth.updateUser({ email, password });
+        if (updateError) throw updateError;
+        if (data.user) await afterAuth(data.user.id, data.user.email ?? email);
+      }
+    } catch (err: any) {
+      setError(err.message ?? 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const contextCopy = INTENT_COPY[intent] ?? INTENT_COPY.save;
 
   return (
     <div className="signup-screen">
@@ -20,7 +94,7 @@ export default function SignupForm() {
       <p className="signup-subtitle">
         {isLogin
           ? 'Sign in to see your saved results and compatibility matches.'
-          : 'Create a free account to save your results and come back anytime.'}
+          : contextCopy}
       </p>
 
       {!isLogin && (
@@ -32,11 +106,8 @@ export default function SignupForm() {
       )}
 
       <div className="signup-form">
-        <button className="signup-social-btn apple" onClick={() => setScreen('results')}>
-          <span className="signup-social-icon"></span>
-          {isLogin ? 'Sign in with Apple' : 'Continue with Apple'}
-        </button>
-        <button className="signup-social-btn google" onClick={() => setScreen('results')}>
+        {/* Google OAuth */}
+        <button className="signup-social-btn google" onClick={handleGoogle} disabled={loading}>
           <svg className="signup-social-icon" width="18" height="18" viewBox="0 0 18 18">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
             <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
@@ -53,24 +124,32 @@ export default function SignupForm() {
           className="signup-input"
           placeholder="Email address"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setError(''); }}
+          autoComplete="email"
         />
         <input
           type="password"
           className="signup-input"
           placeholder={isLogin ? 'Password' : 'Create a password'}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setError(''); }}
+          autoComplete={isLogin ? 'current-password' : 'new-password'}
         />
-        <button className="signup-cta" onClick={() => setScreen('results')}>
-          {isLogin ? 'Sign In ✦' : 'Create Account ✦'}
-        </button>
 
-        {isLogin && (
-          <button className="signup-skip" style={{ marginBottom: 16, fontSize: 12, color: 'var(--peach-deep)' }}>
-            Forgot password?
-          </button>
+        {error && (
+          <p style={{ color: 'var(--peach-deep)', fontSize: 13, margin: '4px 0 8px', textAlign: 'center' }}>
+            {error}
+          </p>
         )}
+
+        <button
+          className="signup-cta"
+          onClick={handleEmailPassword}
+          disabled={loading}
+          style={{ opacity: loading ? 0.6 : 1 }}
+        >
+          {loading ? '...' : isLogin ? 'Sign In ✦' : 'Create Account ✦'}
+        </button>
 
         <button className="signup-skip" onClick={handleSkip}>
           Skip for now
@@ -79,13 +158,15 @@ export default function SignupForm() {
 
       <div className="signup-toggle">
         {isLogin ? (
-          <>Don&apos;t have an account? <button className="signup-toggle-link" onClick={() => setIsLogin(false)}>Sign up</button></>
+          <>Don&apos;t have an account? <button className="signup-toggle-link" onClick={() => { setIsLogin(false); setError(''); }}>Sign up</button></>
         ) : (
-          <>Already have an account? <button className="signup-toggle-link" onClick={() => setIsLogin(true)}>Sign in</button></>
+          <>Already have an account? <button className="signup-toggle-link" onClick={() => { setIsLogin(true); setError(''); }}>Sign in</button></>
         )}
       </div>
 
-      {!isLogin && <p className="signup-fine-print">No spam, ever. We&apos;ll only email you if you ask us to.</p>}
+      {!isLogin && isFullScreen && (
+        <p className="signup-fine-print">No spam, ever. We&apos;ll only email you if you ask us to.</p>
+      )}
     </div>
   );
 }

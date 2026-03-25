@@ -1,7 +1,12 @@
 'use client';
 
+// This page is a fully dynamic SPA — never statically prerender
+export const dynamic = 'force-dynamic';
+
 import { useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { supabase } from '@/lib/supabase';
+import { completeInvite } from '@/lib/db';
 
 import LandingPage from '@/components/LandingPage';
 import NameInput from '@/components/quiz/NameInput';
@@ -23,6 +28,9 @@ import useKeyboardNav from '@/hooks/useKeyboardNav';
 export default function QuizPage() {
   const screen = useQuizStore((s) => s.screen);
   const inviteModalOpen = useQuizStore((s) => s.inviteModalOpen);
+  const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
+  const showToast = useQuizStore((s) => s.showToast);
+  const setScreen = useQuizStore((s) => s.setScreen);
 
   // Navigation hooks
   useSwipeBack();
@@ -32,6 +40,44 @@ export default function QuizPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [screen]);
+
+  // Store inviterCode when arriving from an invite link
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const inviterCode = params.get('inviterCode');
+    if (inviterCode && params.get('authCallback') !== '1') {
+      sessionStorage.setItem('innerMapsInviterCode', inviterCode);
+      window.history.replaceState({}, '', '/quiz');
+    }
+  }, []);
+
+  // Handle post-OAuth callback (Google sign-in)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('authCallback') !== '1') return;
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const intent = params.get('intent') ?? 'save';
+      // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)
+      const inviterCode = params.get('inviterCode') ?? sessionStorage.getItem('innerMapsInviterCode');
+
+      if (user) {
+        await handlePostAuth(user.id, user.email ?? '', intent);
+        if (inviterCode) {
+          await completeInvite(inviterCode, user.id).catch(console.warn);
+          sessionStorage.removeItem('innerMapsInviterCode');
+        }
+      } else {
+        showToast('Signed in! Take the quiz to save your results.');
+        setScreen('landing');
+      }
+
+      // Clean up URL without triggering a navigation
+      window.history.replaceState({}, '', '/quiz');
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function renderScreen() {
     switch (screen) {
