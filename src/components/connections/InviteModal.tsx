@@ -59,7 +59,7 @@ export default function InviteModal() {
         onClick={() => setInviteModalOpen(false)}
       >
         <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
-          <SignupForm intent="invite" onClose={() => setInviteModalOpen(false)} />
+          <SignupForm intent="invite" defaultMode="login" onClose={() => setInviteModalOpen(false)} />
         </div>
       </div>
     );
