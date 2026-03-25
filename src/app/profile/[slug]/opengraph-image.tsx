@@ -21,12 +21,15 @@ export default async function Image({
   const starSign = profile?.starSign ?? '?';
   const starSymbol = profile?.starSymbol ?? '✦';
 
-  const [playfairFont, dmSansFont] = await Promise.all([
+  const [playfairFont, dmSansFont, notoSymbolsFont] = await Promise.all([
     fetch(
       'https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKeiukDQ.ttf',
     ).then((r) => r.arrayBuffer()),
     fetch(
       'https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxhTg.ttf',
+    ).then((r) => r.arrayBuffer()),
+    fetch(
+      'https://fonts.gstatic.com/s/notosanssymbols2/v25/I_uyMoGduATTei9eI8daxVHDyfisHr71-jPszfp-fMA.ttf',
     ).then((r) => r.arrayBuffer()),
   ]);
 
@@ -60,9 +63,13 @@ export default async function Image({
             letterSpacing: 4,
             marginBottom: 40,
             display: 'flex',
+            alignItems: 'center',
+            gap: 12,
           }}
         >
-          ✦ Inner Maps ✦
+          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>✦</span>
+          <span>Inner Maps</span>
+          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>✦</span>
         </div>
 
         {/* 2x2 Grid */}
@@ -127,7 +134,7 @@ export default async function Image({
             marginBottom: 32,
           }}
         >
-          <span>{starSymbol}</span>
+          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>{starSymbol}</span>
           <span>{starSign}</span>
         </div>
 
@@ -149,6 +156,7 @@ export default async function Image({
       fonts: [
         { name: 'Playfair Display', data: playfairFont, weight: 700 },
         { name: 'DM Sans', data: dmSansFont, weight: 400 },
+        { name: 'Noto Sans Symbols 2', data: notoSymbolsFont, weight: 400 },
       ],
     },
   );
