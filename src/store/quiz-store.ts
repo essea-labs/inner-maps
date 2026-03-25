@@ -508,20 +508,23 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     markReturningUser();
     try {
       const { results, answers, userName, birthMonth, birthDay } = get();
-      if (results) {
-        // Results in memory — save them under this user ID
+
+      // Check if this user already has saved results in the DB.
+      // If so, keep the original results (protects existing compatibility data).
+      let existingData: Awaited<ReturnType<typeof fetchUserQuizResults>> = null;
+      try { existingData = await fetchUserQuizResults(userId); } catch { /* non-fatal */ }
+
+      if (existingData) {
+        // Existing results in DB — restore them (don't overwrite with new quiz)
+        await saveUserProfile(userId, { email, isAnonymous: false });
+        set({ results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, starSign: existingData.results.starSign });
+      } else if (results) {
+        // First time saving — persist current in-memory results
         await saveUserProfile(userId, { name: userName, email, birthMonth, birthDay, isAnonymous: false });
         await saveQuizResults(userId, results, answers);
       } else {
-        // No results in memory — save profile, then try to restore existing results from DB
+        // No results anywhere — just save profile
         await saveUserProfile(userId, { email, isAnonymous: false });
-        try {
-          const data = await fetchUserQuizResults(userId);
-          if (data) {
-            // results are already rehydrated by fetchUserQuizResults
-            set({ results: data.results, userName: data.name, birthMonth: data.birthMonth, birthDay: data.birthDay, starSign: data.results.starSign });
-          }
-        } catch { /* non-fatal */ }
       }
       await get().loadConnections(userId);
       await get().checkPurchases(userId);
