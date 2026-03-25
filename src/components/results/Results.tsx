@@ -45,17 +45,21 @@ export default function Results() {
     return `https://innermaps.io/profile/${slug}`;
   }
 
-  function handleCopyLink() {
-    navigator.clipboard?.writeText(getProfileUrl()).then(() => showToast('✓ Link copied!'));
-  }
-
-  function handleShare() {
-    if (navigator.share) {
-      navigator.share({
-        title: 'My Inner Maps Profile',
-        text: `I'm a ${r.cognitiveType} ${r.enneagramDisplay} ${r.starSign?.sign} ${r.starSign?.symbol}. Discover yours:`,
-        url: getProfileUrl(),
-      });
+  async function handleSaveImage() {
+    try {
+      const res = await fetch(getProfileUrl() + '/opengraph-image');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'inner-maps-profile.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('✓ Image saved!');
+    } catch {
+      showToast('Could not save image — try again.');
     }
   }
 
@@ -121,9 +125,9 @@ export default function Results() {
           <div className="share-card-url">innermaps.io</div>
         </div>
 
-        {/* Share Buttons */}
+        {/* Save Button */}
         <div className="share-buttons">
-          <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleShare}>Share</button>
+          <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleSaveImage}>Save ↓</button>
         </div>
 
         {/* Compatibility CTA */}

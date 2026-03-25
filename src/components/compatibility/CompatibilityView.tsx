@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { calculateCompatibility } from '@/lib/compatibility';
 import TabBar from '@/components/ui/TabBar';
@@ -15,6 +15,7 @@ export default function CompatibilityView() {
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
   const purchasedCompatibility = useQuizStore((s) => s.purchasedCompatibility);
   const startCheckout = useQuizStore((s) => s.startCheckout);
+  const showToast = useQuizStore((s) => s.showToast);
   const { user, loading: authLoading } = useAuth();
   const isRealUser = !authLoading && !!user && !user.is_anonymous;
   const [signupOpen, setSignupOpen] = useState(false);
@@ -67,13 +68,27 @@ export default function CompatibilityView() {
     setScreen('compatibility');
   }
 
-  function handleShareCompat() {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Inner Maps Compatibility',
-        text: `${myName} & ${conn.name} are ${compat.overall}% compatible on Inner Maps!`,
-        url: 'https://innermaps.io',
+  const compatCardRef = useRef<HTMLDivElement>(null);
+
+  async function handleSaveImage() {
+    if (!compatCardRef.current) return;
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(compatCardRef.current, {
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true,
       });
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `inner-maps-compatibility.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('✓ Image saved!');
+    } catch {
+      showToast('Could not save image — try again.');
     }
   }
 
@@ -113,7 +128,7 @@ export default function CompatibilityView() {
         </div>
 
         {/* Shareable Card */}
-        <div className="compat-share-card">
+        <div className="compat-share-card" ref={compatCardRef}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
           <div className="compat-share-card-names">{myName} & {conn.name}</div>
           <div className="compat-share-card-score">{compat.overall}% compatible</div>
@@ -161,8 +176,8 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-share-card-url">innermaps.io</div>
         </div>
-        <button className="compat-share-cta" onClick={handleShareCompat} style={{ marginBottom: 24 }}>
-          Share This Compatibility ↗
+        <button className="compat-share-cta" onClick={handleSaveImage} style={{ marginBottom: 24 }}>
+          Save ↓
         </button>
 
         {/* Star Sign */}
