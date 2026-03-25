@@ -549,7 +549,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     if (intent === 'compatibility') {
       set({ screen: 'connections', restoringState: false });
     } else if (intent === 'invite') {
-      set({ screen: 'connections', inviteModalOpen: true, restoringState: false });
+      set({ screen: 'connections', restoringState: false });
     } else if (intent === 'profile') {
       set({ screen: 'profile', restoringState: false });
     } else {
