@@ -131,8 +131,8 @@ export default function InviteModal() {
           <h3 style={{ margin: '0 0 6px', fontSize: 20 }}>
             Invite &amp; <em>connect</em>
           </h3>
-          <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Share your link — when they take the quiz, you&apos;ll both unlock your free compatibility breakdown across all 5 dimensions.
+          <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--text-secondary)' }}>
+            They take the quiz, you both see how you connect.
           </p>
 
           <div className="invite-link-box">
