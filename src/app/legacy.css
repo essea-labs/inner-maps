@@ -2094,8 +2094,14 @@ body {
 .compat-card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   margin-bottom: 14px;
+}
+
+.compat-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .compat-card-icon {

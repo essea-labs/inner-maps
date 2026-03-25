@@ -361,6 +361,12 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       });
       const data = await res.json();
 
+      if (!res.ok || data.error) {
+        console.error('Checkout API error:', data.error);
+        get().showToast(data.error ?? 'Something went wrong. Please try again.');
+        return;
+      }
+
       if (data.already_purchased) {
         // Already purchased — go straight to report
         get().setPurchased(productType, connectionId);

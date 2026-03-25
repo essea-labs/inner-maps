@@ -58,7 +58,7 @@ export default function TabBar() {
           onClick={handleCompat}
         >
           <span className="tab-item-icon">⟡</span>
-          <span className="tab-item-label">Compat</span>
+          <span className="tab-item-label">Compatibility</span>
         </button>
         <button
           className={`tab-item${profileActive ? ' active' : ''}`}

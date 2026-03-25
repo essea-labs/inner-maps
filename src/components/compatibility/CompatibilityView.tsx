@@ -165,8 +165,11 @@ export default function CompatibilityView() {
         {/* Star Sign */}
         <div className="compat-card" style={{ animationDelay: '0.1s' }}>
           <div className="compat-card-header">
-            <span className="compat-card-icon">✦</span>
-            <span className="compat-card-category">Star Sign</span>
+            <div className="compat-card-header-left">
+              <span className="compat-card-icon">✦</span>
+              <span className="compat-card-category">Star Sign</span>
+            </div>
+            <span className="result-card-lock" onClick={handleUnlock}>🔒 Full insights</span>
           </div>
           <div className="compat-vs">
             <div className="compat-vs-item">
@@ -186,8 +189,11 @@ export default function CompatibilityView() {
         {/* Personality */}
         <div className="compat-card" style={{ animationDelay: '0.2s' }}>
           <div className="compat-card-header">
-            <span className="compat-card-icon">🧠</span>
-            <span className="compat-card-category">Personality Type</span>
+            <div className="compat-card-header-left">
+              <span className="compat-card-icon">🧠</span>
+              <span className="compat-card-category">Personality Type</span>
+            </div>
+            <span className="result-card-lock" onClick={handleUnlock}>🔒 Full insights</span>
           </div>
           <div className="compat-vs">
             <div className="compat-vs-item">
@@ -207,8 +213,11 @@ export default function CompatibilityView() {
         {/* Enneagram */}
         <div className="compat-card" style={{ animationDelay: '0.3s' }}>
           <div className="compat-card-header">
-            <span className="compat-card-icon">🔮</span>
-            <span className="compat-card-category">Enneagram</span>
+            <div className="compat-card-header-left">
+              <span className="compat-card-icon">🔮</span>
+              <span className="compat-card-category">Enneagram</span>
+            </div>
+            <span className="result-card-lock" onClick={handleUnlock}>🔒 Full insights</span>
           </div>
           <div className="compat-vs">
             <div className="compat-vs-item">
@@ -228,8 +237,11 @@ export default function CompatibilityView() {
         {/* Attachment */}
         <div className="compat-card" style={{ animationDelay: '0.4s' }}>
           <div className="compat-card-header">
-            <span className="compat-card-icon">💛</span>
-            <span className="compat-card-category">Attachment Style</span>
+            <div className="compat-card-header-left">
+              <span className="compat-card-icon">💛</span>
+              <span className="compat-card-category">Attachment Style</span>
+            </div>
+            <span className="result-card-lock" onClick={handleUnlock}>🔒 Full insights</span>
           </div>
           <div className="compat-vs">
             <div className="compat-vs-item">
@@ -249,8 +261,11 @@ export default function CompatibilityView() {
         {/* Connection */}
         <div className="compat-card" style={{ animationDelay: '0.5s' }}>
           <div className="compat-card-header">
-            <span className="compat-card-icon">🤝</span>
-            <span className="compat-card-category">Connection Style</span>
+            <div className="compat-card-header-left">
+              <span className="compat-card-icon">🤝</span>
+              <span className="compat-card-category">Connection Style</span>
+            </div>
+            <span className="result-card-lock" onClick={handleUnlock}>🔒 Full insights</span>
           </div>
           <div className="compat-vs">
             <div className="compat-vs-item">

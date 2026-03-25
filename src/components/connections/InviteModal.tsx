@@ -128,9 +128,12 @@ export default function InviteModal() {
         </div>
 
         <div style={{ padding: '12px 24px 36px' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 20 }}>
+          <h3 style={{ margin: '0 0 6px', fontSize: 20 }}>
             Invite &amp; <em>connect</em>
           </h3>
+          <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            Share your link — when they take the quiz, you&apos;ll both unlock your free compatibility breakdown across all 5 dimensions.
+          </p>
 
           <div className="invite-link-box">
             <span className="invite-link-text">{displayLink}</span>
