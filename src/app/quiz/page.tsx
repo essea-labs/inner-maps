@@ -99,9 +99,11 @@ export default function QuizPage() {
       // Don't restore screen/tab — purchase handler navigates to the report screen
       delete sessionPatch.screen;
       delete sessionPatch.activeTab;
-      useQuizStore.setState(sessionPatch);
+      useQuizStore.setState({ ...sessionPatch, restoringState: false });
     }
     clearSessionState();
+    // Ensure loading gate is cleared even without session data
+    useQuizStore.setState({ restoringState: false });
 
     // Unlock the report and navigate
     setPurchased(product, connectionId);

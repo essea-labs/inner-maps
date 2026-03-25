@@ -78,6 +78,8 @@ test.describe('Payments', () => {
     // Set session storage with results (simulating state before Stripe redirect)
     await page.goto('/quiz');
     await page.evaluate(() => {
+      // Simulate a returning user (quiz completion sets this flag)
+      localStorage.setItem('im_returning', '1');
       const results = {
         cognitiveType: 'ENFP', cognitiveTypeName: 'The Campaigner', cognitiveTypeDesc: 'desc',
         attachmentStyle: 'Secure', attachmentDesc: 'desc', anxiety: '2.0', avoidance: '2.0',
