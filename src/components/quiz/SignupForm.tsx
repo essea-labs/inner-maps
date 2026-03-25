@@ -33,11 +33,9 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
   },
   invite: {
     title: <>Invite & <em>connect</em></>,
-    subtitle: 'Save your profile to get your personal invite link and start comparing.',
+    subtitle: 'Save your profile to get your personal invite link.',
     benefits: [
-      'Get a unique link to share with friends',
-      'See who\'s taken the quiz and how you match',
-      'Unlock compatibility insights for each connection',
+      'Share your link — when they take the quiz, you both see your compatibility',
     ],
   },
   purchase_individual: {
