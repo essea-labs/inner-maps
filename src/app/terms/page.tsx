@@ -35,8 +35,8 @@ export default function TermsOfService() {
       <h2>Accounts</h2>
       <p>
         You may create an account using your email address or Google sign-in. You are responsible
-        for maintaining the security of your account and password. You must be at least 13 years
-        old to create an account.
+        for maintaining the security of your account and password. You must be at least 16 years
+        old to use Inner Maps or create an account.
       </p>
 
       <h2>Acceptable Use</h2>
@@ -97,6 +97,32 @@ export default function TermsOfService() {
       <p>
         We reserve the right to suspend or terminate your account at any time for violation of
         these terms. You may delete your account at any time by contacting us.
+      </p>
+
+      <h2>International Users (GDPR)</h2>
+      <p>
+        If you are located in the European Union or European Economic Area, your use of Inner Maps
+        is subject to the General Data Protection Regulation (GDPR). We process your personal data
+        based on your consent (when you create an account and take the quiz) and our legitimate
+        interest in operating the service. You have the right to access, correct, delete, or port
+        your data at any time. See our <Link href="/privacy">Privacy Policy</Link> for full details
+        on your rights.
+      </p>
+
+      <h2>California Residents (CCPA)</h2>
+      <p>
+        If you are a California resident, you have additional rights under the California Consumer
+        Privacy Act (CCPA), including the right to know what personal information we collect, the
+        right to request deletion, and the right to opt out of the sale of your data. We do not
+        sell your personal information. See our <Link href="/privacy">Privacy Policy</Link> for
+        full details.
+      </p>
+
+      <h2>Governing Law</h2>
+      <p>
+        These Terms are governed by and construed in accordance with applicable law. Any disputes
+        arising from your use of the service will be resolved in accordance with the laws of the
+        jurisdiction where Inner Maps operates.
       </p>
 
       <h2>Changes to These Terms</h2>
