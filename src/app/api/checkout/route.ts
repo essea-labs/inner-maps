@@ -49,7 +49,8 @@ export async function POST(req: Request) {
         product_type,
         ...(connection_id && { connection_id }),
       },
-      success_url: `${origin}/quiz?${successParams.toString()}`,
+      // {CHECKOUT_SESSION_ID} is a Stripe template variable replaced with the real session ID
+      success_url: `${origin}/quiz?${successParams.toString()}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/quiz`,
     });
 

@@ -92,6 +92,7 @@ export default function QuizPage() {
 
     const product = params.get('product') ?? '';
     const connectionId = params.get('connection_id') ?? undefined;
+    const sessionId = params.get('session_id') ?? '';
 
     // Restore quiz state saved before Stripe redirect (page reloads on return)
     const sessionPatch = restoreStateFromSession();
@@ -119,8 +120,25 @@ export default function QuizPage() {
     // Clean URL
     window.history.replaceState({}, '', '/quiz');
 
-    // Background DB check — retry a few times in case webhook is slow
+    // Confirm purchase in DB directly (don't rely solely on webhook)
     (async () => {
+      if (sessionId) {
+        try {
+          const res = await fetch('/api/purchases/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId }),
+          });
+          if (res.ok) {
+            console.log('Purchase confirmed via direct verification');
+            return; // Confirmed — no need for retry loop
+          }
+        } catch (err) {
+          console.warn('Direct purchase confirm failed, falling back to webhook check:', err);
+        }
+      }
+
+      // Fallback: retry webhook-based check if direct confirm failed
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       for (let attempt = 0; attempt < 5; attempt++) {

@@ -368,6 +368,10 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   resetQuiz: () => {
     clearReturningUser();
     clearSessionState();
+    try {
+      localStorage.removeItem('im_purchased_individual');
+      localStorage.removeItem('im_purchased_compat');
+    } catch { /* non-fatal */ }
     set({
       screen: 'landing',
       prevScreens: [],
@@ -416,18 +420,39 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   setPurchased: (productType, connectionId) => {
     if (productType === 'individual_report') {
       set({ purchasedIndividual: true });
+      // Persist to localStorage as a backup so it survives refresh even if DB lookup fails
+      try { localStorage.setItem('im_purchased_individual', '1'); } catch { /* non-fatal */ }
     } else if (productType === 'compatibility_report' && connectionId) {
       set((s) => ({
         purchasedCompatibility: { ...s.purchasedCompatibility, [connectionId]: true },
       }));
+      try {
+        const existing = JSON.parse(localStorage.getItem('im_purchased_compat') || '{}');
+        existing[connectionId] = true;
+        localStorage.setItem('im_purchased_compat', JSON.stringify(existing));
+      } catch { /* non-fatal */ }
     }
   },
 
   setPurchaseIntent: (intent) => set({ purchaseIntent: intent }),
 
   checkPurchases: async (userId: string) => {
+    // First: hydrate from localStorage backup (instant, survives DB failures)
     try {
-      // Use server-side API to bypass RLS on the purchases table
+      if (localStorage.getItem('im_purchased_individual') === '1') {
+        set({ purchasedIndividual: true });
+      }
+      const compatJson = localStorage.getItem('im_purchased_compat');
+      if (compatJson) {
+        const compat = JSON.parse(compatJson) as Record<string, boolean>;
+        set((s) => ({
+          purchasedCompatibility: { ...s.purchasedCompatibility, ...compat },
+        }));
+      }
+    } catch { /* non-fatal */ }
+
+    // Then: verify against DB (authoritative source — also writes to localStorage)
+    try {
       const res = await fetch(`/api/purchases?user_id=${encodeURIComponent(userId)}`);
       if (!res.ok) throw new Error('Failed to fetch purchases');
       const { purchases } = await res.json() as {
@@ -437,14 +462,20 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       for (const p of purchases) {
         if (p.product_type === 'individual_report') {
           set({ purchasedIndividual: true });
+          try { localStorage.setItem('im_purchased_individual', '1'); } catch { /* non-fatal */ }
         } else if (p.product_type === 'compatibility_report' && p.connection_id) {
           set((s) => ({
             purchasedCompatibility: { ...s.purchasedCompatibility, [p.connection_id!]: true },
           }));
+          try {
+            const existing = JSON.parse(localStorage.getItem('im_purchased_compat') || '{}');
+            existing[p.connection_id] = true;
+            localStorage.setItem('im_purchased_compat', JSON.stringify(existing));
+          } catch { /* non-fatal */ }
         }
       }
     } catch (err) {
-      console.warn('checkPurchases failed:', err);
+      console.warn('checkPurchases DB lookup failed (localStorage backup used):', err);
     }
   },
 
