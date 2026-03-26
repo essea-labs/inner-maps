@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { getAuthUserId } from '@/lib/api-auth';
 import { rehydrateResults, getStarSign, STAR_SIGNS } from '@/lib/quiz-data';
 import type { QuizResults, Connection } from '@/lib/types';
 
@@ -49,6 +50,12 @@ export async function GET(request: NextRequest) {
     const userId = request.nextUrl.searchParams.get('userId');
     if (!userId) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+    }
+
+    // Verify the caller is the user they claim to be
+    const authUserId = await getAuthUserId();
+    if (!authUserId || authUserId !== userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const admin = getSupabaseAdmin();

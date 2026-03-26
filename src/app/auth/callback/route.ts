@@ -47,10 +47,16 @@ export async function GET(request: NextRequest) {
 
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) console.error('Auth code exchange failed:', error.message);
+      if (error) {
+        console.error('Auth code exchange failed:', error.message);
+        redirectUrl.searchParams.set('authError', error.message);
+      }
     } else if (token_hash && type) {
       const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
-      if (error) console.error('OTP verification failed:', error.message);
+      if (error) {
+        console.error('OTP verification failed:', error.message);
+        redirectUrl.searchParams.set('authError', error.message);
+      }
     }
   }
 

@@ -12,6 +12,7 @@ export default function ResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [expired, setExpired] = useState(false);
 
   async function handleSubmit() {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
@@ -29,7 +30,11 @@ export default function ResetPasswordForm() {
       showToast('Password updated ✓');
       setScreen(useQuizStore.getState().results ? 'results' : 'landing');
     } catch (err: any) {
-      setError(err.message ?? 'Something went wrong. Please try again.');
+      const msg = err.message ?? 'Something went wrong. Please try again.';
+      if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid')) {
+        setExpired(true);
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -61,6 +66,19 @@ export default function ResetPasswordForm() {
           style={{ opacity: loading ? 0.6 : 1 }}>
           {loading ? '...' : 'Save password ✦'}
         </button>
+
+        {expired && (
+          <button
+            onClick={() => { setScreen('signup'); }}
+            style={{
+              background: 'none', border: 'none', color: 'var(--peach-deep)',
+              fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '12px 0',
+              textDecoration: 'underline',
+            }}
+          >
+            Request a new reset link →
+          </button>
+        )}
       </div>
     </div>
   );

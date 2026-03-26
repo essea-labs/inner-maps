@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { getAuthUserId } from '@/lib/api-auth';
 
 /**
  * Server-side invite completion — uses admin client to bypass RLS.
@@ -12,6 +13,12 @@ export async function POST(request: NextRequest) {
 
     if (!inviteCode || !inviteeId) {
       return NextResponse.json({ error: 'Missing inviteCode or inviteeId' }, { status: 400 });
+    }
+
+    // Verify the caller is the invitee they claim to be
+    const authUserId = await getAuthUserId();
+    if (!authUserId || authUserId !== inviteeId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const admin = getSupabaseAdmin();
