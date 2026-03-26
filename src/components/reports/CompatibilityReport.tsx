@@ -293,23 +293,23 @@ export default function CompatibilityReport() {
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">1</div>
-            <div className="report-tip-text">Read this report together — out loud, over coffee, on a walk. It&apos;s a conversation starter, not a diagnosis. You&apos;ll learn things about each other that never come up naturally.</div>
+            <div className="report-tip-text">Send this report to {conn.name} with zero context. See which part they screenshot first — that tells you more than any quiz.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">2</div>
-            <div className="report-tip-text">This week, show up in each other&apos;s connection style. {myName}: try {tr.topConnection.toLowerCase()}. {conn.name}: try {r.topConnection.toLowerCase()}. It might feel awkward — that&apos;s the point. It means you&apos;re stretching.</div>
+            <div className="report-tip-text">Challenge: {myName} has to show love in {conn.name}&apos;s style ({tr.topConnection.toLowerCase()}) and vice versa for a full day. Bonus points if it&apos;s hilariously bad — you&apos;ll both remember it.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">3</div>
-            <div className="report-tip-text">Pick an activity that plays to your strongest dimension ({strengths[0]}). Whether that&apos;s cooking together, a road trip, or just an uninterrupted conversation — lean into what already works between you.</div>
+            <div className="report-tip-text">Your strongest dimension is {strengths[0]}. Plan something this week that leans into it — nothing fancy, just intentional. A walk, a meal, a voice note. Low effort, high reward.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">4</div>
-            <div className="report-tip-text">Ask each other: &ldquo;What&apos;s one thing I do that makes you feel really {r.topConnection === 'Quality Time' ? 'valued' : r.topConnection === 'Words of Affirmation' ? 'appreciated' : r.topConnection === 'Physical Touch' ? 'safe' : r.topConnection === 'Acts of Service' ? 'supported' : 'thought of'}?&rdquo; The answer might surprise you — and it costs nothing to do more of it.</div>
+            <div className="report-tip-text">Take the quiz again but answer as each other. Compare results with the real thing. It&apos;s genuinely funny — and the gaps are where the best conversations start.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">5</div>
-            <div className="report-tip-text">Swap phones and take the quiz answering as the other person. See how well you know each other — and where the gaps are. It&apos;s fun, revealing, and usually hilarious.</div>
+            <div className="report-tip-text">Next time things feel off between you, just say &ldquo;I think our {challenges[0]?.toLowerCase() || 'wiring'} is showing.&rdquo; Naming it out loud usually makes you both laugh — and that breaks the tension faster than any serious conversation.</div>
           </div>
         </div>
 
