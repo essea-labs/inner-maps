@@ -1207,6 +1207,7 @@ body {
 }
 
 .result-card-name {
+  font-family: var(--font-dm-sans-family);
   font-size: 15px;
   font-weight: 600;
   color: var(--peach-deep);
@@ -1214,6 +1215,7 @@ body {
 }
 
 .result-card-desc {
+  font-family: var(--font-dm-sans-family);
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -2163,6 +2165,7 @@ body {
 }
 
 .compat-insight {
+  font-family: var(--font-dm-sans-family);
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -2332,6 +2335,7 @@ body {
 
 /* ===== COMPAT DETAIL TIP ===== */
 .compat-detail {
+  font-family: var(--font-dm-sans-family);
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -2549,6 +2553,7 @@ body {
 .report-section-title:first-of-type { margin-top: 0; }
 
 .report-text {
+  font-family: var(--font-dm-sans-family);
   font-size: 14px;
   line-height: 1.7;
   color: var(--text-secondary);
@@ -2684,6 +2689,7 @@ body {
 }
 
 .report-tip-text {
+  font-family: var(--font-dm-sans-family);
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-secondary);
