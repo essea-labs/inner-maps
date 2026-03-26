@@ -158,8 +158,23 @@ function makeDefaultAnswers(): QuizAnswers {
 // loading screen on first render (prevents landing page flash for returning users).
 
 function isReturningUser(): boolean {
-  try { return typeof window !== 'undefined' && localStorage.getItem('im_returning') === '1'; }
+  try {
+    if (typeof window === 'undefined') return false;
+    // Don't show loading screen for password reset — show the form immediately
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('authCallback') === '1' && params.get('intent') === 'recovery') return false;
+    return localStorage.getItem('im_returning') === '1';
+  }
   catch { return false; }
+}
+
+/** Check if this page load is a password recovery callback */
+function isRecoveryCallback(): boolean {
+  try {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('authCallback') === '1' && params.get('intent') === 'recovery';
+  } catch { return false; }
 }
 
 export function markReturningUser() {
@@ -173,8 +188,8 @@ export function clearReturningUser() {
 // ===== STORE =====
 
 export const useQuizStore = create<QuizStore>((set, get) => ({
-  // Initial state
-  screen: 'landing',
+  // Initial state — recovery callback gets the password form on first render
+  screen: isRecoveryCallback() ? 'resetPassword' : 'landing',
   prevScreens: [],
   userName: '',
   birthMonth: null,

@@ -5,7 +5,6 @@ import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 
 export default function ResetPasswordForm() {
-  const restoreUserState = useQuizStore((s) => s.restoreUserState);
   const setScreen = useQuizStore((s) => s.setScreen);
   const showToast = useQuizStore((s) => s.showToast);
 
@@ -24,12 +23,22 @@ export default function ResetPasswordForm() {
 
       showToast('Password updated ✓');
 
-      // Restore quiz state then navigate to results
+      // Load quiz data then navigate explicitly
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await restoreUserState(user.id);
-        // restoreUserState navigates to results if data exists
-        if (!useQuizStore.getState().results) {
+        // Fetch results without letting restoreUserState control navigation
+        const { fetchUserQuizResults } = await import('@/lib/db');
+        const data = await fetchUserQuizResults(user.id);
+        if (data) {
+          useQuizStore.setState({
+            results: data.results,
+            userName: data.name,
+            birthMonth: data.birthMonth,
+            birthDay: data.birthDay,
+            starSign: data.results.starSign,
+          });
+          setScreen('results');
+        } else {
           setScreen('landing');
         }
       } else {

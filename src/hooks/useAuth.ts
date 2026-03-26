@@ -28,6 +28,10 @@ export default function useAuth() {
       .then(async (u) => {
         setUser(u);
         if (u && !u.is_anonymous) {
+          // Don't restore during password reset — let the reset form handle navigation
+          const currentScreen = useQuizStore.getState().screen;
+          if (currentScreen === 'resetPassword') return;
+
           const storeResults = useQuizStore.getState().results;
           if (!storeResults) {
             await restoreUserState(u.id);
