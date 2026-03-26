@@ -315,7 +315,6 @@ export default function CompatibilityView() {
           <button className="upsell-cta" onClick={handleUnlock} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
             {checkoutLoading ? 'Loading checkout…' : 'Unlock Full Compatibility Report ✦'}
           </button>
-          <button className="upsell-skip">No thanks, keep the free version</button>
         </div>
       </div>
       <TabBar />
