@@ -302,19 +302,31 @@ export default function CompatibilityView() {
 
         {/* Upsell */}
         <div className="upsell-section" style={{ marginTop: 24 }}>
-          <h2>Go Deeper Together</h2>
-          <p className="upsell-subtitle">Unlock the full picture of how you and {conn.name} connect</p>
-          <div className="upsell-features">
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Detailed breakdown of your dynamic across all 5 dimensions</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Your biggest strengths as a pair — and where to watch out</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips to deepen your connection</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Communication guide based on both your styles</div>
-          </div>
-          <div className="upsell-price">$4.99</div>
-          <div className="upsell-price-note">One-time purchase</div>
-          <button className="upsell-cta" onClick={handleUnlock} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
-            {checkoutLoading ? 'Loading checkout…' : 'Unlock Full Compatibility Report ✦'}
-          </button>
+          {conn.id && purchasedCompatibility[conn.id] ? (
+            <>
+              <h2>Your Report is <em>Unlocked</em></h2>
+              <p className="upsell-subtitle">View the full picture of how you and {conn.name} connect</p>
+              <button className="upsell-cta" onClick={() => setScreen('compatibilityReport')}>
+                View Compatibility Report &rarr;
+              </button>
+            </>
+          ) : (
+            <>
+              <h2>Go Deeper Together</h2>
+              <p className="upsell-subtitle">Unlock the full picture of how you and {conn.name} connect</p>
+              <div className="upsell-features">
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Detailed breakdown of your dynamic across all 5 dimensions</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Your biggest strengths as a pair — and where to watch out</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips to deepen your connection</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Communication guide based on both your styles</div>
+              </div>
+              <div className="upsell-price">$4.99</div>
+              <div className="upsell-price-note">One-time purchase</div>
+              <button className="upsell-cta" onClick={handleUnlock} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
+                {checkoutLoading ? 'Loading checkout…' : 'Unlock Full Compatibility Report ✦'}
+              </button>
+            </>
+          )}
         </div>
       </div>
       <TabBar />

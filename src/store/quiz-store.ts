@@ -505,12 +505,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       // results are already rehydrated (names, descriptions, star sign) by fetchUserQuizResults
       set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign });
       get().setScreen('results');
-      // Load connections and check purchases in parallel (non-blocking)
-      set({ restoringState: false });
+      // Load connections and check purchases in parallel — keep loading state
+      // until complete so the UI reflects purchase status before becoming interactive
       await Promise.all([
         get().loadConnections(userId),
         get().checkPurchases(userId),
       ]);
+      set({ restoringState: false });
     } catch (err) {
       console.warn('restoreUserState failed:', err);
       set({ restoringState: false });

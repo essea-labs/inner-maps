@@ -226,20 +226,32 @@ export default function Results() {
 
         {/* Upsell Section */}
         <div className="upsell-section" id="upsell">
-          <h2>Your Full Profile, <em>Unlocked</em></h2>
-          <p className="upsell-subtitle">Go deeper than the surface</p>
-          <div className="upsell-features">
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Deep dive into your {r.cognitiveType} personality. How you think, love and work.</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Your {r.attachmentStyle} attachment: triggers, patterns & growth strategies</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Enneagram {r.enneagramDisplay}: core fears, desires & your path to growth</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> How your 5 profiles interact, the full picture of who you are</div>
-            <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips you can actually use today</div>
-          </div>
-          <div className="upsell-price">$9.99</div>
-          <div className="upsell-price-note">One-time purchase · Saved to your profile</div>
-          <button className="upsell-cta" onClick={handleUpsell} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
-            {checkoutLoading ? 'Loading checkout…' : 'Get My Full Report ✦'}
-          </button>
+          {purchasedIndividual ? (
+            <>
+              <h2>Your Full Report is <em>Unlocked</em></h2>
+              <p className="upsell-subtitle">You have access to your complete deep-dive report</p>
+              <button className="upsell-cta" onClick={() => setScreen('individualReport')}>
+                View Your Full Report &rarr;
+              </button>
+            </>
+          ) : (
+            <>
+              <h2>Your Full Profile, <em>Unlocked</em></h2>
+              <p className="upsell-subtitle">Go deeper than the surface</p>
+              <div className="upsell-features">
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Deep dive into your {r.cognitiveType} personality. How you think, love and work.</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Your {r.attachmentStyle} attachment: triggers, patterns & growth strategies</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Enneagram {r.enneagramDisplay}: core fears, desires & your path to growth</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> How your 5 profiles interact, the full picture of who you are</div>
+                <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips you can actually use today</div>
+              </div>
+              <div className="upsell-price">$9.99</div>
+              <div className="upsell-price-note">One-time purchase · Saved to your profile</div>
+              <button className="upsell-cta" onClick={handleUpsell} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
+                {checkoutLoading ? 'Loading checkout…' : 'Get My Full Report ✦'}
+              </button>
+            </>
+          )}
         </div>
 
         <div className="disclaimer">
