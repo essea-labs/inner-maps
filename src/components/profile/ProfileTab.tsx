@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 import useAuth from '@/hooks/useAuth';
@@ -87,6 +88,12 @@ export default function ProfileTab() {
         >
           Sign out
         </button>
+
+        <div className="landing-footer" style={{ marginTop: 32 }}>
+          <Link href="/privacy">Privacy Policy</Link>
+          <span> · </span>
+          <Link href="/terms">Terms of Service</Link>
+        </div>
       </div>
       <TabBar />
     </div>
