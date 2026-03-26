@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+// This page is a fully dynamic SPA — never statically prerender
+export const dynamic = 'force-dynamic';
+
+import { useEffect } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 
@@ -33,13 +36,6 @@ export default function QuizPage() {
   const checkPurchases = useQuizStore((s) => s.checkPurchases);
   const restoreUserState = useQuizStore((s) => s.restoreUserState);
   const restoringState = useQuizStore((s) => s.restoringState);
-
-  // Hydration guard — prevents flash of landing page during SSR.
-  // On server, isReturningUser()/isRecoveryCallback() return false (no window),
-  // so server HTML would render the landing page. By gating on mount, the server
-  // sends a loading spinner instead, and the correct screen shows after hydration.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   // Navigation hooks
   useSwipeBack();
@@ -168,6 +164,7 @@ export default function QuizPage() {
 
     // Password reset — screen already set to 'resetPassword' by store init, just clean URL
     if (intent === 'recovery') {
+      useQuizStore.setState({ restoringState: false });
       window.history.replaceState({}, '', '/quiz');
       return;
     }
@@ -208,9 +205,9 @@ export default function QuizPage() {
   }, []);
 
   function renderScreen() {
-    // Before hydration or while restoring a returning user's state, show a
-    // loading screen instead of briefly flashing the landing page or wrong content
-    if (!mounted || restoringState) {
+    // Show loading until we know which screen to display — prevents flash of
+    // landing page for logged-in users, password reset, and during SSR
+    if (restoringState) {
       return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>

@@ -213,9 +213,10 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   purchasedCompatibility: {},
   purchaseIntent: null,
   currentUserId: null,
-  // Start with restoringState=true for returning users so the first render
-  // shows loading instead of landing page flash
-  restoringState: isReturningUser(),
+  // Always start with loading so we never flash the wrong screen.
+  // Each code path (restore, auth callback, purchase, recovery) clears this
+  // once it knows which screen to show.
+  restoringState: true,
   toastMessage: null,
 
   // ===== NAVIGATION =====
