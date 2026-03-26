@@ -542,16 +542,27 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       }
 
       // Complete invite if inviterCode was passed (works for both OAuth and email+password)
+      let inviteCompleted = false;
       if (inviterCode) {
-        await completeInvite(inviterCode, userId).catch(console.warn);
+        try {
+          inviteCompleted = await completeInvite(inviterCode, userId);
+          if (!inviteCompleted) {
+            console.warn('completeInvite returned false for code:', inviterCode);
+          }
+        } catch (err) {
+          console.warn('completeInvite threw:', err);
+        }
         sessionStorage.removeItem('innerMapsInviterCode');
       }
 
-      await get().loadConnections(userId);
-      await get().checkPurchases(userId);
+      // Load connections and purchases (must await before checking connections)
+      await Promise.all([
+        get().loadConnections(userId),
+        get().checkPurchases(userId),
+      ]);
 
       // If invite was just completed, auto-navigate to compatibility
-      if (inviterCode) {
+      if (inviterCode && inviteCompleted) {
         const conns = get().connections;
         if (conns.length > 0) {
           get().setActiveConnection(conns[0]);
