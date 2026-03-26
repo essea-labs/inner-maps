@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
 import { encodeProfileSlug } from '@/lib/profile-slug';
@@ -30,6 +30,8 @@ export default function Results() {
   // Only evaluate once auth has resolved to avoid a brief flash of the save CTA.
   const isRealUser = !authLoading && !!user && !user.is_anonymous;
 
+  const shareCardRef = useRef<HTMLDivElement>(null);
+
   if (!results) return null;
 
   const r = results;
@@ -46,25 +48,21 @@ export default function Results() {
   }
 
   async function handleSaveImage() {
+    if (!shareCardRef.current) return;
     try {
-      const slug = encodeProfileSlug(
-        r.cognitiveType,
-        r.enneagramDisplay,
-        r.attachmentStyle,
-        r.topConnection,
-        r.starSign?.sign ?? '',
-      );
-      const res = await fetch(`/profile/${slug}/opengraph-image`);
-      if (!res.ok) throw new Error('fetch failed');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(shareCardRef.current, {
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true,
+      });
+      const url = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = url;
       a.download = 'inner-maps-profile.png';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
       showToast('✓ Image saved!');
     } catch {
       showToast('Could not save image — try again.');
@@ -104,7 +102,7 @@ export default function Results() {
         </div>
 
         {/* Share Card */}
-        <div className="share-card" id="shareCard">
+        <div className="share-card" id="shareCard" ref={shareCardRef}>
           <div className="share-card-title">✦ Inner Maps ✦</div>
           <div className="share-card-results">
             <div className="share-card-item">
