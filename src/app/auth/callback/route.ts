@@ -36,20 +36,10 @@ export async function GET(request: NextRequest) {
   );
 
   if (code) {
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.error('Auth code exchange failed:', error.message);
       authError = error.message;
-    }
-    // Supabase PKCE recovery: the session event type is PASSWORD_RECOVERY
-    // but we can also detect it from the session's aal or amr
-    // Simplest: check if the exchange returned a recovery session
-    if (data?.session?.user && !error) {
-      // Check if this was a password recovery by looking at the amr claim
-      const amr = (data.session as any).amr;
-      if (amr?.some((a: any) => a.method === 'recovery' || a.method === 'otp')) {
-        intent = 'recovery';
-      }
     }
   } else if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
