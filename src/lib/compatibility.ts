@@ -23,16 +23,34 @@ export const ZODIAC_ELEMENTS: Record<string, string> = {
   'Cancer': 'water', 'Scorpio': 'water', 'Pisces': 'water',
 };
 
+// Sign-specific traits used to generate richer compatibility detail
+export const SIGN_TRAITS: Record<string, { brings: string; style: string; edge: string }> = {
+  'Aries': { brings: 'directness, initiative, and fearless energy', style: 'acts fast, speaks honestly, leads from the front', edge: 'can be impulsive and steamroll slower-paced people' },
+  'Taurus': { brings: 'reliability, patience, and grounded calm', style: 'shows up consistently, values comfort and quality', edge: 'resists change and can dig in when challenged' },
+  'Gemini': { brings: 'curiosity, adaptability, and quick wit', style: 'keeps things light and interesting, connects ideas', edge: 'can be scattered and hard to pin down emotionally' },
+  'Cancer': { brings: 'emotional depth, loyalty, and nurturing instincts', style: 'creates safety, remembers the details that matter', edge: 'can withdraw when hurt instead of speaking up' },
+  'Leo': { brings: 'warmth, confidence, and infectious enthusiasm', style: 'makes people feel special, leads with generosity', edge: 'needs recognition and can dominate without realising' },
+  'Virgo': { brings: 'thoughtfulness, precision, and quiet devotion', style: 'shows love through acts of service, notices everything', edge: 'can be overly critical of themselves and others' },
+  'Libra': { brings: 'diplomacy, fairness, and an eye for harmony', style: 'smooths conflict, makes everyone feel included', edge: 'avoids confrontation and can be indecisive under pressure' },
+  'Scorpio': { brings: 'intensity, loyalty, and emotional courage', style: 'goes deep, sees through pretence, commits fully', edge: 'holds grudges and can be possessive when insecure' },
+  'Sagittarius': { brings: 'optimism, honesty, and expansive thinking', style: 'brings adventure and big-picture perspective', edge: 'can be blunt and restless with routine' },
+  'Capricorn': { brings: 'discipline, dependability, and quiet ambition', style: 'builds for the long term, earns trust through action', edge: 'can prioritise achievement over emotional connection' },
+  'Aquarius': { brings: 'originality, fairness, and independent thinking', style: 'challenges conventions, values authenticity', edge: 'can seem emotionally detached to those closest to them' },
+  'Pisces': { brings: 'empathy, creativity, and intuitive understanding', style: 'feels what others feel, brings compassion naturally', edge: 'can lose boundaries and absorb others\' stress' },
+};
+
 // ===== COMPATIBILITY FUNCTIONS =====
 export function getZodiacCompat(sign1: string, sign2: string): CompatDimension {
   const base = sign1 === sign2
     ? COMPAT_ZODIAC['same']
     : (COMPAT_ZODIAC[[ZODIAC_ELEMENTS[sign1], ZODIAC_ELEMENTS[sign2]].sort().join('-')] || COMPAT_ZODIAC['earth-fire']);
-  const e1 = ZODIAC_ELEMENTS[sign1], e2 = ZODIAC_ELEMENTS[sign2];
+  const t1 = SIGN_TRAITS[sign1], t2 = SIGN_TRAITS[sign2];
   let detail = '';
-  if (sign1 === sign2) detail = `Two ${sign1}s means you share the same strengths and the same blind spots. You get each other instantly — the work is in challenging each other to grow.`;
-  else if (e1 === e2) detail = `Both ${e1} signs — ${sign1} and ${sign2} share an elemental rhythm. You instinctively understand each other's pace and priorities.`;
-  else detail = `${sign1} (${e1}) and ${sign2} (${e2}) — different elements mean different instincts. ${sign1} brings ${e1 === 'fire' ? 'bold energy' : e1 === 'earth' ? 'grounded stability' : e1 === 'air' ? 'fresh perspective' : 'emotional depth'}, ${sign2} brings ${e2 === 'fire' ? 'bold energy' : e2 === 'earth' ? 'grounded stability' : e2 === 'air' ? 'fresh perspective' : 'emotional depth'}.`;
+  if (sign1 === sign2) {
+    detail = `Two ${sign1}s means you both bring ${t1.brings}. You get each other instantly — you share the same rhythms and the same blind spots. The growth comes from challenging each other rather than just mirroring.`;
+  } else {
+    detail = `${sign1} brings ${t1.brings} — someone who ${t1.style}. ${sign2} brings ${t2.brings} — someone who ${t2.style}. Together, ${sign1}'s energy meets ${sign2}'s energy in a way that ${ZODIAC_ELEMENTS[sign1] === ZODIAC_ELEMENTS[sign2] ? 'feels natural and understood' : 'stretches both of you to see the world differently'}.`;
+  }
   return { ...base, detail };
 }
 
@@ -86,6 +104,20 @@ export function getConnectionCompat(top1: string, top2: string): CompatDimension
   return { score: 65, insight: `One speaks ${top1.toLowerCase()}, the other ${top2.toLowerCase()}. You'll need to learn each other's dialect — but that's what makes love intentional.`, detail: `To make the other person feel loved: ${tips[top1] || 'show up in their language'}. To feel loved yourself: ask them to ${tips[top2] || 'show up in yours'}.` };
 }
 
+// Specific dynamics for key enneagram pairings
+const ENNEA_PAIR_DYNAMICS: Record<string, { dynamic: string; strength: string; tension: string }> = {
+  '1-2': { dynamic: "The Reformer's drive for correctness meets the Helper's drive for connection. You balance purpose with warmth.", strength: "The One brings structure and integrity; the Two brings empathy and care. Together you create something both principled and compassionate.", tension: "The One can seem critical when they're trying to help, and the Two can feel unappreciated when their efforts aren't acknowledged the 'right' way." },
+  '1-7': { dynamic: "Order meets adventure. You fascinate each other precisely because you're so different — One brings discipline, Seven brings joy.", strength: "The Seven helps the One lighten up and enjoy life; the One helps the Seven finish what they start. You each have what the other secretly wants.", tension: "The One can find the Seven irresponsible; the Seven can find the One rigid. Meeting in the middle is the work." },
+  '2-4': { dynamic: "Both heart types — you connect on an emotional wavelength that others can't reach. Deep, meaningful, and intensely felt.", strength: "The Two's warmth makes the Four feel truly seen. The Four's depth makes the Two feel like more than just a caretaker. You validate each other's emotional worlds.", tension: "Both can become moody and take things personally. When hurt, the Two over-gives and the Four withdraws — recognise the pattern early." },
+  '2-8': { dynamic: "Strength meets softness. The Eight's protectiveness and the Two's care create a powerful bond when trust is established.", strength: "The Eight feels safe to be vulnerable with the Two. The Two feels protected and valued by the Eight. Both are action-oriented lovers who show up for people.", tension: "Both want to be in charge of the relationship's emotional direction. Power struggles emerge when neither is willing to be the one who yields." },
+  '3-6': { dynamic: "The Achiever's confidence stabilises the Loyalist's anxiety, while the Loyalist's devotion grounds the Achiever's ambition.", strength: "The Three inspires the Six to take action despite fear. The Six keeps the Three honest and connected to what really matters beyond success.", tension: "The Three can seem superficial to the Six; the Six can seem overly cautious to the Three. Trust builds when both show their real selves." },
+  '3-7': { dynamic: "Two high-energy types who accomplish things together. You're the pair that makes plans and actually follows through on them.", strength: "The Three's focus meets the Seven's enthusiasm — you dream big and execute. Both are optimistic, future-oriented, and energising to be around.", tension: "Both avoid negative emotions. When things get hard, neither wants to slow down and process — but that's exactly when you need to." },
+  '4-5': { dynamic: "Depth meets depth. The Four's emotional intensity and the Five's intellectual intensity create a rich, private world together.", strength: "The Four draws the Five into their feelings; the Five gives the Four's emotions structure and understanding. You're each other's safe harbour.", tension: "Both need space but for different reasons — the Four to feel, the Five to think. Communicate about when you need closeness versus solitude." },
+  '5-1': { dynamic: "Two cerebral types who respect each other's competence. You share a love of getting things right and doing things well.", strength: "The Five's knowledge and the One's principles create a partnership built on mutual respect and intellectual rigour. You trust each other's judgement.", tension: "Both can be emotionally reserved. The relationship may feel correct but cool — deliberately build warmth through shared experiences, not just ideas." },
+  '6-9': { dynamic: "The Loyalist's vigilance and the Peacemaker's calm create a surprisingly stable foundation. You balance caution with acceptance.", strength: "The Six feels calmed by the Nine's presence. The Nine feels valued by the Six's loyalty and attention. Together you build genuine safety.", tension: "The Six may want to address problems the Nine would rather avoid. The Nine's passivity can trigger the Six's anxiety. Talk through disagreements before they calcify." },
+  '7-9': { dynamic: "Both seek positivity but express it differently — the Seven through activity, the Nine through harmony. Easy, comfortable energy together.", strength: "The Seven energises the Nine to try new things. The Nine helps the Seven slow down and appreciate what's already here. You expand each other's world.", tension: "Both avoid conflict and negative emotions. Issues can go unaddressed for too long because neither wants to rock the boat. Schedule honest check-ins." },
+};
+
 export function getEnneagramCompat(type1: number, type2: number): CompatDimension {
   const highCompat = [[2,4],[1,7],[4,5],[2,8],[3,6],[5,1],[6,9],[7,9],[3,7],[1,2]];
   const isHigh = highCompat.some(([a,b]) => (a===type1 && b===type2) || (a===type2 && b===type1));
@@ -100,16 +132,37 @@ export function getEnneagramCompat(type1: number, type2: number): CompatDimensio
     8: 'to feel respected and not controlled',
     9: 'to feel that their voice matters',
   };
-  const detail = type1 === type2
-    ? `You both need ${needs[type1]}. Since you share this drive, make sure you're meeting it for each other — not just assuming it's handled.`
-    : `${ENNEAGRAM_QS[type1-1].name} needs ${needs[type1]}. ${ENNEAGRAM_QS[type2-1].name} needs ${needs[type2]}. Know these, and you'll never accidentally hurt each other.`;
+  const brings: Record<number, string> = {
+    1: 'integrity and a drive to improve', 2: 'warmth and genuine care for others',
+    3: 'motivation and the energy to get things done', 4: 'emotional honesty and creative depth',
+    5: 'insight and calm, measured thinking', 6: 'loyalty and a sharp eye for what could go wrong',
+    7: 'optimism and the ability to find joy anywhere', 8: 'strength and the courage to protect what matters',
+    9: 'peace and the ability to make everyone feel heard',
+  };
+
+  // Check for specific pair dynamics
+  const pairKey = [type1, type2].sort().join('-');
+  const pairData = ENNEA_PAIR_DYNAMICS[pairKey];
+
   if (type1 === type2) {
-    return { score: 70, insight: `Two ${ENNEAGRAM_QS[type1-1].name}s — you understand each other at a core level, but may amplify each other's patterns. Awareness is everything.`, detail };
+    return {
+      score: 70,
+      insight: `Two ${ENNEAGRAM_QS[type1-1].name}s — you understand each other at a core level, but may amplify each other's patterns.`,
+      detail: `You both need ${needs[type1]} and you both bring ${brings[type1]}. The beauty is instant understanding — the risk is that you reinforce each other's blind spots. Seek friends and influences outside this dynamic to stay balanced.`,
+    };
   }
-  if (isHigh) {
-    return { score: 85, insight: `${ENNEAGRAM_QS[type1-1].name} and ${ENNEAGRAM_QS[type2-1].name} — a naturally complementary pairing. You bring out the best in each other's growth journey.`, detail };
+  if (pairData) {
+    return {
+      score: 85,
+      insight: `${ENNEAGRAM_QS[type1-1].name} and ${ENNEAGRAM_QS[type2-1].name} — ${pairData.dynamic}`,
+      detail: `${pairData.strength} Watch for: ${pairData.tension}`,
+    };
   }
-  return { score: 62, insight: `${ENNEAGRAM_QS[type1-1].name} meets ${ENNEAGRAM_QS[type2-1].name} — different core motivations mean you'll see the world through very different lenses. That's where the learning lives.`, detail };
+  return {
+    score: 62,
+    insight: `${ENNEAGRAM_QS[type1-1].name} meets ${ENNEAGRAM_QS[type2-1].name} — different core motivations that create a dynamic worth understanding.`,
+    detail: `${ENNEAGRAM_QS[type1-1].name} brings ${brings[type1]} and needs ${needs[type1]}. ${ENNEAGRAM_QS[type2-1].name} brings ${brings[type2]} and needs ${needs[type2]}. When you respect these differences, you complement each other powerfully.`,
+  };
 }
 
 export function calculateCompatibility(myResults: QuizResults, theirResults: QuizResults): CompatibilityResult {

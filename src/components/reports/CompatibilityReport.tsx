@@ -138,11 +138,11 @@ export default function CompatibilityReport() {
           <p className="report-text" style={{ fontStyle: 'italic' }}>{compat.zodiac.insight}</p>
           <div className="report-highlight" style={{ borderLeftColor: '#66BB6A' }}>
             <div className="report-highlight-label" style={{ color: '#2E7D32' }}>Strength</div>
-            <p className="report-text" style={{ margin: 0 }}>{COMPAT_DEEP.zodiac.strength(e1, e2)}</p>
+            <p className="report-text" style={{ margin: 0 }}>{COMPAT_DEEP.zodiac.strength(r.starSign?.sign ?? 'Aries', tr.starSign?.sign ?? 'Aries')}</p>
           </div>
           <div className="report-highlight">
             <div className="report-highlight-label">Watch Out</div>
-            <p className="report-text" style={{ margin: 0 }}>{COMPAT_DEEP.zodiac.watchOut(e1, e2)}</p>
+            <p className="report-text" style={{ margin: 0 }}>{COMPAT_DEEP.zodiac.watchOut(r.starSign?.sign ?? 'Aries', tr.starSign?.sign ?? 'Aries')}</p>
           </div>
         </div>
 
@@ -293,23 +293,23 @@ export default function CompatibilityReport() {
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">1</div>
-            <div className="report-tip-text">Share this report together. Reading it side by side creates the kind of vulnerable, honest conversation that most relationships never have.</div>
+            <div className="report-tip-text">Read this report together — out loud, over coffee, on a walk. It&apos;s a conversation starter, not a diagnosis. You&apos;ll learn things about each other that never come up naturally.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">2</div>
-            <div className="report-tip-text">This week, each show love in the other person&apos;s connection style — not your own. {myName}: try {tr.topConnection.toLowerCase()}. {conn.name}: try {r.topConnection.toLowerCase()}.</div>
+            <div className="report-tip-text">This week, show up in each other&apos;s connection style. {myName}: try {tr.topConnection.toLowerCase()}. {conn.name}: try {r.topConnection.toLowerCase()}. It might feel awkward — that&apos;s the point. It means you&apos;re stretching.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">3</div>
-            <div className="report-tip-text">When you feel friction, name the dynamic: &ldquo;I think my {r.attachmentStyle.toLowerCase()} pattern is showing up right now.&rdquo; Naming it takes its power away.</div>
+            <div className="report-tip-text">Pick an activity that plays to your strongest dimension ({strengths[0]}). Whether that&apos;s cooking together, a road trip, or just an uninterrupted conversation — lean into what already works between you.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">4</div>
-            <div className="report-tip-text">Plan something that plays to your strongest compatibility dimension ({strengths[0]}). Double down on what works.</div>
+            <div className="report-tip-text">Ask each other: &ldquo;What&apos;s one thing I do that makes you feel really {r.topConnection === 'Quality Time' ? 'valued' : r.topConnection === 'Words of Affirmation' ? 'appreciated' : r.topConnection === 'Physical Touch' ? 'safe' : r.topConnection === 'Acts of Service' ? 'supported' : 'thought of'}?&rdquo; The answer might surprise you — and it costs nothing to do more of it.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">5</div>
-            <div className="report-tip-text">Revisit this report in 3 months. Growth is real — and noticing it together is one of the most bonding things you can do.</div>
+            <div className="report-tip-text">Swap phones and take the quiz answering as the other person. See how well you know each other — and where the gaps are. It&apos;s fun, revealing, and usually hilarious.</div>
           </div>
         </div>
 

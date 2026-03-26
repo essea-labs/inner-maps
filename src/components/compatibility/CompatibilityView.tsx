@@ -202,6 +202,7 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.zodiac.insight}</div>
           <div className="compat-detail">💡 {compat.zodiac.detail}</div>
+          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See your strengths &amp; watch-outs &rarr;</div>}
         </div>
 
         {/* Personality */}
@@ -226,6 +227,7 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.personality.insight}</div>
           <div className="compat-detail">💡 {compat.personality.detail}</div>
+          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See how you each communicate &rarr;</div>}
         </div>
 
         {/* Enneagram */}
@@ -250,6 +252,7 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.enneagram.insight}</div>
           <div className="compat-detail">💡 {compat.enneagram.detail}</div>
+          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See what you each bring &rarr;</div>}
         </div>
 
         {/* Attachment */}
@@ -274,6 +277,7 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.attachment.insight}</div>
           <div className="compat-detail">💡 {compat.attachment.detail}</div>
+          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See your conflict patterns &rarr;</div>}
         </div>
 
         {/* Connection */}
@@ -298,6 +302,7 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.connection.insight}</div>
           <div className="compat-detail">💡 {compat.connection.detail}</div>
+          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See how to show love to each other &rarr;</div>}
         </div>
 
         {/* Upsell */}

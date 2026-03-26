@@ -220,6 +220,12 @@ export default function IndividualReport() {
             <p className="report-text">{sdd.season}</p>
             <div className="report-section-title">Ruling Planet</div>
             <p className="report-text">{sdd.planet}</p>
+            <div className="report-section-title">Your Strengths</div>
+            <p className="report-text">{sdd.strengths}</p>
+            <div className="report-section-title">Your Growth Edges</div>
+            <p className="report-text">{sdd.challenges}</p>
+            <div className="report-section-title">How This Shows Up in Your Life</div>
+            <p className="report-text">{sdd.practicalInsight}</p>
           </div>
         )}
 

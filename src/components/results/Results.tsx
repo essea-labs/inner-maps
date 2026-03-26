@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
+import { WING_COMMENTARY, STARSIGN_DEEP_DIVE, TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE } from '@/lib/deep-dive-data';
 import { encodeProfileSlug } from '@/lib/profile-slug';
 import TabBar from '@/components/ui/TabBar';
 import SignupForm from '@/components/quiz/SignupForm';
@@ -158,6 +159,14 @@ export default function Results() {
           <div className="result-card-type">{r.cognitiveType}</div>
           <div className="result-card-name">{r.cognitiveTypeName}</div>
           <div className="result-card-desc">{r.cognitiveTypeDesc}</div>
+          {!purchasedIndividual && TYPE_DEEP_DIVE[r.cognitiveType] && (
+            <div onClick={handleUpsell} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {TYPE_DEEP_DIVE[r.cognitiveType].think}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Enneagram Card */}
@@ -170,8 +179,16 @@ export default function Results() {
           <div className="result-card-name">{r.enneagramName}</div>
           <div className="result-card-desc">{ENNEAGRAM_QS[r.enneagramType - 1]?.desc}</div>
           <div className="result-card-desc" style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', fontSize: 13, color: 'var(--text-light)' }}>
-            Your {r.enneagramWing}-wing ({ENNEAGRAM_QS[r.enneagramWing - 1]?.name}) adds a secondary flavour, blending {ENNEAGRAM_QS[r.enneagramType - 1]?.name.replace('The ', '')} drive with {ENNEAGRAM_QS[r.enneagramWing - 1]?.name.replace('The ', '')} energy.
+            {WING_COMMENTARY[`${r.enneagramType}w${r.enneagramWing}`] || `Your ${r.enneagramWing}-wing (${ENNEAGRAM_QS[r.enneagramWing - 1]?.name}) adds a secondary flavour, blending ${ENNEAGRAM_QS[r.enneagramType - 1]?.name.replace('The ', '')} drive with ${ENNEAGRAM_QS[r.enneagramWing - 1]?.name.replace('The ', '')} energy.`}
           </div>
+          {!purchasedIndividual && ENNEAGRAM_DEEP_DIVE[r.enneagramType] && (
+            <div onClick={handleUpsell} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                Your core fear: {ENNEAGRAM_DEEP_DIVE[r.enneagramType].fear}. Your core desire: {ENNEAGRAM_DEEP_DIVE[r.enneagramType].desire}.
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Attachment Style Card */}
@@ -190,6 +207,14 @@ export default function Results() {
             <div style={{ position: 'absolute', bottom: -18, left: '50%', transform: 'translateX(-50%)', fontSize: 10, color: 'var(--text-light)' }}>Avoidance →</div>
             <div style={{ position: 'absolute', left: -40, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', fontSize: 10, color: 'var(--text-light)' }}>Anxiety →</div>
           </div>
+          {!purchasedIndividual && ATTACHMENT_DEEP_DIVE[r.attachmentStyle] && (
+            <div onClick={handleUpsell} style={{ cursor: 'pointer', marginTop: 24, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {ATTACHMENT_DEEP_DIVE[r.attachmentStyle].conflict}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Connection Style Card */}
@@ -221,6 +246,11 @@ export default function Results() {
             </div>
             <div className="result-card-type">{r.starSign.sign} {r.starSign.symbol}</div>
             <div className="result-card-desc">{r.starSign.desc}</div>
+            {STARSIGN_DEEP_DIVE[r.starSign.sign]?.strengths && (
+              <div className="result-card-desc" style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', fontSize: 13, color: 'var(--text-light)' }}>
+                {STARSIGN_DEEP_DIVE[r.starSign.sign].strengths}
+              </div>
+            )}
           </div>
         )}
 
