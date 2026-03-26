@@ -9,7 +9,7 @@ import { saveUserProfile, saveQuizResults, fetchConnections, fetchUserQuizResult
 // Save navigation + quiz state to sessionStorage before external redirects (Stripe, OAuth, magic link).
 // This ensures the user lands back on the correct screen when they return.
 
-const SESSION_KEYS = ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection','im_screen','im_activeTab','im_profile_cache'] as const;
+const SESSION_KEYS = ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection','im_screen','im_activeTab'] as const;
 
 export function saveStateToSession() {
   const s = useQuizStore.getState();
@@ -69,12 +69,12 @@ interface ProfileCache {
 }
 
 function saveProfileCache(cache: ProfileCache) {
-  try { sessionStorage.setItem('im_profile_cache', JSON.stringify(cache)); } catch { /* non-fatal */ }
+  try { localStorage.setItem('im_profile_cache', JSON.stringify(cache)); } catch { /* non-fatal */ }
 }
 
 function loadProfileCache(userId: string): ProfileCache | null {
   try {
-    const raw = sessionStorage.getItem('im_profile_cache');
+    const raw = localStorage.getItem('im_profile_cache');
     if (!raw) return null;
     const cache = JSON.parse(raw) as ProfileCache;
     // Only use cache if it belongs to the same user
@@ -420,6 +420,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     try {
       localStorage.removeItem('im_purchased_individual');
       localStorage.removeItem('im_purchased_compat');
+      localStorage.removeItem('im_profile_cache');
     } catch { /* non-fatal */ }
     set({
       screen: 'landing',

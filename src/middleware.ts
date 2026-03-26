@@ -23,8 +23,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh the session if the access token has expired — keeps users logged in
-  await supabase.auth.getUser();
+  // Refresh the session locally if the access token has expired — keeps users
+  // logged in. Uses getSession() instead of getUser() to avoid a network
+  // round-trip to the Supabase auth server on every page load.
+  await supabase.auth.getSession();
 
   return supabaseResponse;
 }
