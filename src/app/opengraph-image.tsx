@@ -1,23 +1,10 @@
 import { ImageResponse } from 'next/og';
 
-export const dynamic = 'force-dynamic';
 export const alt = 'Inner Maps — Discover Your Full Self';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function Image() {
-  const [playfairFont, dmSansFont, notoSymbolsFont] = await Promise.all([
-    fetch(
-      'https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKeiukDQ.ttf',
-    ).then((r) => r.arrayBuffer()),
-    fetch(
-      'https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxhTg.ttf',
-    ).then((r) => r.arrayBuffer()),
-    fetch(
-      'https://fonts.gstatic.com/s/notosanssymbols2/v25/I_uyMoGduATTei9eI8daxVHDyfisHr71-jPszfp-fMA.ttf',
-    ).then((r) => r.arrayBuffer()),
-  ]);
-
   const dimensions = [
     { emoji: '\uD83E\uDDE0', label: 'Personality Type' },
     { emoji: '\uD83D\uDD2E', label: 'Enneagram' },
@@ -36,15 +23,14 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#FFF8F5',
-          fontFamily: 'DM Sans',
+          background: 'linear-gradient(135deg, #FFF8F5 0%, #F5E6D8 100%)',
+          fontFamily: 'Georgia, serif',
           color: '#2D2217',
         }}
       >
         {/* Brand header */}
         <div
           style={{
-            fontFamily: 'Playfair Display',
             fontSize: 18,
             letterSpacing: 6,
             textTransform: 'uppercase',
@@ -55,15 +41,14 @@ export default async function Image() {
             gap: 12,
           }}
         >
-          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>✦</span>
+          <span>✦</span>
           <span>Inner Maps</span>
-          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>✦</span>
+          <span>✦</span>
         </div>
 
         {/* Headline */}
         <div
           style={{
-            fontFamily: 'Playfair Display',
             fontSize: 52,
             fontWeight: 700,
             textAlign: 'center',
@@ -85,6 +70,7 @@ export default async function Image() {
             color: '#8B7B6B',
             textAlign: 'center',
             marginBottom: 40,
+            fontFamily: 'sans-serif',
             display: 'flex',
           }}
         >
@@ -113,6 +99,7 @@ export default async function Image() {
                 padding: '12px 24px',
                 fontSize: 18,
                 fontWeight: 500,
+                fontFamily: 'sans-serif',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
               }}
             >
@@ -130,6 +117,7 @@ export default async function Image() {
             fontSize: 16,
             color: '#C4956B',
             letterSpacing: 1,
+            fontFamily: 'sans-serif',
             display: 'flex',
           }}
         >
@@ -139,11 +127,6 @@ export default async function Image() {
     ),
     {
       ...size,
-      fonts: [
-        { name: 'Playfair Display', data: playfairFont, weight: 700 },
-        { name: 'DM Sans', data: dmSansFont, weight: 400 },
-        { name: 'Noto Sans Symbols 2', data: notoSymbolsFont, weight: 400 },
-      ],
     },
   );
 }
