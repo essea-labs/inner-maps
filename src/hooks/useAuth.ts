@@ -34,7 +34,7 @@ export default function useAuth() {
 
           const storeResults = useQuizStore.getState().results;
           if (!storeResults) {
-            await restoreUserState(u.id);
+            await restoreUserState(u.id, u.email ?? '');
           }
           // loadConnections is called inside restoreUserState, no need to duplicate
         }

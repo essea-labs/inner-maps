@@ -143,7 +143,7 @@ interface QuizStore {
 
   // Phase 2: Supabase
   loadConnections: (userId: string) => Promise<void>;
-  restoreUserState: (userId: string) => Promise<void>;
+  restoreUserState: (userId: string, email?: string) => Promise<void>;
   handlePostAuth: (userId: string, email: string, intent: string, inviterCode?: string | null) => Promise<void>;
 }
 
@@ -548,8 +548,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     }
   },
 
-  restoreUserState: async (userId: string) => {
-    set({ restoringState: true, currentUserId: userId });
+  restoreUserState: async (userId: string, email?: string) => {
+    set({ restoringState: true, currentUserId: userId, ...(email ? { email } : {}) });
     try {
       const data = await fetchUserQuizResults(userId);
       if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
@@ -580,7 +580,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       let existingData: Awaited<ReturnType<typeof fetchUserQuizResults>> = null;
       try { existingData = await fetchUserQuizResults(userId); } catch { /* non-fatal */ }
 
-      set({ currentUserId: userId });
+      set({ currentUserId: userId, email });
 
       if (existingData) {
         // Existing results in DB — restore them (don't overwrite with new quiz)

@@ -1,8 +1,5 @@
 'use client';
 
-// This page is a fully dynamic SPA — never statically prerender
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
@@ -73,7 +70,7 @@ export default function QuizPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
-        await restoreUserState(user.id);
+        await restoreUserState(user.id, user.email ?? '');
       } else {
         // Not a returning user or already have results — clear loading
         useQuizStore.setState({ restoringState: false });

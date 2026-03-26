@@ -3,15 +3,14 @@
 import Link from 'next/link';
 import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
-import useAuth from '@/hooks/useAuth';
 import TabBar from '@/components/ui/TabBar';
 
 export default function ProfileTab() {
   const results = useQuizStore((s) => s.results);
   const userName = useQuizStore((s) => s.userName);
+  const email = useQuizStore((s) => s.email);
   const resetQuiz = useQuizStore((s) => s.resetQuiz);
   const restoringState = useQuizStore((s) => s.restoringState);
-  const { user, loading: authLoading } = useAuth();
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -24,7 +23,7 @@ export default function ProfileTab() {
         <div className="connections-page-header">
           <div className="logo">✦ Inner Maps ✦</div>
           <h1>My <em>Profile</em></h1>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{user?.email}</p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{email}</p>
         </div>
 
         {results ? (
@@ -55,7 +54,7 @@ export default function ProfileTab() {
               </div>
             </div>
           </div>
-        ) : (authLoading || restoringState) ? (
+        ) : restoringState ? (
           <div className="connections-empty" style={{ marginBottom: 24 }}>
             <div className="connections-empty-icon" style={{ animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
             <h3>Loading your profile…</h3>
