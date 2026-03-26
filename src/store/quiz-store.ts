@@ -3,7 +3,7 @@ import type { ScreenName, QuizAnswers, QuizResults, Connection, StarSign } from 
 import { SECTIONS, getStarSign, calculateResults } from '@/lib/quiz-data';
 import { MOCK_CONNECTIONS } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
-import { saveUserProfile, saveQuizResults, fetchConnections, hasPurchase, fetchUserQuizResults, completeInvite } from '@/lib/db';
+import { saveUserProfile, saveQuizResults, fetchConnections, fetchUserQuizResults, completeInvite } from '@/lib/db';
 
 // ===== SESSION PERSISTENCE HELPERS =====
 // Save navigation + quiz state to sessionStorage before external redirects (Stripe, OAuth, magic link).
@@ -427,18 +427,19 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   checkPurchases: async (userId: string) => {
     try {
-      const hasIndividual = await hasPurchase(userId, 'individual_report');
-      if (hasIndividual) set({ purchasedIndividual: true });
+      // Use server-side API to bypass RLS on the purchases table
+      const res = await fetch(`/api/purchases?user_id=${encodeURIComponent(userId)}`);
+      if (!res.ok) throw new Error('Failed to fetch purchases');
+      const { purchases } = await res.json() as {
+        purchases: { product_type: string; connection_id: string | null }[];
+      };
 
-      // Check compatibility purchases for all active connections
-      const conns = get().connections;
-      for (const conn of conns) {
-        if (!conn.id) continue;
-        const connId = conn.id;
-        const hasCompat = await hasPurchase(userId, 'compatibility_report', connId);
-        if (hasCompat) {
+      for (const p of purchases) {
+        if (p.product_type === 'individual_report') {
+          set({ purchasedIndividual: true });
+        } else if (p.product_type === 'compatibility_report' && p.connection_id) {
           set((s) => ({
-            purchasedCompatibility: { ...s.purchasedCompatibility, [connId]: true },
+            purchasedCompatibility: { ...s.purchasedCompatibility, [p.connection_id!]: true },
           }));
         }
       }
