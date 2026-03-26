@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase';
 import { useQuizStore } from '@/store/quiz-store';
 import type { User } from '@supabase/supabase-js';
 
+// Cache the auth fetch so multiple useAuth() consumers don't each hit the DB
+let _authPromise: Promise<User | null> | null = null;
+
 export default function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,35 +17,34 @@ export default function useAuth() {
   useEffect(() => {
     let subscription: ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | null = null;
 
-    async function loadUserData(u: User) {
-      // Load connections for real (non-anonymous) accounts
-      if (u && !u.is_anonymous) {
-        // If the store has no results, restore from DB
-        const storeResults = useQuizStore.getState().results;
-        if (!storeResults) {
-          await restoreUserState(u.id);
-        } else {
-          // Results already in store — just load connections
-          await loadConnections(u.id);
-        }
-      }
+    // Deduplicate: if another useAuth instance is already fetching, reuse the promise
+    if (!_authPromise) {
+      _authPromise = supabase.auth.getUser()
+        .then(({ data }) => data.user ?? null)
+        .catch(() => null);
     }
 
-    supabase.auth.getUser()
-      .then(({ data }) => {
-        const u = data.user ?? null;
+    _authPromise
+      .then(async (u) => {
         setUser(u);
-        useQuizStore.setState({ currentUserId: (u && !u.is_anonymous) ? u.id : null });
-        if (u) loadUserData(u);
+        if (u && !u.is_anonymous) {
+          const storeResults = useQuizStore.getState().results;
+          if (!storeResults) {
+            await restoreUserState(u.id);
+          }
+          // loadConnections is called inside restoreUserState, no need to duplicate
+        }
       })
-      .catch(() => { /* non-fatal — user stays null */ })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        // Clear cache after all consumers have resolved
+        setTimeout(() => { _authPromise = null; }, 100);
+      });
 
     try {
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         const u = session?.user ?? null;
         setUser(u);
-        useQuizStore.setState({ currentUserId: (u && !u.is_anonymous) ? u.id : null });
         if (u && !u.is_anonymous) loadConnections(u.id);
       });
       subscription = data.subscription;

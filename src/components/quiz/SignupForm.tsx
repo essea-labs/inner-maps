@@ -179,6 +179,8 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
     setLoading(true); setError('');
 
     try {
+      // Set recovery intent cookie so auth callback knows to show password form
+      document.cookie = `innerMapsIntent=recovery; path=/; max-age=600; SameSite=Lax`;
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
         redirectTo: `${window.location.origin}/auth/callback`,
       });
@@ -202,15 +204,6 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         <p className="signup-subtitle">
           We sent a password reset link to <strong>{email}</strong>.<br />
           Tap it to set a new password.
-        </p>
-        <p style={{ fontSize: 13, color: 'var(--text-light)', marginTop: 24 }}>
-          Wrong email?{' '}
-          <button
-            onClick={() => { setResetSent(false); setError(''); }}
-            style={{ background: 'none', border: 'none', color: 'var(--peach-deep)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-          >
-            Change it
-          </button>
         </p>
         {!isFullScreen && (
           <button className="signup-skip" onClick={onClose} style={{ marginTop: 8 }}>Close</button>
