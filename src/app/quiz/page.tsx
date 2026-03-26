@@ -177,6 +177,7 @@ export default function QuizPage() {
 
       // Password reset flow — show the new-password form instead of normal post-auth
       if (intent === 'recovery' && user) {
+        useQuizStore.setState({ restoringState: false });
         setScreen('resetPassword');
         window.history.replaceState({}, '', '/quiz');
         return;
