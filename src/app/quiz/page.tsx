@@ -160,37 +160,44 @@ export default function QuizPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('authCallback') !== '1') return;
 
-    const intent = params.get('intent') ?? 'save';
+    let intent = params.get('intent') ?? 'save';
+    const authError = params.get('authError');
+
+    // Detect expired/reused recovery links: Supabase may redirect without
+    // type=recovery on failure, so the callback falls back to intent=save.
+    // The localStorage flag set when requesting the reset survives this.
+    let recoveryPending = false;
+    try { recoveryPending = localStorage.getItem('im_recovery_pending') === '1'; } catch { /* */ }
+    if (intent !== 'recovery' && recoveryPending) intent = 'recovery';
 
     // Password reset callback
     if (intent === 'recovery') {
-      const authError = params.get('authError');
-      if (authError) {
-        // Token expired or already used — don't show reset form, navigate to
-        // results (if logged in) or landing (if not)
-        (async () => {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user && !user.is_anonymous) {
-            // Already logged in — they probably already reset successfully
-            const storeResults = useQuizStore.getState().results;
-            if (!storeResults) await restoreUserState(user.id, user.email ?? '');
-            else useQuizStore.setState({ screen: 'results', restoringState: false });
-          } else {
-            showToast('This reset link has expired. Please request a new one.');
-            useQuizStore.setState({ screen: 'landing', restoringState: false });
-          }
-          window.history.replaceState({}, '', '/quiz');
-        })();
+      try { localStorage.removeItem('im_recovery_pending'); } catch { /* */ }
+
+      // Valid recovery token — show the reset form (already set by store init)
+      if (!authError) {
+        useQuizStore.setState({ restoringState: false });
+        window.history.replaceState({}, '', '/quiz');
         return;
       }
-      // Valid recovery — screen already set to 'resetPassword' by store init
-      useQuizStore.setState({ restoringState: false });
-      window.history.replaceState({}, '', '/quiz');
+
+      // Token expired or already used — navigate to the right place
+      (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && !user.is_anonymous) {
+          const storeResults = useQuizStore.getState().results;
+          if (!storeResults) await restoreUserState(user.id, user.email ?? '');
+          else useQuizStore.setState({ screen: 'results', restoringState: false });
+        } else {
+          showToast('This reset link has expired. Please request a new one.');
+          useQuizStore.setState({ screen: 'landing', restoringState: false });
+        }
+        window.history.replaceState({}, '', '/quiz');
+      })();
       return;
     }
 
-    // Check if auth failed during callback
-    const authError = params.get('authError');
+    // Check if auth failed during callback (non-recovery)
     if (authError) {
       showToast('Sign-in failed. Please try again.');
       useQuizStore.setState({ restoringState: false });

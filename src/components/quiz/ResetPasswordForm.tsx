@@ -22,6 +22,7 @@ export default function ResetPasswordForm() {
       if (updateError) throw updateError;
 
       showToast('Password updated ✓');
+      try { localStorage.removeItem('im_recovery_pending'); } catch { /* non-fatal */ }
 
       // Load quiz data then navigate explicitly
       const { data: { user } } = await supabase.auth.getUser();

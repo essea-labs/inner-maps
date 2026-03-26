@@ -16,8 +16,11 @@ export async function GET(request: NextRequest) {
   let intent = isRecovery ? 'recovery' : (cookieStore.get('innerMapsIntent')?.value ?? 'save');
   const inviterCode = cookieStore.get('innerMapsInviterCode')?.value;
 
+  // Supabase may redirect with error params (e.g., expired recovery token)
+  const supabaseError = searchParams.get('error_description') || searchParams.get('error');
+
   // Exchange the token first so we can detect recovery from the session event
-  let authError: string | null = null;
+  let authError: string | null = supabaseError || null;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -181,6 +181,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
     try {
       // Set recovery intent cookie so auth callback knows to show password form
       document.cookie = `innerMapsIntent=recovery; path=/; max-age=600; SameSite=Lax`;
+      // Also persist in localStorage — the cookie is consumed on first callback,
+      // but we need to detect expired/reused links on subsequent clicks
+      try { localStorage.setItem('im_recovery_pending', '1'); } catch { /* non-fatal */ }
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
         redirectTo: `${window.location.origin}/auth/callback`,
       });
