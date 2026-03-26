@@ -91,8 +91,54 @@ export default function PrivacyPolicy() {
 
       <h2>Children&apos;s Privacy</h2>
       <p>
-        Inner Maps is not intended for children under 13. We do not knowingly collect personal
-        information from children under 13.
+        Inner Maps is not intended for anyone under the age of 16. We do not knowingly collect
+        personal information from individuals under 16. If we become aware that we have collected
+        data from someone under 16, we will promptly delete their account and associated data.
+      </p>
+
+      <h2>Your Rights Under GDPR (EU/EEA Residents)</h2>
+      <p>
+        If you are located in the European Union or European Economic Area, you have the following
+        rights under the General Data Protection Regulation (GDPR):
+      </p>
+      <ul>
+        <li><strong>Right of access</strong> — request a copy of the personal data we hold about you</li>
+        <li><strong>Right to rectification</strong> — request correction of inaccurate or incomplete data</li>
+        <li><strong>Right to erasure</strong> — request deletion of your personal data</li>
+        <li><strong>Right to restrict processing</strong> — request that we limit how we use your data</li>
+        <li><strong>Right to data portability</strong> — request your data in a structured, machine-readable format</li>
+        <li><strong>Right to object</strong> — object to processing of your personal data</li>
+        <li><strong>Right to withdraw consent</strong> — withdraw consent at any time where processing is based on consent</li>
+      </ul>
+      <p>
+        You also have the right to lodge a complaint with your local data protection supervisory
+        authority. Our legal basis for processing your data is your consent (when you create an
+        account and take the quiz) and our legitimate interest in operating the service.
+      </p>
+
+      <h2>Your Rights Under CCPA (California Residents)</h2>
+      <p>
+        If you are a California resident, the California Consumer Privacy Act (CCPA) provides you
+        with the following rights:
+      </p>
+      <ul>
+        <li><strong>Right to know</strong> — request what personal information we collect, use, and disclose about you</li>
+        <li><strong>Right to delete</strong> — request deletion of your personal information</li>
+        <li><strong>Right to opt-out of sale</strong> — we do not sell your personal information to third parties</li>
+        <li><strong>Right to non-discrimination</strong> — we will not discriminate against you for exercising your rights</li>
+      </ul>
+      <p>
+        In the preceding 12 months, we may have collected the following categories of personal
+        information: identifiers (email, name), internet activity (quiz responses, usage data), and
+        inferences drawn from this information (personality profiles). We do not sell any of this
+        information.
+      </p>
+
+      <h2>How to Exercise Your Rights</h2>
+      <p>
+        To exercise any of the rights described above, or to ask a question about your data, please
+        contact us at <a href="mailto:ask@innermaps.io">ask@innermaps.io</a>. We will respond to
+        verified requests within 30 days (or sooner where required by law).
       </p>
 
       <h2>Changes to This Policy</h2>
