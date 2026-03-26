@@ -255,7 +255,7 @@ export default function QuizScreen() {
         </div>
         <div />
       </div>
-      <div className="question-area">
+      <div className="question-area" key={`${currentSection}-${currentQuestion}`}>
         {questionContent}
       </div>
       {isLastQ ? (

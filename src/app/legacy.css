@@ -21,7 +21,7 @@
   --radius-lg: 24px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
   font-family: var(--font-dm-sans-family);
@@ -801,6 +801,12 @@ body {
     border-color: var(--peach);
     background: var(--peach-pale);
   }
+}
+
+.scale-btn:focus,
+.scale-btn:active {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scale-btn.selected {
