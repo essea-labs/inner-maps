@@ -47,7 +47,6 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
     benefits: [
       'Deep dive into all 5 dimensions of your personality',
       'Personalised growth strategies and tips',
-      'Access your report anytime from any device',
     ],
   },
   purchase_compatibility: {

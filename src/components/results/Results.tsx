@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
-import { WING_COMMENTARY, STARSIGN_DEEP_DIVE, TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE } from '@/lib/deep-dive-data';
+import { WING_COMMENTARY, STARSIGN_DEEP_DIVE, TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE, CONNECTION_DEEP_DIVE } from '@/lib/deep-dive-data';
 import { encodeProfileSlug } from '@/lib/profile-slug';
 import TabBar from '@/components/ui/TabBar';
 import SignupForm from '@/components/quiz/SignupForm';
@@ -236,6 +236,14 @@ export default function Results() {
               <div className="result-card-desc">{r.connectionDescs[r.connectionSorted[1][0]]}</div>
             </div>
           )}
+          {!purchasedIndividual && CONNECTION_DEEP_DIVE[r.connectionSorted[0]?.[0]] && (
+            <div onClick={handleUpsell} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {CONNECTION_DEEP_DIVE[r.connectionSorted[0][0]].dayToDay}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Star Sign Card */}
@@ -243,12 +251,21 @@ export default function Results() {
           <div className="result-card" style={{ animationDelay: '0.5s' }}>
             <div className="result-card-header">
               <span className="result-card-category">✦ STAR SIGN</span>
+              <span className="result-card-lock" onClick={handleUpsell}>🔒 Full insights</span>
             </div>
             <div className="result-card-type">{r.starSign.sign} {r.starSign.symbol}</div>
             <div className="result-card-desc">{r.starSign.desc}</div>
             {STARSIGN_DEEP_DIVE[r.starSign.sign]?.strengths && (
               <div className="result-card-desc" style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', fontSize: 13, color: 'var(--text-light)' }}>
                 {STARSIGN_DEEP_DIVE[r.starSign.sign].strengths}
+              </div>
+            )}
+            {!purchasedIndividual && STARSIGN_DEEP_DIVE[r.starSign.sign]?.practicalInsight && (
+              <div onClick={handleUpsell} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                  {STARSIGN_DEEP_DIVE[r.starSign.sign].practicalInsight}
+                </p>
+                <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
               </div>
             )}
           </div>
