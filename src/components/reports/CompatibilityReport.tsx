@@ -51,6 +51,28 @@ export default function CompatibilityReport() {
       : `Let ${name} think out loud. They process by talking, and interrupting can feel like dismissal.`;
   }
 
+  // Enneagram core needs for personalised tips
+  const enneagramNeeds: Record<number, string> = {
+    1: 'to feel that things are being done right',
+    2: 'to feel appreciated for what they give',
+    3: 'to feel valued for who they are, not just what they achieve',
+    4: 'to feel seen for their uniqueness',
+    5: 'to feel competent and not overwhelmed',
+    6: 'to feel safe and supported',
+    7: 'to feel free and not boxed in',
+    8: 'to feel respected and not controlled',
+    9: 'to feel that their voice matters',
+  };
+
+  // Connection style → feeling word for tip 4
+  const connectionFeeling: Record<string, string> = {
+    'Words of Affirmation': 'appreciated',
+    'Acts of Service': 'supported',
+    'Gifts': 'thought of',
+    'Quality Time': 'valued',
+    'Physical Touch': 'close to you',
+  };
+
   const conflictTip = r.attachmentStyle === 'Avoidant' || tr.attachmentStyle === 'Avoidant'
     ? "One of you needs space during tension. Agree on a \"pause and return\" rule — take 20 minutes, then come back. The conversation isn't over; it's just breathing."
     : r.attachmentStyle === 'Anxious' || tr.attachmentStyle === 'Anxious'
@@ -293,23 +315,23 @@ export default function CompatibilityReport() {
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">1</div>
-            <div className="report-tip-text">Send this report to {conn.name} with zero context. See which part they screenshot first — that tells you more than any quiz.</div>
+            <div className="report-tip-text">As {ENNEAGRAM_QS[r.enneagramType - 1]?.name}, {myName} needs {enneagramNeeds[r.enneagramType]}. As {ENNEAGRAM_QS[tr.enneagramType - 1]?.name}, {conn.name} needs {enneagramNeeds[tr.enneagramType]}. This week, meet the other person&apos;s need without mentioning you read this. See if they notice.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">2</div>
-            <div className="report-tip-text">Challenge: {myName} has to show love in {conn.name}&apos;s style ({tr.topConnection.toLowerCase()}) and vice versa for a full day. Bonus points if it&apos;s hilariously bad — you&apos;ll both remember it.</div>
+            <div className="report-tip-text">This week, show up in each other&apos;s connection style. {myName}: try {tr.topConnection.toLowerCase()}. {conn.name}: try {r.topConnection.toLowerCase()}. It won&apos;t feel natural. It might even be funny. Both good signs.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">3</div>
-            <div className="report-tip-text">Your strongest dimension is {strengths[0]}. Plan something this week that leans into it — nothing fancy, just intentional. A walk, a meal, a voice note. Low effort, high reward.</div>
+            <div className="report-tip-text">Pick an activity that plays to your strongest compatibility dimension ({strengths[0]}). You&apos;re already good at this one — make it a regular thing.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">4</div>
-            <div className="report-tip-text">Take the quiz again but answer as each other. Compare results with the real thing. It&apos;s genuinely funny — and the gaps are where the best conversations start.</div>
+            <div className="report-tip-text">Ask each other: &ldquo;What&apos;s one thing I do that makes you feel really {connectionFeeling[r.topConnection] || 'valued'}?&rdquo; The answer might surprise you.</div>
           </div>
           <div className="report-tip-card">
             <div className="report-tip-number">5</div>
-            <div className="report-tip-text">Next time things feel off between you, just say &ldquo;I think our {challenges[0]?.toLowerCase() || 'wiring'} is showing.&rdquo; Naming it out loud usually makes you both laugh — and that breaks the tension faster than any serious conversation.</div>
+            <div className="report-tip-text">Both send your compatibility card to a friend who knows you as a pair. Ask: accurate? Their reaction is usually better than the quiz itself.</div>
           </div>
         </div>
 
