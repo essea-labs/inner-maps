@@ -172,9 +172,9 @@ export default function QuizPage() {
 
     // Password reset callback
     if (intent === 'recovery') {
-      try { localStorage.removeItem('im_recovery_pending'); } catch { /* */ }
-
-      // Valid recovery token — show the reset form (already set by store init)
+      // Valid recovery token — show the reset form (already set by store init).
+      // Keep im_recovery_pending — only clear it after successful password update
+      // (in ResetPasswordForm) so we can detect re-clicks on expired links.
       if (!authError) {
         useQuizStore.setState({ restoringState: false });
         window.history.replaceState({}, '', '/quiz');
@@ -182,6 +182,7 @@ export default function QuizPage() {
       }
 
       // Token expired or already used — navigate to the right place
+      try { localStorage.removeItem('im_recovery_pending'); } catch { /* */ }
       (async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user && !user.is_anonymous) {
