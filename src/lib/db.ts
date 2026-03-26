@@ -94,20 +94,28 @@ export async function getInviteByCode(
   return data as { inviter_id: string };
 }
 
-/** Mark invite as completed when invitee signs up. Returns true on success. */
+/** Mark invite as completed when invitee signs up.
+ *  Uses server-side API route to bypass RLS (anon key can't update other users' invites). */
 export async function completeInvite(
   inviteCode: string,
   inviteeId: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('invites')
-    .update({ status: 'completed', invitee_id: inviteeId })
-    .eq('invite_code', inviteCode);
-  if (error) {
-    console.error('completeInvite error:', error.message);
+  try {
+    const res = await fetch('/api/invite-complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteCode, inviteeId }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('completeInvite API error:', data.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('completeInvite fetch error:', err);
     return false;
   }
-  return true;
 }
 
 // ===== FETCH USER QUIZ RESULTS (for state restoration) =====

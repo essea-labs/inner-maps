@@ -9,6 +9,8 @@ export default function ConnectionsTab() {
   const results = useQuizStore((s) => s.results);
   const connections = useQuizStore((s) => s.connections);
   const loadConnections = useQuizStore((s) => s.loadConnections);
+  const restoreUserState = useQuizStore((s) => s.restoreUserState);
+  const restoringState = useQuizStore((s) => s.restoringState);
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
   const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
   const setScreen = useQuizStore((s) => s.setScreen);
@@ -16,9 +18,14 @@ export default function ConnectionsTab() {
   const { user } = useAuth();
 
   // Refresh connections from DB each time this tab mounts
+  // Also restore results if store is empty (e.g. user navigated directly to this tab)
   useEffect(() => {
     if (user && !user.is_anonymous) {
-      loadConnections(user.id);
+      if (!results) {
+        restoreUserState(user.id);
+      } else {
+        loadConnections(user.id);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -29,7 +36,26 @@ export default function ConnectionsTab() {
     setActiveTab('compat');
   }
 
-  // User hasn't taken the quiz yet
+  // Still loading user data from DB
+  if (!results && (restoringState || (user && !user.is_anonymous))) {
+    return (
+      <div style={{ paddingBottom: 80 }}>
+        <div className="connections-page">
+          <div className="connections-page-header">
+            <div className="logo">✦ Inner Maps ✦</div>
+            <h1>Compatibility</h1>
+          </div>
+          <div className="connections-empty">
+            <div className="connections-empty-icon" style={{ animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
+            <h3>Loading…</h3>
+          </div>
+        </div>
+        <TabBar />
+      </div>
+    );
+  }
+
+  // User hasn't taken the quiz yet (truly no results)
   if (!results) {
     return (
       <div style={{ paddingBottom: 80 }}>
