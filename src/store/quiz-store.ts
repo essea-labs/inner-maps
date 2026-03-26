@@ -9,7 +9,7 @@ import { saveUserProfile, saveQuizResults, fetchConnections, fetchUserQuizResult
 // Save navigation + quiz state to sessionStorage before external redirects (Stripe, OAuth, magic link).
 // This ensures the user lands back on the correct screen when they return.
 
-const SESSION_KEYS = ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection','im_screen','im_activeTab'] as const;
+const SESSION_KEYS = ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection','im_screen','im_activeTab','im_profile_cache'] as const;
 
 export function saveStateToSession() {
   const s = useQuizStore.getState();
@@ -52,6 +52,35 @@ export function restoreStateFromSession(): Record<string, any> | null {
 
 export function clearSessionState() {
   SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
+}
+
+// ===== PROFILE CACHE =====
+// Cache quiz results in sessionStorage so returning users get instant restore
+// without a DB round-trip. The cache is written after successful restore and
+// read before attempting a DB fetch.
+
+interface ProfileCache {
+  userId: string;
+  results: QuizResults;
+  userName: string;
+  birthMonth: number | null;
+  birthDay: number | null;
+  email: string;
+}
+
+function saveProfileCache(cache: ProfileCache) {
+  try { sessionStorage.setItem('im_profile_cache', JSON.stringify(cache)); } catch { /* non-fatal */ }
+}
+
+function loadProfileCache(userId: string): ProfileCache | null {
+  try {
+    const raw = sessionStorage.getItem('im_profile_cache');
+    if (!raw) return null;
+    const cache = JSON.parse(raw) as ProfileCache;
+    // Only use cache if it belongs to the same user
+    if (cache.userId !== userId) return null;
+    return cache;
+  } catch { return null; }
 }
 
 // ===== STATE SHAPE =====
@@ -551,20 +580,43 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   restoreUserState: async (userId: string, email?: string) => {
     set({ restoringState: true, currentUserId: userId, ...(email ? { email } : {}) });
-    try {
-      const data = await fetchUserQuizResults(userId);
-      if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
-      const { results, name, birthMonth, birthDay } = data;
-      // results are already rehydrated (names, descriptions, star sign) by fetchUserQuizResults
-      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign });
+
+    // Try cached profile first — renders instantly without any network calls
+    const cached = loadProfileCache(userId);
+    if (cached) {
+      set({
+        results: cached.results,
+        userName: cached.userName,
+        birthMonth: cached.birthMonth,
+        birthDay: cached.birthDay,
+        starSign: cached.results.starSign,
+        email: cached.email || email || '',
+        restoringState: false,
+      });
       get().setScreen('results');
-      // Load connections and check purchases in parallel — keep loading state
-      // until complete so the UI reflects purchase status before becoming interactive
-      await Promise.all([
+      // Refresh connections and purchases in the background (non-blocking)
+      Promise.all([
+        get().loadConnections(userId),
+        get().checkPurchases(userId),
+      ]).catch(() => { /* non-fatal */ });
+      return;
+    }
+
+    try {
+      // No cache — fire all three fetches in parallel.
+      // This eliminates the waterfall: results → (connections + purchases).
+      const [data] = await Promise.all([
+        fetchUserQuizResults(userId),
         get().loadConnections(userId),
         get().checkPurchases(userId),
       ]);
+      if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
+      const { results, name, birthMonth, birthDay } = data;
+      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign });
+      get().setScreen('results');
       set({ restoringState: false });
+      // Cache for next time
+      saveProfileCache({ userId, results, userName: name, birthMonth, birthDay, email: email || '' });
     } catch (err) {
       console.warn('restoreUserState failed:', err);
       set({ restoringState: false });
@@ -588,10 +640,12 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         // Pass the current in-memory name so it's preserved if the user just entered it
         await saveUserProfile(userId, { name: userName || existingData.name || undefined, email, isAnonymous: false });
         set({ results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, starSign: existingData.results.starSign });
+        saveProfileCache({ userId, results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, email });
       } else if (results) {
         // First time saving — persist current in-memory results
         await saveUserProfile(userId, { name: userName, email, birthMonth, birthDay, isAnonymous: false });
         await saveQuizResults(userId, results, answers);
+        saveProfileCache({ userId, results, userName, birthMonth, birthDay, email });
       } else {
         // No results anywhere — just save profile
         await saveUserProfile(userId, { email, isAnonymous: false });

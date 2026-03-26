@@ -1,8 +1,5 @@
 'use client';
 
-// This page is a fully dynamic SPA — never statically prerender
-export const dynamic = 'force-dynamic';
-
 import { useEffect } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
@@ -62,9 +59,13 @@ export default function QuizPage() {
       return;
     }
 
-    // Otherwise try DB restore for logged-in users
+    // Otherwise try DB restore for logged-in users.
+    // Use getSession() instead of getUser() — the middleware already refreshed
+    // the token via getUser(), so the session cookie is valid. getSession() reads
+    // the local cookie without a network round-trip, saving ~200-400ms.
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
         await restoreUserState(user.id, user.email ?? '');
       } else {

@@ -24,24 +24,17 @@ export default function ResetPasswordForm() {
       showToast('Password updated ✓');
       try { localStorage.removeItem('im_recovery_pending'); } catch { /* non-fatal */ }
 
-      // Load quiz data then navigate explicitly
-      const { data: { user } } = await supabase.auth.getUser();
+      // Navigate optimistically — password update succeeded, so show results
+      // immediately while loading data in the background. Uses getSession()
+      // (reads local cookie) instead of getUser() (network call) since
+      // middleware already refreshed the token.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (user) {
-        // Fetch results without letting restoreUserState control navigation
-        const { fetchUserQuizResults } = await import('@/lib/db');
-        const data = await fetchUserQuizResults(user.id);
-        if (data) {
-          useQuizStore.setState({
-            results: data.results,
-            userName: data.name,
-            birthMonth: data.birthMonth,
-            birthDay: data.birthDay,
-            starSign: data.results.starSign,
-          });
-          setScreen('results');
-        } else {
-          setScreen('landing');
-        }
+        // Navigate first, then load data — user sees results screen instantly
+        setScreen('results');
+        const restoreUserState = useQuizStore.getState().restoreUserState;
+        restoreUserState(user.id, user.email ?? '');
       } else {
         setScreen('landing');
       }
