@@ -160,28 +160,29 @@ export default function QuizPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('authCallback') !== '1') return;
 
-    (async () => {
-      // Check if auth failed during callback
-      const authError = params.get('authError');
-      if (authError) {
-        showToast('Sign-in failed. Please try again.');
-        useQuizStore.setState({ restoringState: false });
-        window.history.replaceState({}, '', '/quiz');
-        return;
-      }
+    const intent = params.get('intent') ?? 'save';
 
+    // Password reset — show form immediately, no async work needed
+    if (intent === 'recovery') {
+      useQuizStore.setState({ restoringState: false });
+      setScreen('resetPassword');
+      window.history.replaceState({}, '', '/quiz');
+      return;
+    }
+
+    // Check if auth failed during callback
+    const authError = params.get('authError');
+    if (authError) {
+      showToast('Sign-in failed. Please try again.');
+      useQuizStore.setState({ restoringState: false });
+      window.history.replaceState({}, '', '/quiz');
+      return;
+    }
+
+    (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const intent = params.get('intent') ?? 'save';
       // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)
       const inviterCode = params.get('inviterCode') ?? sessionStorage.getItem('innerMapsInviterCode');
-
-      // Password reset flow — show the new-password form instead of normal post-auth
-      if (intent === 'recovery' && user) {
-        useQuizStore.setState({ restoringState: false });
-        setScreen('resetPassword');
-        window.history.replaceState({}, '', '/quiz');
-        return;
-      }
 
       // Restore quiz state saved before Google OAuth redirect
       const sessionPatch = restoreStateFromSession();

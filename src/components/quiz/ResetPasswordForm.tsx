@@ -22,13 +22,19 @@ export default function ResetPasswordForm() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
 
-      // Restore their quiz state and navigate to results
+      showToast('Password updated ✓');
+
+      // Restore quiz state then navigate to results
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await restoreUserState(user.id);
+        // restoreUserState navigates to results if data exists
+        if (!useQuizStore.getState().results) {
+          setScreen('landing');
+        }
+      } else {
+        setScreen('landing');
       }
-      showToast('Password updated ✓');
-      setScreen(useQuizStore.getState().results ? 'results' : 'landing');
     } catch (err: any) {
       const msg = err.message ?? 'Something went wrong. Please try again.';
       if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid')) {
