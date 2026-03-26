@@ -12,9 +12,10 @@ export default function TabBar() {
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
   const setScreen = useQuizStore((s) => s.setScreen);
   const { user, loading } = useAuth();
+  const currentUserId = useQuizStore((s) => s.currentUserId);
   const [signInOpen, setSignInOpen] = useState(false);
 
-  const isRealUser = !loading && !!user && !user.is_anonymous;
+  const isRealUser = !!currentUserId || (!loading && !!user && !user.is_anonymous);
 
   function handleMyMap() {
     setActiveTab('mymap');

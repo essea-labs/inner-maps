@@ -99,6 +99,9 @@ interface QuizStore {
   purchasedCompatibility: Record<string, boolean>; // keyed by connection id
   purchaseIntent: string | null; // 'purchase_individual' | 'purchase_compatibility'
 
+  // Auth
+  currentUserId: string | null;
+
   // Loading
   restoringState: boolean;
 
@@ -194,6 +197,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   purchasedIndividual: false,
   purchasedCompatibility: {},
   purchaseIntent: null,
+  currentUserId: null,
   // Start with restoringState=true for returning users so the first render
   // shows loading instead of landing page flash
   restoringState: isReturningUser(),
@@ -384,6 +388,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       currentQuestion: 0,
       answers: makeDefaultAnswers(),
       results: null,
+      currentUserId: null,
       connections: [],
       activeConnection: null,
       activeTab: 'mymap',
@@ -529,7 +534,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   restoreUserState: async (userId: string) => {
-    set({ restoringState: true });
+    set({ restoringState: true, currentUserId: userId });
     try {
       const data = await fetchUserQuizResults(userId);
       if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
@@ -559,6 +564,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       // If so, keep the original results (protects existing compatibility data).
       let existingData: Awaited<ReturnType<typeof fetchUserQuizResults>> = null;
       try { existingData = await fetchUserQuizResults(userId); } catch { /* non-fatal */ }
+
+      set({ currentUserId: userId });
 
       if (existingData) {
         // Existing results in DB — restore them (don't overwrite with new quiz)

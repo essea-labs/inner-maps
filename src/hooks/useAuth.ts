@@ -32,6 +32,7 @@ export default function useAuth() {
       .then(({ data }) => {
         const u = data.user ?? null;
         setUser(u);
+        useQuizStore.setState({ currentUserId: (u && !u.is_anonymous) ? u.id : null });
         if (u) loadUserData(u);
       })
       .catch(() => { /* non-fatal — user stays null */ })
@@ -41,6 +42,7 @@ export default function useAuth() {
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         const u = session?.user ?? null;
         setUser(u);
+        useQuizStore.setState({ currentUserId: (u && !u.is_anonymous) ? u.id : null });
         if (u && !u.is_anonymous) loadConnections(u.id);
       });
       subscription = data.subscription;
