@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useQuizStore } from '@/store/quiz-store';
 import TabBar from '@/components/ui/TabBar';
 
@@ -88,6 +89,12 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="landing-footer">
+          <Link href="/privacy">Privacy Policy</Link>
+          <span> · </span>
+          <Link href="/terms">Terms of Service</Link>
         </div>
       </div>
 

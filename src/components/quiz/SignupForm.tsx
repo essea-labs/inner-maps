@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type React from 'react';
+import Link from 'next/link';
 import { useQuizStore, saveStateToSession } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 
@@ -314,7 +315,12 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
       </div>
 
       {!isLogin && isFullScreen && (
-        <p className="signup-fine-print">No spam, ever. We&apos;ll only email you if you ask us to.</p>
+        <p className="signup-fine-print">
+          By signing up, you agree to our{' '}
+          <Link href="/terms" style={{ color: 'var(--peach)', textDecoration: 'underline' }}>Terms</Link>
+          {' '}and{' '}
+          <Link href="/privacy" style={{ color: 'var(--peach)', textDecoration: 'underline' }}>Privacy Policy</Link>.
+        </p>
       )}
     </div>
   );
