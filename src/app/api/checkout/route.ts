@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getStripe, PRICES } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getAuthUserId } from '@/lib/api-auth';
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +13,12 @@ export async function POST(req: Request) {
     }
     if (!user_id) {
       return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
+    }
+
+    // Verify the caller is the user they claim to be
+    const authUserId = await getAuthUserId();
+    if (!authUserId || authUserId !== user_id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check for existing purchase (duplicate prevention)

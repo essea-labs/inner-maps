@@ -8,11 +8,11 @@ export const COMPAT_ZODIAC: Record<string, { score: number; insight: string }> =
   'earth-earth': { score: 80, insight: "Grounded together. You build something real and lasting, brick by brick. Just don't let routine replace romance." },
   'air-air': { score: 78, insight: "Two minds in constant motion. The conversations never end — but make sure you land somewhere together." },
   'water-water': { score: 85, insight: "Emotionally in sync on a level most people can't reach. You feel each other without words." },
-  'fire-air': { score: 88, insight: "Fire and air — you fan each other's flames. Exciting, stimulating, and never boring." },
+  'air-fire': { score: 88, insight: "Fire and air — you fan each other's flames. Exciting, stimulating, and never boring." },
   'earth-water': { score: 86, insight: "Earth and water — you nurture and ground each other. A naturally supportive, deeply caring dynamic." },
-  'fire-earth': { score: 62, insight: "Fire meets earth — one wants to charge ahead, the other wants a plan. Different speeds, but you balance each other." },
+  'earth-fire': { score: 62, insight: "Fire meets earth — one wants to charge ahead, the other wants a plan. Different speeds, but you balance each other." },
   'fire-water': { score: 58, insight: "Steam. Intense chemistry but you process the world in very different ways. Empathy is the bridge." },
-  'earth-air': { score: 60, insight: "One lives in the practical, the other in the possible. You'll challenge each other to grow." },
+  'air-earth': { score: 60, insight: "One lives in the practical, the other in the possible. You'll challenge each other to grow." },
   'air-water': { score: 65, insight: "Head meets heart. You think differently but that's what makes the conversation so rich." },
 };
 
@@ -27,7 +27,7 @@ export const ZODIAC_ELEMENTS: Record<string, string> = {
 export function getZodiacCompat(sign1: string, sign2: string): CompatDimension {
   const base = sign1 === sign2
     ? COMPAT_ZODIAC['same']
-    : (COMPAT_ZODIAC[[ZODIAC_ELEMENTS[sign1], ZODIAC_ELEMENTS[sign2]].sort().join('-')] || COMPAT_ZODIAC['fire-earth']);
+    : (COMPAT_ZODIAC[[ZODIAC_ELEMENTS[sign1], ZODIAC_ELEMENTS[sign2]].sort().join('-')] || COMPAT_ZODIAC['earth-fire']);
   const e1 = ZODIAC_ELEMENTS[sign1], e2 = ZODIAC_ELEMENTS[sign2];
   let detail = '';
   if (sign1 === sign2) detail = `Two ${sign1}s means you share the same strengths and the same blind spots. You get each other instantly — the work is in challenging each other to grow.`;
@@ -113,7 +113,9 @@ export function getEnneagramCompat(type1: number, type2: number): CompatDimensio
 }
 
 export function calculateCompatibility(myResults: QuizResults, theirResults: QuizResults): CompatibilityResult {
-  const zodiac = getZodiacCompat(myResults.starSign!.sign, theirResults.starSign!.sign);
+  const mySign = myResults.starSign?.sign ?? 'Aries';
+  const theirSign = theirResults.starSign?.sign ?? 'Aries';
+  const zodiac = getZodiacCompat(mySign, theirSign);
   const personality = getPersonalityCompat(myResults.cognitiveType, theirResults.cognitiveType);
   const attachment = getAttachmentCompat(myResults.attachmentStyle, theirResults.attachmentStyle);
   const connection = getConnectionCompat(myResults.topConnection, theirResults.topConnection);

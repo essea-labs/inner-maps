@@ -141,6 +141,15 @@ export default function QuizPage() {
     if (params.get('authCallback') !== '1') return;
 
     (async () => {
+      // Check if auth failed during callback
+      const authError = params.get('authError');
+      if (authError) {
+        showToast('Sign-in failed. Please try again.');
+        useQuizStore.setState({ restoringState: false });
+        window.history.replaceState({}, '', '/quiz');
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       const intent = params.get('intent') ?? 'save';
       // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)

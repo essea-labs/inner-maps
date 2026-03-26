@@ -32,36 +32,28 @@ describe('getZodiacCompat', () => {
     expect(getZodiacCompat('Cancer', 'Pisces').score).toBe(85);
   });
 
-  // NOTE: The source code sorts element names alphabetically before lookup.
-  // Some COMPAT_ZODIAC keys don't match sorted order (fire-air vs air-fire),
-  // causing those combos to fall through to the fire-earth fallback (62).
-  // This is a BUG in compatibility.ts — tests verify actual behavior.
+  it('fire-air → score 88', () => {
+    expect(getZodiacCompat('Aries', 'Gemini').score).toBe(88);
+  });
 
-  it('earth-water → score 86 (key matches sorted order)', () => {
+  it('earth-water → score 86', () => {
     expect(getZodiacCompat('Taurus', 'Cancer').score).toBe(86);
   });
 
-  it('fire-water → score 58 (key matches sorted order)', () => {
-    expect(getZodiacCompat('Aries', 'Cancer').score).toBe(58);
-  });
-
-  it('air-water → score 65 (key matches sorted order)', () => {
-    expect(getZodiacCompat('Gemini', 'Cancer').score).toBe(65);
-  });
-
-  it('fire-air falls through to fallback 62 (BUG: key mismatch)', () => {
-    // fire + air → sorted = "air-fire" but data has "fire-air"
-    expect(getZodiacCompat('Aries', 'Gemini').score).toBe(62);
-  });
-
-  it('fire-earth falls through to fallback 62 (BUG: key mismatch)', () => {
-    // fire + earth → sorted = "earth-fire" but data has "fire-earth"
+  it('fire-earth → score 62', () => {
     expect(getZodiacCompat('Aries', 'Taurus').score).toBe(62);
   });
 
-  it('earth-air falls through to fallback 62 (BUG: key mismatch)', () => {
-    // earth + air → sorted = "air-earth" but data has "earth-air"
-    expect(getZodiacCompat('Taurus', 'Gemini').score).toBe(62);
+  it('fire-water → score 58', () => {
+    expect(getZodiacCompat('Aries', 'Cancer').score).toBe(58);
+  });
+
+  it('earth-air → score 60', () => {
+    expect(getZodiacCompat('Taurus', 'Gemini').score).toBe(60);
+  });
+
+  it('air-water → score 65', () => {
+    expect(getZodiacCompat('Gemini', 'Cancer').score).toBe(65);
   });
 
   it('is symmetric (A,B same as B,A)', () => {
