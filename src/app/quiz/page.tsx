@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 
@@ -23,7 +23,22 @@ import Toast from '@/components/ui/Toast';
 import useSwipeBack from '@/hooks/useSwipeBack';
 import useKeyboardNav from '@/hooks/useKeyboardNav';
 
+// Loading placeholder — rendered identically on server and client to prevent
+// hydration mismatch. The real UI only mounts after useEffect fires.
+function LoadingPlaceholder() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
+      <p style={{ fontSize: 14, color: 'var(--text-light)' }}>Loading your profile…</p>
+    </div>
+  );
+}
+
 export default function QuizPage() {
+  // Mount guard — guarantees server and client render the same placeholder,
+  // eliminating hydration mismatches from localStorage/window reads in Zustand.
+  const [mounted, setMounted] = useState(false);
+
   const screen = useQuizStore((s) => s.screen);
   const inviteModalOpen = useQuizStore((s) => s.inviteModalOpen);
   const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
@@ -37,6 +52,9 @@ export default function QuizPage() {
   // Navigation hooks
   useSwipeBack();
   useKeyboardNav();
+
+  // Mark as mounted on client — must be the first effect
+  useEffect(() => { setMounted(true); }, []);
 
   // Scroll to top on every screen change
   useEffect(() => {
@@ -233,17 +251,13 @@ export default function QuizPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Before mount, return the same placeholder the server rendered
+  if (!mounted) return <LoadingPlaceholder />;
+
   function renderScreen() {
     // Show loading until we know which screen to display — prevents flash of
     // landing page for logged-in users, password reset, and during SSR
-    if (restoringState) {
-      return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
-          <p style={{ fontSize: 14, color: 'var(--text-light)' }}>Loading your profile…</p>
-        </div>
-      );
-    }
+    if (restoringState) return <LoadingPlaceholder />;
 
     switch (screen) {
       case 'landing':
