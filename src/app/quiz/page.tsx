@@ -162,10 +162,8 @@ export default function QuizPage() {
 
     const intent = params.get('intent') ?? 'save';
 
-    // Password reset — show form immediately, no async work needed
+    // Password reset — screen already set to 'resetPassword' by store init, just clean URL
     if (intent === 'recovery') {
-      useQuizStore.setState({ restoringState: false });
-      setScreen('resetPassword');
       window.history.replaceState({}, '', '/quiz');
       return;
     }
