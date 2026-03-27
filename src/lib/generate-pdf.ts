@@ -5,41 +5,43 @@ import {
 } from '@/lib/deep-dive-data';
 import { ZODIAC_ELEMENTS } from '@/lib/compatibility';
 
-// Brand colors (hex → RGB)
+// Brand colors (RGB tuples)
 const PEACH: [number, number, number] = [232, 168, 124];
 const BROWN: [number, number, number] = [45, 34, 23];
 const LIGHT: [number, number, number] = [139, 126, 116];
 const GREEN: [number, number, number] = [102, 187, 106];
+const DEEP_GREEN: [number, number, number] = [46, 125, 50];
+const BG: [number, number, number] = [250, 247, 244];
 
 /**
- * Polished text-based PDF with proper heading hierarchy, spacing, and brand styling.
+ * Text-based PDF that mirrors the web report section-for-section.
+ * Every heading, paragraph, bullet, and highlight from IndividualReport.tsx is included.
  */
 export async function generateReportPDF(
-  _element: HTMLElement, // kept for API compat, not used in text approach
+  _element: HTMLElement,
   fileName: string,
   results?: QuizResults,
   userName?: string,
 ) {
   const { default: jsPDF } = await import('jspdf');
 
-  // If results not passed, try to get from store
   let r = results;
   let name = userName;
   if (!r || !name) {
     const { useQuizStore } = await import('@/store/quiz-store');
-    const state = useQuizStore.getState();
-    r = r || state.results!;
-    name = name || state.userName || 'Your';
+    const s = useQuizStore.getState();
+    r = r || s.results!;
+    name = name || s.userName || 'Your';
   }
   if (!r) return;
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = doc.internal.pageSize.getWidth();
-  const H = doc.internal.pageSize.getHeight();
-  const M = 20; // margin
-  const CW = W - M * 2; // content width
+  const W = doc.internal.pageSize.getWidth();   // 210
+  const H = doc.internal.pageSize.getHeight();   // 297
+  const M = 18;
+  const CW = W - M * 2;
   let y = M;
-  let pageNum = 1;
+  let pg = 1;
 
   const dd = TYPE_DEEP_DIVE[r.cognitiveType];
   const edd = ENNEAGRAM_DEEP_DIVE[r.enneagramType];
@@ -49,138 +51,165 @@ export async function generateReportPDF(
   const intersections = generateIntersectionInsights(r);
   const element = r.starSign ? ZODIAC_ELEMENTS[r.starSign.sign] : '';
 
-  // ── Helpers ──────────────────────────────────────────────────
+  // ── Layout helpers ────────────────────────────────────────────
 
   function footer() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(...LIGHT);
-    doc.text('innermaps.io', W / 2, H - 8, { align: 'center' });
-    doc.text(`${pageNum}`, W - M, H - 8, { align: 'right' });
+    doc.text('innermaps.io', W / 2, H - 7, { align: 'center' });
+    doc.text(String(pg), W - M, H - 7, { align: 'right' });
   }
 
   function newPage() {
     footer();
     doc.addPage();
-    pageNum++;
+    pg++;
     y = M;
   }
 
-  function ensureSpace(needed: number) {
-    if (y + needed > H - 16) newPage();
+  function need(h: number) {
+    if (y + h > H - 14) newPage();
   }
 
-  function heading1(text: string) {
-    ensureSpace(16);
+  // Section heading with icon (e.g. "🧠 Personality Type — Deep Dive")
+  function sectionTitle(icon: string, text: string) {
+    need(18);
+    y += 4;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
+    doc.setFontSize(15);
     doc.setTextColor(...BROWN);
-    doc.text(text, M, y);
-    y += 10;
+    doc.text(`${icon}  ${text}`, M, y);
+    y += 9;
+    // Underline
+    doc.setDrawColor(...PEACH);
+    doc.setLineWidth(0.5);
+    doc.line(M, y, M + CW * 0.3, y);
+    y += 6;
   }
 
-  function heading2(text: string) {
-    ensureSpace(12);
-    y += 3;
+  // Sub-heading (peach, 11pt)
+  function sub(text: string) {
+    need(10);
+    y += 2;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(...PEACH);
     doc.text(text, M, y);
-    y += 7;
+    y += 6;
   }
 
-  function body(text: string) {
+  // Body paragraph
+  function para(text: string) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(...BROWN);
     const lines = doc.splitTextToSize(text, CW);
-    for (const line of lines) {
-      ensureSpace(5);
-      doc.text(line, M, y);
+    for (const ln of lines) {
+      need(4.5);
+      doc.text(ln, M, y);
       y += 4.2;
     }
-    y += 3;
+    y += 4;
   }
 
-  function bullets(items: string[]) {
+  // Bullet list
+  function list(items: string[]) {
     for (const item of items) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9.5);
       doc.setTextColor(...BROWN);
-      const lines = doc.splitTextToSize(item, CW - 6);
+      const lines = doc.splitTextToSize(item, CW - 7);
       for (let i = 0; i < lines.length; i++) {
-        ensureSpace(5);
-        if (i === 0) doc.text('•', M, y);
-        doc.text(lines[i], M + 5, y);
+        need(4.5);
+        if (i === 0) {
+          doc.setTextColor(...PEACH);
+          doc.text('•', M + 1, y);
+          doc.setTextColor(...BROWN);
+        }
+        doc.text(lines[i], M + 6, y);
         y += 4.2;
       }
+      y += 1;
     }
     y += 3;
   }
 
-  function highlight(label: string, text: string, color: [number, number, number] = PEACH) {
-    ensureSpace(16);
+  // Highlight box with left accent
+  function box(label: string, text: string, accent: [number, number, number] = PEACH, labelColor?: [number, number, number]) {
+    const textLines = doc.splitTextToSize(text, CW - 16);
+    const bh = 10 + textLines.length * 4.2 + 5;
+    need(bh + 2);
     // Background
-    const textLines = doc.splitTextToSize(text, CW - 14);
-    const boxH = 8 + textLines.length * 4.2 + 4;
-    doc.setFillColor(250, 247, 244);
-    doc.roundedRect(M, y - 2, CW, boxH, 2, 2, 'F');
-    // Left accent
-    doc.setFillColor(...color);
-    doc.rect(M, y - 2, 2, boxH, 'F');
+    doc.setFillColor(...BG);
+    doc.roundedRect(M, y, CW, bh, 2, 2, 'F');
+    // Left bar
+    doc.setFillColor(...accent);
+    doc.rect(M, y, 2.5, bh, 'F');
     // Label
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.setTextColor(...color);
-    doc.text(label.toUpperCase(), M + 6, y + 3);
-    y += 8;
+    doc.setTextColor(...(labelColor || accent));
+    doc.text(label.toUpperCase(), M + 7, y + 5);
     // Body
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(...BROWN);
-    for (const line of textLines) {
-      doc.text(line, M + 6, y);
-      y += 4.2;
+    let ty = y + 10;
+    for (const ln of textLines) {
+      doc.text(ln, M + 7, ty);
+      ty += 4.2;
     }
-    y += 6;
+    y += bh + 5;
   }
 
-  function separator() {
+  // Thin separator
+  function sep() {
     y += 2;
     doc.setDrawColor(245, 213, 192);
     doc.setLineWidth(0.3);
     doc.line(M, y, W - M, y);
-    y += 6;
+    y += 5;
   }
 
-  // ── COVER ────────────────────────────────────────────────────
+  // Small tag/pill
+  function tag(text: string, x: number) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    const tw = doc.getTextWidth(text) + 8;
+    doc.setFillColor(245, 213, 192);
+    doc.roundedRect(x, y - 3, tw, 6, 3, 3, 'F');
+    doc.setTextColor(180, 110, 70);
+    doc.text(text, x + 4, y + 1);
+    return tw + 4;
+  }
 
-  y = 50;
+  // ── COVER PAGE ────────────────────────────────────────────────
+
+  y = 55;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(...PEACH);
-  doc.text('INNER MAPS', W / 2, y, { align: 'center' });
-  y += 14;
+  doc.text('✦  I N N E R   M A P S  ✦', W / 2, y, { align: 'center' });
+  y += 16;
 
-  doc.setFontSize(22);
+  doc.setFontSize(24);
   doc.setTextColor(...BROWN);
-  const title = `${name}'s Inner Maps`;
-  doc.text(title, W / 2, y, { align: 'center' });
-  y += 9;
+  doc.text(`${name}'s Inner Maps`, W / 2, y, { align: 'center' });
+  y += 10;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(...LIGHT);
   doc.text('Your complete 5-dimension personality profile', W / 2, y, { align: 'center' });
-  y += 6;
+  y += 7;
 
-  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   doc.setFontSize(9);
-  doc.text(dateStr, W / 2, y, { align: 'center' });
-  y += 20;
+  doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), W / 2, y, { align: 'center' });
+  y += 22;
 
-  // Summary table
-  const rows = [
+  // Summary card
+  const rows: [string, string][] = [
     ['Personality', r.cognitiveType],
     ['Enneagram', r.enneagramDisplay],
     ['Attachment', r.attachmentStyle],
@@ -188,146 +217,254 @@ export async function generateReportPDF(
     ['Star Sign', r.starSign ? `${r.starSign.sign} ${r.starSign.symbol}` : '—'],
   ];
 
-  doc.setFillColor(250, 247, 244);
-  doc.roundedRect(M + 10, y, CW - 20, rows.length * 8 + 8, 3, 3, 'F');
-  y += 8;
+  const cardX = M + 15;
+  const cardW = CW - 30;
+  const cardH = rows.length * 9 + 12;
+  doc.setFillColor(...BG);
+  doc.setDrawColor(245, 213, 192);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(cardX, y, cardW, cardH, 3, 3, 'FD');
+  y += 10;
 
   for (const [label, value] of rows) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...LIGHT);
-    doc.text(label, M + 18, y);
+    doc.text(label, cardX + 10, y);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
+    doc.setFontSize(10.5);
     doc.setTextColor(...BROWN);
-    doc.text(value, M + 55, y);
-    y += 8;
+    doc.text(value, cardX + 42, y);
+    y += 9;
   }
 
-  // ── PERSONALITY TYPE ─────────────────────────────────────────
+  // ── 1. PERSONALITY TYPE ───────────────────────────────────────
 
   newPage();
-
-  heading1('Personality Type — Deep Dive');
+  sectionTitle('🧠', 'Personality Type — Deep Dive');
   if (dd) {
-    highlight('Your Type', `${r.cognitiveType} — ${r.cognitiveTypeName}`);
-    heading2('How You Think');
-    body(dd.think);
-    heading2('How You Love');
-    body(dd.love);
-    heading2('How You Work');
-    body(dd.work);
-    highlight('Your Superpower', dd.superpower, GREEN);
-    highlight('Your Blind Spot', dd.blindspot, PEACH);
+    box('Your Type', `${r.cognitiveType} — ${r.cognitiveTypeName}`);
+    sub('How You Think');
+    para(dd.think);
+    sub('How You Love');
+    para(dd.love);
+    sub('How You Work');
+    para(dd.work);
+    box('Your Superpower', dd.superpower, GREEN, DEEP_GREEN);
+    box('Your Blind Spot', dd.blindspot, PEACH);
   }
 
-  // ── ENNEAGRAM ────────────────────────────────────────────────
+  // ── 2. ENNEAGRAM ──────────────────────────────────────────────
 
   newPage();
-
-  heading1('Enneagram — Deep Dive');
+  sectionTitle('🔮', 'Enneagram — Deep Dive');
   if (edd) {
-    highlight('Your Type', `${r.enneagramDisplay} — ${r.enneagramName}`);
-    heading2('Core Fear');
-    body(edd.fear);
-    heading2('Core Desire');
-    body(edd.desire);
-    heading2('Under Stress');
-    body(edd.stress);
-    heading2('At Your Best');
-    body(edd.best);
-    heading2('Growth Strategies');
-    bullets(edd.strategies);
+    box('Your Type', `${r.enneagramDisplay} — ${r.enneagramName}`);
+    sub('Core Fear');
+    para(edd.fear);
+    sub('Core Desire');
+    para(edd.desire);
+    sub('Under Stress');
+    para(edd.stress);
+    sub('At Your Best');
+    para(edd.best);
+    sub('Growth Strategies');
+    list(edd.strategies);
   }
 
-  // ── ATTACHMENT ───────────────────────────────────────────────
+  // ── 3. ATTACHMENT STYLE ───────────────────────────────────────
 
   newPage();
-
-  heading1('Attachment Style — Deep Dive');
+  sectionTitle('💛', 'Attachment Style — Deep Dive');
   if (add) {
-    highlight('Your Style', r.attachmentStyle);
-    heading2('Your Triggers');
-    bullets(add.triggers);
-    heading2('Your Patterns');
-    bullets(add.patterns);
-    heading2('In Conflict');
-    body(add.conflict);
-    heading2('Growth Strategies');
-    bullets(add.strategies);
+    box('Your Style', r.attachmentStyle);
+    sub('Your Triggers');
+    list(add.triggers);
+    sub('Your Patterns');
+    list(add.patterns);
+    sub('In Conflict');
+    para(add.conflict);
+    sub('Growth Strategies');
+    list(add.strategies);
   }
 
-  // ── CONNECTION STYLE ─────────────────────────────────────────
+  // ── 4. CONNECTION STYLE ───────────────────────────────────────
 
   newPage();
-
-  heading1('Connection Style — Deep Dive');
+  sectionTitle('🤝', 'Connection Style — Deep Dive');
   if (cdd) {
-    highlight('Primary Style', r.topConnection);
-    if (r.connectionSorted[1]) {
-      highlight('Secondary Style', r.connectionNames[r.connectionSorted[1][0]]);
+    box('Primary', r.topConnection);
+
+    sub('What This Means Day-to-Day');
+    para(cdd.dayToDay);
+    sub('How to Ask For It');
+    para(cdd.askForIt);
+    sub('When This Need Isn\'t Met');
+    para(cdd.unmet);
+
+    // Full ranking (matches web report)
+    sep();
+    need(10 + r.connectionSorted.length * 7);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...PEACH);
+    doc.text('YOUR FULL RANKING', M, y);
+    y += 6;
+
+    for (const [key, score] of r.connectionSorted) {
+      need(7);
+      const isTop = key === r.connectionSorted[0][0];
+      doc.setFont('helvetica', isTop ? 'bold' : 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...BROWN);
+      doc.text(`${isTop ? '★ ' : ''}${r.connectionNames[key]}`, M, y);
+
+      // Score bar
+      const barX = M + 55;
+      const barW = CW - 70;
+      const fill = (score as number) / 4;
+      doc.setFillColor(245, 213, 192);
+      doc.roundedRect(barX, y - 3, barW, 4, 2, 2, 'F');
+      doc.setFillColor(...PEACH);
+      doc.roundedRect(barX, y - 3, barW * fill, 4, 2, 2, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...LIGHT);
+      doc.text(String(score), barX + barW + 3, y);
+      y += 7;
     }
-    heading2('Day to Day');
-    body(cdd.dayToDay);
-    heading2('When It\'s Unmet');
-    body(cdd.unmet);
-    heading2('How to Ask For It');
-    body(cdd.askForIt);
+    y += 4;
   }
 
-  // ── STAR SIGN ────────────────────────────────────────────────
+  // ── 5. STAR SIGN ──────────────────────────────────────────────
 
   if (sdd && r.starSign) {
     newPage();
-    heading1('Star Sign — Deep Dive');
-    highlight('Your Sign', `${r.starSign.sign} ${r.starSign.symbol}`);
+    sectionTitle('✦', 'Star Sign — Deep Dive');
+    box('Your Sign', `${r.starSign.sign} ${r.starSign.symbol}`);
 
-    if (sdd.strengths) { heading2('Strengths'); body(sdd.strengths); }
-    if (sdd.challenges) { heading2('Challenges'); body(sdd.challenges); }
-    if (sdd.practicalInsight) { heading2('Practical Insight'); body(sdd.practicalInsight); }
-    if (sdd.element) { heading2('Element & Energy'); body(`${sdd.element}. ${sdd.season || ''}`); }
+    // Tags (element + modality)
+    need(10);
+    let tx = M;
+    tx += tag(sdd.element, tx);
+    tag(sdd.modality, tx);
+    y += 6;
+
+    sub('Your Season');
+    para(sdd.season);
+    sub('Ruling Planet');
+    para(sdd.planet);
+    sub('Your Strengths');
+    para(sdd.strengths || '');
+    sub('Your Growth Edges');
+    para(sdd.challenges || '');
+    sub('How This Shows Up in Your Life');
+    para(sdd.practicalInsight || '');
 
     const tip =
       element === 'fire' ? "Start something bold you've been putting off." :
       element === 'earth' ? 'Slow down and enjoy something sensory — a meal, a walk, a bath.' :
       element === 'air' ? 'Have a conversation that stretches your thinking.' :
       'Spend time near water and let your intuition speak.';
-    highlight('This Week', tip);
+    box('This Week', tip);
   }
 
-  // ── INTERSECTION INSIGHTS ────────────────────────────────────
+  // ── 6. INTERSECTIONS ──────────────────────────────────────────
 
   if (intersections.length > 0) {
     newPage();
-    heading1('How Your Dimensions Interact');
-    body('Your personality isn\'t five separate traits — it\'s the way they blend. Here\'s what happens when your dimensions meet.');
-
+    sectionTitle('⟡', 'How Your 5 Dimensions Interact');
+    para('Your personality isn\'t five separate traits — it\'s the way they blend. Here\'s what happens when your dimensions meet.');
     for (let i = 0; i < intersections.length; i++) {
-      separator();
-      heading2(`Insight ${i + 1}`);
-      body(intersections[i]);
+      sep();
+      para(intersections[i]);
     }
   }
 
-  // ── FINAL FOOTER ─────────────────────────────────────────────
+  // ── 7. 5 THINGS TO TRY THIS WEEK ─────────────────────────────
 
-  footer();
-
-  // Disclaimer on last page
-  ensureSpace(12);
+  newPage();
+  need(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(...BROWN);
+  doc.text('5 Things to Try This Week', W / 2, y, { align: 'center' });
   y += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...PEACH);
+  doc.text('Personalised for you', W / 2, y, { align: 'center' });
+  y += 8;
+
+  const tips: string[] = [];
+  // Tip 1: cognitive type
+  tips.push(
+    `As a ${r.cognitiveType}, ${r.cognitiveType[0] === 'I'
+      ? 'protect your alone time this week — block 30 minutes of uninterrupted solitude and notice how it recharges you'
+      : "reach out to someone you haven't spoken to in a while — your social energy is a gift, use it intentionally"}.`
+  );
+  // Tip 2: enneagram strategy
+  if (edd) tips.push(edd.strategies[0]);
+  // Tip 3: attachment strategy
+  if (add) tips.push(add.strategies[0]);
+  // Tip 4: connection style
+  tips.push(
+    `Your connection style is ${r.topConnection} — this week, tell someone close to you exactly how they can make you feel loved. Most people want to show up for you; they just need the roadmap.`
+  );
+  // Tip 5: star sign
+  if (r.starSign) {
+    const elTip =
+      element === 'fire' ? "start something bold you've been putting off" :
+      element === 'earth' ? 'slow down and enjoy something sensory — a meal, a walk, a bath' :
+      element === 'air' ? 'have a conversation that stretches your thinking' :
+      'spend time near water and let your intuition speak';
+    tips.push(`Lean into your ${r.starSign.sign} ${element} energy: ${elTip}.`);
+  }
+
+  for (let i = 0; i < tips.length; i++) {
+    const tipLines = doc.splitTextToSize(tips[i], CW - 14);
+    const tipH = 8 + tipLines.length * 4.2 + 4;
+    need(tipH + 3);
+
+    // Number circle
+    doc.setFillColor(...PEACH);
+    doc.circle(M + 4, y + 4, 3.5, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.text(String(i + 1), M + 4, y + 5.2, { align: 'center' });
+
+    // Tip text
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...BROWN);
+    let ty = y + 2;
+    for (const ln of tipLines) {
+      doc.text(ln, M + 12, ty);
+      ty += 4.2;
+    }
+    y = ty + 4;
+  }
+
+  // ── DISCLAIMER ────────────────────────────────────────────────
+
+  need(16);
+  y += 8;
+  sep();
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7);
   doc.setTextColor(...LIGHT);
   doc.text('This assessment is not affiliated with The Myers-Briggs Company or the MBTI® instrument.', W / 2, y, { align: 'center' });
   doc.text('For entertainment and self-reflection purposes. Not a clinical assessment.', W / 2, y + 3.5, { align: 'center' });
 
+  footer();
   doc.save(fileName);
 }
 
 /**
- * Screenshot-based PDF for compatibility reports (complex layouts).
- * Uses html2canvas with high quality PNG to avoid blur.
+ * Screenshot-based PDF for compatibility reports (complex side-by-side layouts).
+ * Uses html2canvas at 3x scale with PNG for sharp output.
  */
 export async function generateScreenshotPDF(element: HTMLElement, fileName: string) {
   const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
@@ -336,16 +473,14 @@ export async function generateScreenshotPDF(element: HTMLElement, fileName: stri
   ]);
 
   const canvas = await html2canvas(element, {
-    scale: 3, // higher scale for clarity
+    scale: 3,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#FFF8F5',
   });
 
-  const imgData = canvas.toDataURL('image/png'); // PNG for no compression artifacts
   const imgW = canvas.width;
   const imgH = canvas.height;
-
   const pdfW = 210;
   const pdfH = 297;
   const margin = 8;

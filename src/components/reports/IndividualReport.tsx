@@ -119,10 +119,10 @@ export default function IndividualReport() {
             <div style={{ fontSize: 24, flexShrink: 0 }}>⟡</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
-                How compatible are you?
+                Compare your personality with someone
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                Create a free account to compare your profile with friends, family, or partners
+                Invite a friend, partner, or family member to take the quiz and see how you match
               </div>
             </div>
             <div style={{ color: 'var(--peach)', fontSize: 16 }}>→</div>
