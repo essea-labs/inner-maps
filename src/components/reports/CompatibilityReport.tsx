@@ -114,7 +114,7 @@ export default function CompatibilityReport() {
             try {
               const { generateCompatPDF } = await import('@/lib/generate-pdf');
               const n = `${(myName).toLowerCase()}-${(conn.name || 'friend').toLowerCase()}`.replace(/\s+/g, '-');
-              await generateCompatPDF(n + '-compatibility-report.pdf', r, tr, myName, conn.name, compat, strengths, challenges);
+              await generateCompatPDF(n + '-compatibility-report.pdf');
             } catch (err) {
               console.error('PDF generation failed:', err);
             } finally {
@@ -148,7 +148,8 @@ export default function CompatibilityReport() {
         <div className="compat-share-card" style={{ marginBottom: 24 }}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
           <div className="compat-share-card-names">{myName} & {conn.name}</div>
-          <div className="compat-share-card-score">{compat.overall}% <span style={{ fontSize: '0.45em', fontWeight: 400, color: 'var(--text-light)' }}>Overall Compatibility</span></div>
+          <div className="compat-share-card-score">{compat.overall}%</div>
+          <div style={{ fontSize: 12, color: 'white', fontWeight: 400, marginTop: -4, textAlign: 'center', opacity: 0.85 }}>Overall Compatibility</div>
           <div className="compat-share-card-grid">
             <div className="compat-share-card-item">
               <div className="compat-share-card-item-label">Personality</div>
@@ -167,7 +168,7 @@ export default function CompatibilityReport() {
               </div>
             </div>
             <div className="compat-share-card-item">
-              <div className="compat-share-card-item-label">Attachment</div>
+              <div className="compat-share-card-item-label">Attachment Style</div>
               <div className="compat-share-card-item-values" style={{ fontSize: r.attachmentStyle.length > 10 ? 11 : 14 }}>
                 <span>{r.attachmentStyle}</span>
                 <span className="vs">&amp;</span>
@@ -175,7 +176,7 @@ export default function CompatibilityReport() {
               </div>
             </div>
             <div className="compat-share-card-item">
-              <div className="compat-share-card-item-label">Connection</div>
+              <div className="compat-share-card-item-label">Connection Style</div>
               <div className="compat-share-card-item-values" style={{ fontSize: r.topConnection.length > 12 ? 11 : 14 }}>
                 <span>{r.topConnection}</span>
                 <span className="vs">&amp;</span>

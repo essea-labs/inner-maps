@@ -70,7 +70,7 @@ export default function IndividualReport() {
             try {
               const { generateReportPDF } = await import('@/lib/generate-pdf');
               const n = (userName || 'your').toLowerCase().replace(/\s+/g, '-');
-              await generateReportPDF(reportRef.current, `${n}-inner-maps-report.pdf`, r, userName || 'Your');
+              await generateReportPDF(reportRef.current, `${n}-inner-maps-report.pdf`);
             } catch (err) {
               console.error('PDF generation failed:', err);
             } finally {
@@ -143,7 +143,7 @@ export default function IndividualReport() {
             </div>
             <div className="share-card-item">
               <div className="share-card-item-label">Attachment Style</div>
-              <div className="share-card-item-value">{r.attachmentStyle}</div>
+              <div className="share-card-item-value" style={{ fontSize: r.attachmentStyle.length > 12 ? 14 : 18 }}>{r.attachmentStyle}</div>
             </div>
             <div className="share-card-item">
               <div className="share-card-item-label">Connection Style</div>
