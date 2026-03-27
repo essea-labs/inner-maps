@@ -22,16 +22,16 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
     ],
   },
   compatibility: {
-    title: <>Check your <em>compatibility</em></>,
-    subtitle: 'See how your personalities actually fit together — the good, the surprising, and the hilarious.',
+    title: <>Discover your <em>compatibility</em></>,
+    subtitle: 'Sign up to get your invite link and see how you match with anyone who takes the quiz.',
     benefits: [
-      'See your compatibility score across all 5 dimensions',
-      'Find out which personality traits draw you together',
+      'Both get a free compatibility score instantly',
+      'Every new connection reveals a different side of your personality',
     ],
   },
   invite: {
-    title: <>Invite & <em>connect</em></>,
-    subtitle: 'Sign up to get your personal invite link and see compatibility with anyone who takes the quiz.',
+    title: <>Discover your <em>compatibility</em></>,
+    subtitle: 'Sign up to get your invite link and see how you match with anyone who takes the quiz.',
     benefits: [
       'Both get a free compatibility score instantly',
       'Every new connection reveals a different side of your personality',
