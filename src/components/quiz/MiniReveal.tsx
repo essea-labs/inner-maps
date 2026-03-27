@@ -17,12 +17,12 @@ export default function MiniReveal() {
   let name = '';
 
   if (currentSection === 2) {
-    // Just finished cognitive
+    // Just finished cognitive — mirror scoring from quiz-data.ts
     const dims = [
-      { letters: ['E', 'I'], range: [0, 3] },
-      { letters: ['S', 'N'], range: [3, 6] },
-      { letters: ['T', 'F'], range: [6, 9] },
-      { letters: ['J', 'P'], range: [9, 12] },
+      { letters: ['E', 'I'], range: [0, 4], anchor: 1 },
+      { letters: ['S', 'N'], range: [4, 8], anchor: 4 },
+      { letters: ['T', 'F'], range: [8, 12], anchor: 11 },
+      { letters: ['J', 'P'], range: [12, 15], anchor: -1 },
     ];
     let type = '';
     dims.forEach((d) => {
@@ -31,7 +31,12 @@ export default function MiniReveal() {
       for (let i = d.range[0]; i < d.range[1]; i++) {
         if (answers.cognitive[i] === 'a') aCount++;
       }
-      type += aCount >= Math.ceil(total / 2) ? d.letters[0] : d.letters[1];
+      const bCount = total - aCount;
+      if (aCount !== bCount) {
+        type += aCount > bCount ? d.letters[0] : d.letters[1];
+      } else {
+        type += answers.cognitive[d.anchor] === 'a' ? d.letters[0] : d.letters[1];
+      }
     });
     emoji = '🧠';
     title = 'Personality Type';

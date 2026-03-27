@@ -86,7 +86,7 @@ function loadProfileCache(userId: string): ProfileCache | null {
 // ===== STATE SHAPE =====
 // currentSection matches the original:
 //   0 = starsign (birthday, 0 questions)
-//   1 = cognitive (12 questions)
+//   1 = cognitive (15 questions)
 //   2 = attachment (8 questions)
 //   3 = connection (10 questions)
 //   4 = enneagram (10 questions)
@@ -179,7 +179,7 @@ interface QuizStore {
 
 function makeDefaultAnswers(): QuizAnswers {
   return {
-    cognitive: Array(12).fill(null),
+    cognitive: Array(15).fill(null),
     attachment: Array(8).fill(null),
     connection: Array(10).fill(null),
     enneagram: Array(10).fill(null),

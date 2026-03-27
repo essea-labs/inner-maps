@@ -12,23 +12,31 @@ import type {
 // ===== SECTIONS =====
 export const SECTIONS: Section[] = [
   { id: 'starsign', name: 'Star Sign', icon: '✦', questions: 0 },
-  { id: 'cognitive', name: 'Personality Type', icon: '🧠', questions: 12 },
+  { id: 'cognitive', name: 'Personality Type', icon: '🧠', questions: 15 },
   { id: 'attachment', name: 'Attachment Style', icon: '💛', questions: 8 },
   { id: 'connection', name: 'Connection Style', icon: '🤝', questions: 10 },
   { id: 'enneagram', name: 'Enneagram', icon: '🔮', questions: 10 },
 ];
 
-// ===== COGNITIVE QUESTIONS (12 A/B) =====
+// ===== COGNITIVE QUESTIONS (15 A/B) =====
+// E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 4), T/F = 8-11 (anchor: 11), J/P = 12-14
 export const COGNITIVE_QS: CognitiveQuestion[] = [
+  // --- E/I (4 questions) ---
   { q: "You've got a free Saturday. What sounds better?", a: "Rally the group chat, let's do something!", b: "Keep it open. Solo time sounds perfect." },
   { q: "After a brutal week, you recharge by...", a: "Going out. People give you energy, even when you're drained.", b: "Staying in. You need quiet before you can be 'on' again." },
+  { q: "When you're working through a problem, you prefer to...", a: "Talk it through with someone — ideas click when you say them out loud.", b: "Think it through alone first — you need space to sort your thoughts." },
   { q: "In a group conversation, you usually...", a: "Jump right in. You think best out loud.", b: "Listen first, then speak once your thoughts are formed." },
+  // --- S/N (4 questions) ---
   { q: "When you're telling a story, you tend to...", a: "Include the details — who was there, what was said, exactly how it happened.", b: "Jump to the point — the meaning or punchline, not all the specifics." },
+  { q: "When you meet someone new, you're more curious about...", a: "The basics — what they do, where they're from, their story so far.", b: "What makes them tick — their passions, their worldview, what's going on underneath." },
   { q: "You just finished a really good book or show. You think about...", a: "The scenes that stuck with you — specific moments, lines, images.", b: "What it was really about underneath — the themes, the message." },
-  { q: "When you meet someone new, you first pick up on...", a: "The facts — what they do, where they're from, how you're connected.", b: "The vibe — their energy, whether you click, what's beneath the surface." },
-  { q: "A friend asks for your honest opinion on a tough situation. You lean toward...", a: "Giving the most accurate assessment, even if it's not what they want to hear.", b: "Framing your thoughts carefully — honesty matters, but so does how they feel." },
+  { q: "When learning something new, you'd rather...", a: "Follow a step-by-step approach with concrete examples.", b: "Get the big picture first, then fill in details as needed." },
+  // --- T/F (4 questions) ---
+  { q: "A friend is upset about something you think is a misunderstanding. You...", a: "Explain what you think actually happened — clearing it up will help.", b: "Acknowledge their feelings first — they need to feel heard before logic helps." },
   { q: "When you're processing a big life decision, you mostly...", a: "Make a mental list of outcomes and pick the smartest one.", b: "Sit with how each option feels until one clicks." },
   { q: "When you need to make a group decision, you focus on...", a: "What makes the most logical sense for everyone — fairness through reason.", b: "How everyone feels about the options — fairness through making sure nobody's upset." },
+  { q: "When two friends are in a conflict, you instinctively...", a: "Try to figure out who's actually right.", b: "Try to understand how each person feels." },
+  // --- J/P (3 questions) ---
   { q: "Your approach to a weekend trip:", a: "Itinerary first. I like knowing what's happening.", b: "Wing it. The best stuff is unplanned anyway." },
   { q: "When you've got a deadline:", a: "Steady progress. I aim to finish early.", b: "Last-minute magic. Pressure is my fuel." },
   { q: "When making plans with people, you prefer...", a: "To lock it in early — you like having something confirmed.", b: "To keep it loose — closer to the time, see what feels right." },
@@ -164,12 +172,13 @@ export function rehydrateResults(r: QuizResults, starSign: StarSign | null): Qui
 }
 
 export function calculateResults(answers: QuizAnswers, starSign: StarSign | null): QuizResults {
-  // Cognitive Type — with continuous dimension scores
+  // Cognitive Type — with continuous dimension scores & anchor tiebreaker
+  // E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 4), T/F = 8-11 (anchor: 11), J/P = 12-14
   const dims = [
-    { letters: ['E', 'I'] as const, range: [0, 3] },
-    { letters: ['S', 'N'] as const, range: [3, 6] },
-    { letters: ['T', 'F'] as const, range: [6, 9] },
-    { letters: ['J', 'P'] as const, range: [9, 12] },
+    { letters: ['E', 'I'] as const, range: [0, 4], anchor: 1 },
+    { letters: ['S', 'N'] as const, range: [4, 8], anchor: 4 },
+    { letters: ['T', 'F'] as const, range: [8, 12], anchor: 11 },
+    { letters: ['J', 'P'] as const, range: [12, 15], anchor: -1 }, // odd count, no ties
   ];
   let type = '';
   const dimensionScores: Record<string, number> = {};
@@ -180,7 +189,14 @@ export function calculateResults(answers: QuizAnswers, starSign: StarSign | null
       if (answers.cognitive[i] === 'a') aCount++;
     }
     dimensionScores[`${d.letters[0]}/${d.letters[1]}`] = aCount / total;
-    type += aCount >= Math.ceil(total / 2) ? d.letters[0] : d.letters[1];
+    const bCount = total - aCount;
+    if (aCount !== bCount) {
+      // Clear majority — pick the winner
+      type += aCount > bCount ? d.letters[0] : d.letters[1];
+    } else {
+      // Tie — anchor question decides
+      type += answers.cognitive[d.anchor] === 'a' ? d.letters[0] : d.letters[1];
+    }
   });
 
   // Attachment
