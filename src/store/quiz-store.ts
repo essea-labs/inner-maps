@@ -72,7 +72,8 @@ function saveProfileCache(cache: ProfileCache) {
   try { localStorage.setItem('im_profile_cache', JSON.stringify(cache)); } catch { /* non-fatal */ }
 }
 
-function loadProfileCache(userId: string): ProfileCache | null {
+function loadProfileCache(userId: string | null | undefined): ProfileCache | null {
+  if (!userId) return null; // No user ID → don't load anyone else's cache
   try {
     const raw = localStorage.getItem('im_profile_cache');
     if (!raw) return null;
