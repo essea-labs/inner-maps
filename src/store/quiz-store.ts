@@ -609,6 +609,10 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     // Try cached profile first — renders instantly without any network calls
     const cached = loadProfileCache(userId);
     if (cached) {
+      // Set screen and restoringState in a single atomic update to prevent
+      // a flash of the landing page between clearing the loading gate and
+      // switching to the results screen.
+      const { screen: prev, prevScreens } = get();
       set({
         results: cached.results,
         userName: cached.userName,
@@ -616,9 +620,10 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         birthDay: cached.birthDay,
         starSign: cached.results.starSign,
         email: cached.email || email || '',
+        screen: 'results',
+        prevScreens: [...prevScreens, prev],
         restoringState: false,
       });
-      get().setScreen('results');
       // Refresh connections and purchases in the background (non-blocking)
       Promise.all([
         get().loadConnections(userId),
@@ -637,9 +642,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       ]);
       if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
       const { results, name, birthMonth, birthDay } = data;
-      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign, email: email || '' });
-      get().setScreen('results');
-      set({ restoringState: false });
+      const { screen: prev, prevScreens } = get();
+      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign, email: email || '', screen: 'results', prevScreens: [...prevScreens, prev], restoringState: false });
       // Cache for next time
       saveProfileCache({ userId, results, userName: name, birthMonth, birthDay, email: email || '' });
     } catch (err) {
