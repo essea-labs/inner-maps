@@ -5,6 +5,20 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function Image() {
+  // Fetch DM Sans font via Google Fonts CSS API for reliable URL resolution
+  let fontData: ArrayBuffer | null = null;
+  try {
+    const cssRes = await fetch('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
+    });
+    const css = await cssRes.text();
+    const urlMatch = css.match(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/);
+    if (urlMatch) {
+      const fontRes = await fetch(urlMatch[1]);
+      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
+    }
+  } catch { /* font fetch failed — fall back to system fonts */ }
+
   const dimensions = [
     { emoji: '\uD83E\uDDE0', label: 'Personality Type' },
     { emoji: '\uD83D\uDD2E', label: 'Enneagram' },
@@ -28,7 +42,6 @@ export default async function Image() {
           color: '#2D2217',
         }}
       >
-        {/* Brand header */}
         <div
           style={{
             fontSize: 18,
@@ -41,12 +54,11 @@ export default async function Image() {
             gap: 12,
           }}
         >
-          <span>&#10022;</span>
+          <span style={{ fontFamily: 'sans-serif' }}>&#10022;</span>
           <span>Inner Maps</span>
-          <span>&#10022;</span>
+          <span style={{ fontFamily: 'sans-serif' }}>&#10022;</span>
         </div>
 
-        {/* Headline */}
         <div
           style={{
             fontSize: 52,
@@ -63,7 +75,6 @@ export default async function Image() {
           <span>in Under 12 Minutes</span>
         </div>
 
-        {/* Subheadline */}
         <div
           style={{
             fontSize: 20,
@@ -77,7 +88,6 @@ export default async function Image() {
           One quiz. Five dimensions. Understand yourself.
         </div>
 
-        {/* Dimension pills */}
         <div
           style={{
             display: 'flex',
@@ -109,7 +119,6 @@ export default async function Image() {
           ))}
         </div>
 
-        {/* Footer */}
         <div
           style={{
             position: 'absolute',
@@ -127,6 +136,9 @@ export default async function Image() {
     ),
     {
       ...size,
+      fonts: fontData
+        ? [{ name: 'DM Sans', data: fontData, weight: 400 as const }]
+        : undefined,
     },
   );
 }
