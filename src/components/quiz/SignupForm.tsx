@@ -12,14 +12,12 @@ interface IntentContent {
   benefits: string[];
 }
 
-const INTENT_CONTENT: Record<string, IntentContent> = {
+// Content shown when the form is in signup mode
+const SIGNUP_CONTENT: Record<string, IntentContent> = {
   save: {
     title: <>Keep your <em>results</em></>,
-    subtitle: 'Free account — takes 10 seconds. Your profile stays yours forever.',
-    benefits: [
-      'Revisit your full 5-dimension profile anytime',
-      'Track how you grow and change over time',
-    ],
+    subtitle: 'Save your profile so you never lose it — and see how you match with others.',
+    benefits: [],
   },
   compatibility: {
     title: <>Discover your <em>compatibility</em></>,
@@ -38,8 +36,8 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
     ],
   },
   profile: {
-    title: <>Your <em>profile</em></>,
-    subtitle: 'Sign in to save your results and track your compatibility.',
+    title: <>Keep your <em>results</em></>,
+    subtitle: 'Save your profile so you never lose it — and see how you match with others.',
     benefits: [],
   },
   save_after_purchase: {
@@ -65,6 +63,45 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
       'Full breakdown of your dynamic across all 5 dimensions',
       'Communication guide based on both your styles',
     ],
+  },
+};
+
+// Content shown when the form is in login mode
+const LOGIN_CONTENT: Record<string, IntentContent> = {
+  save: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to access your profile and discover your compatibility with others.',
+    benefits: [],
+  },
+  compatibility: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to see your compatibility and invite others to take the quiz.',
+    benefits: [],
+  },
+  invite: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to see your compatibility and invite others to take the quiz.',
+    benefits: [],
+  },
+  profile: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to access your profile and discover your compatibility with others.',
+    benefits: [],
+  },
+  save_after_purchase: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to access your report and saved results.',
+    benefits: [],
+  },
+  purchase_individual: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to purchase and access your full personality report.',
+    benefits: [],
+  },
+  purchase_compatibility: {
+    title: <>Welcome <em>back</em></>,
+    subtitle: 'Sign in to purchase your compatibility report.',
+    benefits: [],
   },
 };
 
@@ -124,10 +161,12 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           password,
         });
         if (signInError) {
-          if (signInError.message?.includes('Invalid login')) {
+          if (signInError.message?.includes('Invalid login') || signInError.message?.includes('invalid')) {
             setError('Incorrect email or password.');
+          } else if (signInError.message?.includes('Email not confirmed')) {
+            setError('Please check your email to confirm your account first.');
           } else {
-            throw signInError;
+            setError(signInError.message ?? 'Something went wrong. Please try again.');
           }
           return;
         }
@@ -153,7 +192,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
     }
   }
 
-  const content = INTENT_CONTENT[intent] ?? INTENT_CONTENT.save;
+  const signupContent = SIGNUP_CONTENT[intent] ?? SIGNUP_CONTENT.save;
+  const loginContent = LOGIN_CONTENT[intent] ?? LOGIN_CONTENT.save;
+  const content = mode === 'login' ? loginContent : signupContent;
 
   // ── "Check your email" after forgot password ─────────────────────────────
   if (mode === 'resetSent') {
@@ -191,7 +232,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
       <div className={`signup-screen${!isFullScreen ? ' signup-screen--modal' : ''}`}>
         <div className="logo">✦ Inner Maps ✦</div>
         <h2>Reset your <em>password</em></h2>
-        <p className="signup-subtitle">Enter your email and we&apos;ll send you a reset link.</p>
+        <p className="signup-subtitle">We&apos;ll email you a secure link to create a new password.</p>
 
         <div className="signup-form">
           <input
@@ -284,18 +325,21 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           </button>
         )}
 
-        <button
-          onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setPassword(''); }}
-          style={{
-            display: 'block', width: '100%', background: 'none', border: 'none',
-            color: 'var(--text-light)', fontSize: 13, cursor: 'pointer',
-            marginTop: 8, textAlign: 'center',
-          }}
-        >
-          {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-        </button>
+        <p style={{ fontSize: 13, color: 'var(--text-light)', marginTop: 8, textAlign: 'center' }}>
+          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+          <button
+            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setPassword(''); }}
+            style={{
+              background: 'none', border: 'none', color: 'var(--peach)',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline',
+              padding: 0,
+            }}
+          >
+            {mode === 'login' ? 'Sign up' : 'Sign in'}
+          </button>
+        </p>
 
-        <button className="signup-skip" onClick={handleSkip}>Skip for now</button>
+        <button className="signup-skip" onClick={handleSkip} style={{ marginTop: 16 }}>Skip for now</button>
       </div>
 
       {isFullScreen && (

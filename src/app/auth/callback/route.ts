@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
-  const token_hash = searchParams.get('token_hash');
+  const code = searchParams.get('code');             // PKCE recovery flow
+  const token_hash = searchParams.get('token_hash'); // OTP recovery flow
   const type = searchParams.get('type');
 
   const cookieStore = await cookies();
@@ -28,8 +29,14 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  // Exchange recovery token for a session
-  if (token_hash && type) {
+  // Exchange the recovery token/code for a session
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      console.error('Auth code exchange failed:', error.message);
+      authError = error.message;
+    }
+  } else if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
     if (error) {
       console.error('OTP verification failed:', error.message);
@@ -38,9 +45,10 @@ export async function GET(request: NextRequest) {
   }
 
   // Build redirect — only recovery callbacks use this route now
+  const isRecovery = type === 'recovery' || code;
   const redirectUrl = new URL('/quiz', origin);
   redirectUrl.searchParams.set('authCallback', '1');
-  redirectUrl.searchParams.set('intent', 'recovery');
+  redirectUrl.searchParams.set('intent', isRecovery ? 'recovery' : 'save');
   if (authError) redirectUrl.searchParams.set('authError', authError);
 
   const response = NextResponse.redirect(redirectUrl);
