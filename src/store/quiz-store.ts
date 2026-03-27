@@ -366,19 +366,31 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         screen: 'results',
         prevScreens: [...prevScreens, current],
       });
-      // Sign in anonymously, persist quiz data, and complete invite if applicable
+      // Persist quiz data — use existing session if signed in, otherwise create anonymous
       (async () => {
         try {
-          const { data: { user } } = await supabase.auth.signInAnonymously();
+          let user = (await supabase.auth.getSession()).data.session?.user ?? null;
+          const isExistingRealUser = user && !user.is_anonymous;
+
+          if (!isExistingRealUser) {
+            // Only sign in anonymously if no real user session exists
+            const { data } = await supabase.auth.signInAnonymously();
+            user = data.user;
+          }
+
           if (user) {
             set({ currentUserId: user.id });
             await saveUserProfile(user.id, {
               name: userName,
+              email: isExistingRealUser ? (user.email ?? '') : undefined,
               birthMonth,
               birthDay,
-              isAnonymous: true,
+              isAnonymous: !isExistingRealUser,
             });
             await saveQuizResults(user.id, results, answers);
+            if (isExistingRealUser) {
+              saveProfileCache({ userId: user.id, results, userName, birthMonth, birthDay, email: user.email ?? '' });
+            }
 
             // Complete invite immediately if user arrived via invite link
             let inviterCode: string | null = null;
