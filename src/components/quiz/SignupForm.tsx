@@ -214,10 +214,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
             {loading ? 'Sending…' : 'Send reset link ✦'}
           </button>
 
-          <button
-            onClick={() => { setMode('login'); setError(''); }}
-            className="signup-skip"
-          >
+          <button className="signup-skip" onClick={() => { setMode('login'); setError(''); }}>
             Back to sign in
           </button>
         </div>
@@ -229,12 +226,10 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
   return (
     <div className={`signup-screen${!isFullScreen ? ' signup-screen--modal' : ''}`}>
       <div className="logo">✦ Inner Maps ✦</div>
-      <h2>{mode === 'login' ? <>Sign <em>in</em></> : content.title}</h2>
-      <p className="signup-subtitle">
-        {mode === 'login' ? 'Welcome back! Enter your email and password.' : content.subtitle}
-      </p>
+      <h2>{content.title}</h2>
+      <p className="signup-subtitle">{content.subtitle}</p>
 
-      {mode === 'signup' && content.benefits.length > 0 && (
+      {content.benefits.length > 0 && (
         <div className="signup-benefits">
           {content.benefits.map((b, i) => (
             <div key={i} className="signup-benefit">
@@ -281,7 +276,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
             onClick={() => { setMode('forgot'); setError(''); }}
             style={{
               background: 'none', border: 'none', color: 'var(--peach)',
-              fontSize: 13, fontWeight: 500, cursor: 'pointer', marginTop: 4,
+              fontSize: 13, fontWeight: 500, cursor: 'pointer', marginTop: 12,
               textDecoration: 'underline',
             }}
           >
@@ -293,7 +288,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setPassword(''); }}
           style={{
             background: 'none', border: 'none', color: 'var(--text-light)',
-            fontSize: 13, cursor: 'pointer', marginTop: 8,
+            fontSize: 13, cursor: 'pointer', marginTop: 12,
           }}
         >
           {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
