@@ -179,7 +179,7 @@ export default function CompatibilityView() {
             </div>
             <div className="compat-share-card-item">
               <div className="compat-share-card-item-label">Attachment Style</div>
-              <div className="compat-share-card-item-values" style={{ fontSize: results.attachmentStyle.length > 10 ? 11 : 14 }}>
+              <div className="compat-share-card-item-values" style={{ fontSize: Math.max(results.attachmentStyle.length, conn.results!.attachmentStyle.length) > 10 ? 11 : 14 }}>
                 <span>{results.attachmentStyle}</span>
                 <span className="vs">&amp;</span>
                 <span>{conn.results!.attachmentStyle}</span>
@@ -230,7 +230,14 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.zodiac.insight}</div>
           <div className="compat-detail">💡 {compat.zodiac.detail}</div>
-          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See your strengths &amp; watch-outs &rarr;</div>}
+          {!(conn.id && purchasedCompatibility[conn.id]) && (
+            <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {compat.zodiac.detail}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Personality */}
@@ -255,7 +262,14 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.personality.insight}</div>
           <div className="compat-detail">💡 {compat.personality.detail}</div>
-          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See how you each communicate &rarr;</div>}
+          {!(conn.id && purchasedCompatibility[conn.id]) && (
+            <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {compat.personality.detail}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Enneagram */}
@@ -280,7 +294,14 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.enneagram.insight}</div>
           <div className="compat-detail">💡 {compat.enneagram.detail}</div>
-          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See what you each bring &rarr;</div>}
+          {!(conn.id && purchasedCompatibility[conn.id]) && (
+            <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {compat.enneagram.detail}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Attachment */}
@@ -305,7 +326,14 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.attachment.insight}</div>
           <div className="compat-detail">💡 {compat.attachment.detail}</div>
-          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See your conflict patterns &rarr;</div>}
+          {!(conn.id && purchasedCompatibility[conn.id]) && (
+            <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {compat.attachment.detail}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Connection */}
@@ -330,7 +358,14 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-insight">{compat.connection.insight}</div>
           <div className="compat-detail">💡 {compat.connection.detail}</div>
-          {!(conn.id && purchasedCompatibility[conn.id]) && <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 8, fontSize: 12, color: 'var(--peach)', fontWeight: 600 }}>See how to show love to each other &rarr;</div>}
+          {!(conn.id && purchasedCompatibility[conn.id]) && (
+            <div onClick={handleUnlock} style={{ cursor: 'pointer', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--peach-pale)', position: 'relative', overflow: 'hidden' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)', maskImage: 'linear-gradient(to bottom, black 30%, transparent)' }}>
+                {compat.connection.detail}
+              </p>
+              <div style={{ fontSize: 12, color: 'var(--peach)', fontWeight: 600, marginTop: 4 }}>Unlock full insight &rarr;</div>
+            </div>
+          )}
         </div>
 
         {/* Upsell */}

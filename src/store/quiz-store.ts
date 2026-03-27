@@ -637,7 +637,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       ]);
       if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
       const { results, name, birthMonth, birthDay } = data;
-      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign });
+      set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign, email: email || '' });
       get().setScreen('results');
       set({ restoringState: false });
       // Cache for next time
