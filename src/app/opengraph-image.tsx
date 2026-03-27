@@ -5,6 +5,10 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function Image() {
+  const notoSymbolsFont = await fetch(
+    'https://fonts.gstatic.com/s/notosanssymbols2/v25/I_uyMoGduATTei9eI8daxVHDyfisHr71-jPszfp-fMA.ttf',
+  ).then((r) => r.arrayBuffer());
+
   const dimensions = [
     { emoji: '\uD83E\uDDE0', label: 'Personality Type' },
     { emoji: '\uD83D\uDD2E', label: 'Enneagram' },
@@ -41,9 +45,9 @@ export default async function Image() {
             gap: 12,
           }}
         >
-          <span>✦</span>
+          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>✦</span>
           <span>Inner Maps</span>
-          <span>✦</span>
+          <span style={{ fontFamily: 'Noto Sans Symbols 2' }}>✦</span>
         </div>
 
         {/* Headline */}
@@ -127,6 +131,9 @@ export default async function Image() {
     ),
     {
       ...size,
+      fonts: [
+        { name: 'Noto Sans Symbols 2', data: notoSymbolsFont, weight: 400 },
+      ],
     },
   );
 }
