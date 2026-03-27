@@ -692,6 +692,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
           console.warn('completeInvite threw:', err);
         }
         sessionStorage.removeItem('innerMapsInviterCode');
+        sessionStorage.removeItem('innerMapsInviterName');
       }
 
       // Load connections and purchases (must await before checking connections)
@@ -737,6 +738,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
           body: JSON.stringify({ invite_code: inviteCodeForClaim }),
         });
         sessionStorage.removeItem('innerMapsInviterCode');
+        sessionStorage.removeItem('innerMapsInviterName');
         // Refresh connections after claiming
         await get().loadConnections(userId);
       }

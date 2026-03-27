@@ -105,13 +105,23 @@ export default function QuizPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Store inviterCode when arriving from an invite link
+  // Store inviterCode when arriving from an invite link, and fetch inviter name
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const inviterCode = params.get('inviterCode');
     if (inviterCode && params.get('authCallback') !== '1') {
       sessionStorage.setItem('innerMapsInviterCode', inviterCode);
       window.history.replaceState({}, '', '/quiz');
+
+      // Fetch inviter name for the disclosure banner (non-blocking, non-fatal)
+      fetch(`/api/invite-lookup?code=${encodeURIComponent(inviterCode)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.inviterName) {
+            sessionStorage.setItem('innerMapsInviterName', data.inviterName);
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 

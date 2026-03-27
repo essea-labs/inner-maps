@@ -1,16 +1,44 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuizStore } from '@/store/quiz-store';
 import TabBar from '@/components/ui/TabBar';
 
 export default function LandingPage() {
   const setScreen = useQuizStore((s) => s.setScreen);
+  const [inviterName, setInviterName] = useState<string | null>(null);
+  const [isInviteFlow, setIsInviteFlow] = useState(false);
+
+  useEffect(() => {
+    const code = sessionStorage.getItem('innerMapsInviterCode');
+    if (code) {
+      setIsInviteFlow(true);
+      const name = sessionStorage.getItem('innerMapsInviterName');
+      if (name) setInviterName(name);
+    }
+  }, []);
 
   return (
     <>
       <div className="landing" style={{ paddingBottom: 100 }}>
         <div className="logo">✦ Inner Maps ✦</div>
+
+        {isInviteFlow && (
+          <div className="invite-banner">
+            <div className="invite-banner-title">
+              {inviterName
+                ? `${inviterName} invited you to discover your personality!`
+                : "You've been invited to discover your personality!"}
+            </div>
+            <div className="invite-banner-text">
+              When you complete the quiz, your results will be shared with{' '}
+              {inviterName || 'the person who invited you'} so you can explore
+              your compatibility together.
+            </div>
+          </div>
+        )}
+
         <h1>Discover Your <em>Full Self</em> in Under 12 Minutes</h1>
         <p className="subtitle">One quiz. Five dimensions. Understand yourself — then see how you match with others.</p>
 

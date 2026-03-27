@@ -413,6 +413,29 @@ body {
   color: var(--peach);
 }
 
+/* ===== INVITE DISCLOSURE BANNER ===== */
+.invite-banner {
+  background: #FFF0E6;
+  border: 1px solid var(--peach);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 0 0 24px;
+  text-align: left;
+  animation: fadeInUp 0.5s ease-out;
+}
+.invite-banner-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+.invite-banner-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-light);
+  line-height: 1.45;
+}
+
 /* ===== COMPATIBILITY TEASER ===== */
 .compat-teaser {
   width: 100%;
