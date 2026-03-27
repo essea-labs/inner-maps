@@ -25,11 +25,15 @@ export default function ResetPasswordForm() {
       showToast('Password updated ✓');
       try { localStorage.removeItem('im_recovery_pending'); } catch { /* non-fatal */ }
 
-      // Use restoreUserState — checks profile cache first (instant if cached),
-      // only hits the DB as fallback.
+      // Restore profile data, then navigate to results (or landing if no data)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await restoreUserState(user.id, user.email ?? '');
+        // restoreUserState navigates to results if data exists, but if the
+        // user has no quiz results it just clears restoringState. Ensure we
+        // always leave the password form.
+        const { results } = useQuizStore.getState();
+        if (!results) setScreen('landing');
       } else {
         setScreen('landing');
       }
