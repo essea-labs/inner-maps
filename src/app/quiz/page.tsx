@@ -125,6 +125,11 @@ export default function QuizPage() {
     // Ensure loading gate is cleared even without session data
     useQuizStore.setState({ restoringState: false });
 
+    // Store session ID so we can claim this purchase if user signs up later
+    if (sessionId) {
+      try { sessionStorage.setItem('im_stripe_session_id', sessionId); } catch { /* */ }
+    }
+
     // Unlock the report and navigate
     setPurchased(product, connectionId);
 

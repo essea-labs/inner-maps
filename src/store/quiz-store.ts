@@ -168,7 +168,7 @@ interface QuizStore {
   setPurchased: (productType: string, connectionId?: string) => void;
   setPurchaseIntent: (intent: string | null) => void;
   checkPurchases: (userId: string) => Promise<void>;
-  startCheckout: (productType: string, userId: string, connectionId?: string) => Promise<void>;
+  startCheckout: (productType: string, connectionId?: string) => Promise<void>;
 
   // Phase 2: Supabase
   loadConnections: (userId: string) => Promise<void>;
@@ -530,12 +530,12 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     }
   },
 
-  startCheckout: async (productType: string, userId: string, connectionId?: string) => {
+  startCheckout: async (productType: string, connectionId?: string) => {
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_type: productType, user_id: userId, connection_id: connectionId }),
+        body: JSON.stringify({ product_type: productType, connection_id: connectionId }),
       });
       const data = await res.json();
 
@@ -686,14 +686,34 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       console.warn('handlePostAuth save failed:', err);
     }
 
+    // Claim any anonymous purchase made before signup
+    try {
+      const stripeSessionId = sessionStorage.getItem('im_stripe_session_id');
+      if (stripeSessionId) {
+        await fetch('/api/purchases/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stripe_session_id: stripeSessionId }),
+        });
+        sessionStorage.removeItem('im_stripe_session_id');
+      }
+    } catch { /* non-fatal */ }
+
+    // Handle save_after_purchase intent — return to report
+    if (intent === 'save_after_purchase') {
+      get().showToast('Account created — your report is saved!');
+      set({ screen: 'individualReport', restoringState: false });
+      return;
+    }
+
     // Handle purchase intents — redirect to Stripe checkout
     if (intent === 'purchase_individual') {
-      await get().startCheckout('individual_report', userId);
+      await get().startCheckout('individual_report');
       return;
     }
     if (intent === 'purchase_compatibility') {
       const connectionId = get().activeConnection?.id;
-      await get().startCheckout('compatibility_report', userId, connectionId);
+      await get().startCheckout('compatibility_report', connectionId);
       return;
     }
 

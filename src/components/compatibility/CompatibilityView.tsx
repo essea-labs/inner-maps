@@ -106,7 +106,7 @@ export default function CompatibilityView() {
     }
     // Authenticated — go to Stripe
     setCheckoutLoading(true);
-    await startCheckout('compatibility_report', user!.id, connectionId);
+    await startCheckout('compatibility_report', connectionId);
     setCheckoutLoading(false);
   }
 

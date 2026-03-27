@@ -79,14 +79,9 @@ export default function Results() {
       setScreen('individualReport');
       return;
     }
-    // Anonymous user — need to sign up first
-    if (!isRealUser) {
-      openSignup('purchase_individual');
-      return;
-    }
-    // Authenticated — go to Stripe checkout
+    // Go straight to Stripe checkout — no signup required
     setCheckoutLoading(true);
-    await startCheckout('individual_report', user!.id);
+    await startCheckout('individual_report');
     setCheckoutLoading(false);
   }
 
@@ -293,7 +288,7 @@ export default function Results() {
                 <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips you can actually use today</div>
               </div>
               <div className="upsell-price">$9.99</div>
-              <div className="upsell-price-note">One-time purchase · Saved to your profile</div>
+              <div className="upsell-price-note">One-time purchase · Instant access</div>
               <button className="upsell-cta" onClick={handleUpsell} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
                 {checkoutLoading ? 'Loading checkout…' : 'Get My Full Report ✦'}
               </button>

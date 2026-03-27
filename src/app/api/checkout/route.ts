@@ -5,20 +5,17 @@ import { getAuthUserId } from '@/lib/api-auth';
 
 export async function POST(req: Request) {
   try {
-    const { product_type, user_id, connection_id } = await req.json();
+    const { product_type, connection_id } = await req.json();
 
     // Validate product type
     if (!PRICES[product_type]) {
       return NextResponse.json({ error: 'Invalid product type' }, { status: 400 });
     }
-    if (!user_id) {
-      return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
-    }
 
-    // Verify the caller is the user they claim to be
-    const authUserId = await getAuthUserId();
-    if (!authUserId || authUserId !== user_id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Use the authenticated session's user ID (works for anonymous users too)
+    const user_id = await getAuthUserId();
+    if (!user_id) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     // Check for existing purchase (duplicate prevention)

@@ -49,6 +49,17 @@ export default function IndividualReport() {
       <div className="report-topnav">
         <button className="report-topnav-back" onClick={() => setScreen('results')}>←</button>
         <span className="report-topnav-title">Full Report</span>
+        <button
+          className="report-topnav-action"
+          onClick={async () => {
+            const { generateReport } = await import('@/lib/generate-pdf');
+            await generateReport(r, userName || 'Your');
+          }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 8px', color: 'var(--text-secondary)' }}
+          title="Download PDF"
+        >
+          ↓
+        </button>
       </div>
       <div className="report-page">
 
@@ -57,6 +68,35 @@ export default function IndividualReport() {
           <h1>{userName ? `${userName}'s` : 'Your'} Inner Maps</h1>
           <p>Your complete 5-dimension profile</p>
         </div>
+
+        {/* Save to Profile CTA — only for anonymous users */}
+        {!isRealUser && (
+          <div
+            onClick={() => setSignupOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, var(--peach-pale), var(--card-bg))',
+              borderRadius: 'var(--radius)',
+              padding: '16px 20px',
+              marginBottom: 24,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              cursor: 'pointer',
+              border: '1px solid var(--peach-pale)',
+            }}
+          >
+            <div style={{ fontSize: 24, flexShrink: 0 }}>✦</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+                Save your report forever
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                Create a free account to keep it — and discover compatibility with friends
+              </div>
+            </div>
+            <div style={{ color: 'var(--peach)', fontSize: 16 }}>→</div>
+          </div>
+        )}
 
         {/* Summary Card */}
         <div className="share-card" style={{ marginBottom: 24 }}>

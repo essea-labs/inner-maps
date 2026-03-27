@@ -24,17 +24,19 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
   },
   compatibility: {
     title: <>Check your <em>compatibility</em></>,
-    subtitle: 'Save your profile first — then compare with anyone who takes the quiz.',
+    subtitle: 'See how your personalities actually fit together — the good, the surprising, and the hilarious.',
     benefits: [
-      'See how you and your friend really click',
-      'Get a breakdown across all 5 dimensions',
-      'Share results and spark real conversations',
+      'See your compatibility score across all 5 dimensions',
+      'Find out which personality traits draw you together',
     ],
   },
   invite: {
     title: <>Invite & <em>connect</em></>,
     subtitle: 'Sign up to get your personal invite link and see compatibility with anyone who takes the quiz.',
-    benefits: [],
+    benefits: [
+      'Both get a free compatibility score instantly',
+      'Every new connection reveals a different side of your personality',
+    ],
   },
   profile: {
     title: <>Your <em>profile</em></>,
@@ -47,6 +49,14 @@ const INTENT_CONTENT: Record<string, IntentContent> = {
     benefits: [
       'Deep dive into all 5 dimensions of your personality',
       'Personalised growth strategies and tips',
+    ],
+  },
+  save_after_purchase: {
+    title: <>Save your <em>report</em></>,
+    subtitle: 'Keep your report forever — and find out how you match with anyone.',
+    benefits: [
+      'Access your full report anytime from any device',
+      'Invite friends to discover your compatibility',
     ],
   },
   purchase_compatibility: {
