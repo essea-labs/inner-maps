@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
 import { WING_COMMENTARY, STARSIGN_DEEP_DIVE, TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE, CONNECTION_DEEP_DIVE } from '@/lib/deep-dive-data';
@@ -32,14 +32,6 @@ export default function Results() {
   const isRealUser = !authLoading && !!user && !user.is_anonymous;
 
   const shareCardRef = useRef<HTMLDivElement>(null);
-
-  // Check if this user arrived via an invite link (inviterCode in sessionStorage)
-  const [hasInviterCode, setHasInviterCode] = useState(false);
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem('innerMapsInviterCode')) setHasInviterCode(true);
-    } catch { /* */ }
-  }, []);
 
   if (!results) return null;
 
@@ -140,52 +132,18 @@ export default function Results() {
           <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleSaveImage}>Save</button>
         </div>
 
-        {/* Compatibility CTA — invite-aware */}
-        {hasInviterCode && !isRealUser ? (
-          <div
-            onClick={() => openSignup('compatibility')}
-            style={{
-              background: 'linear-gradient(135deg, var(--peach), var(--peach-deep, #D4956A))',
-              borderRadius: 'var(--radius)',
-              padding: '20px 24px',
-              marginBottom: 28,
-              cursor: 'pointer',
-              textAlign: 'center',
-              boxShadow: '0 4px 16px rgba(232, 168, 124, 0.3)',
-            }}
-          >
-            <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 6 }}>
-              Someone&apos;s waiting to see your compatibility
-            </div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', marginBottom: 14 }}>
-              Sign up to reveal how your personalities match — it only takes 10 seconds
-            </div>
-            <div style={{
-              display: 'inline-block',
-              background: 'white',
-              color: 'var(--peach)',
-              fontWeight: 700,
-              fontSize: 14,
-              padding: '10px 28px',
-              borderRadius: 24,
-              fontFamily: 'var(--font-dm-sans-family)',
-            }}>
-              See Your Compatibility
-            </div>
+        {/* Compatibility CTA */}
+        <div
+          onClick={() => isRealUser ? setInviteModalOpen(true) : openSignup('compatibility')}
+          style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: 20, marginBottom: 28, boxShadow: 'var(--card-shadow)', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.2s' }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,var(--peach-light),var(--peach))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>⟡</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>Check Your Compatibility</div>
+            <div style={{ fontSize: 13, color: 'var(--text-light)' }}>Invite a friend and see how your worlds align</div>
           </div>
-        ) : (
-          <div
-            onClick={() => isRealUser ? setInviteModalOpen(true) : openSignup('compatibility')}
-            style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: 20, marginBottom: 28, boxShadow: 'var(--card-shadow)', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,var(--peach-light),var(--peach))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>⟡</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>Check Your Compatibility</div>
-              <div style={{ fontSize: 13, color: 'var(--text-light)' }}>Invite a friend and see how your worlds align</div>
-            </div>
-            <div style={{ color: 'var(--peach)', fontSize: 18, flexShrink: 0 }}>→</div>
-          </div>
-        )}
+          <div style={{ color: 'var(--peach)', fontSize: 18, flexShrink: 0 }}>→</div>
+        </div>
 
         {/* Personality Type Card */}
         <div className="result-card" style={{ animationDelay: '0.1s' }}>
