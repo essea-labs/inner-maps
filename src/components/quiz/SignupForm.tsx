@@ -113,6 +113,7 @@ interface SignupFormProps {
 
 export default function SignupForm({ intent = 'save', onClose, defaultMode = 'signup' }: SignupFormProps) {
   const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
+  const restoreUserState = useQuizStore((s) => s.restoreUserState);
   const setScreen = useQuizStore((s) => s.setScreen);
   const showToast = useQuizStore((s) => s.showToast);
 
@@ -172,8 +173,10 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         }
         if (!data.user) { setError('Something went wrong. Please try again.'); return; }
 
-        const inviterCode = sessionStorage.getItem('innerMapsInviterCode') ?? undefined;
-        await handlePostAuth(data.user.id, trimmedEmail, intent, inviterCode);
+        // Use restoreUserState for login — it checks the profile cache first
+        // (instant if cached) and only hits the DB as fallback. Much faster
+        // than handlePostAuth which does multiple sequential DB writes.
+        await restoreUserState(data.user.id, trimmedEmail);
         if (onClose) onClose();
 
       } else if (mode === 'forgot') {

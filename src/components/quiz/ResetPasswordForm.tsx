@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 export default function ResetPasswordForm() {
   const setScreen = useQuizStore((s) => s.setScreen);
   const showToast = useQuizStore((s) => s.showToast);
+  const restoreUserState = useQuizStore((s) => s.restoreUserState);
 
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,12 +25,11 @@ export default function ResetPasswordForm() {
       showToast('Password updated ✓');
       try { localStorage.removeItem('im_recovery_pending'); } catch { /* non-fatal */ }
 
-      // Restore user profile in the background — show loading spinner
-      // immediately instead of blocking on the password form.
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user ?? null;
+      // Use restoreUserState — checks profile cache first (instant if cached),
+      // only hits the DB as fallback.
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        useQuizStore.getState().restoreUserState(user.id, user.email ?? '');
+        await restoreUserState(user.id, user.email ?? '');
       } else {
         setScreen('landing');
       }
