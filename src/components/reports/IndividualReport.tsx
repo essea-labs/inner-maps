@@ -97,7 +97,7 @@ export default function IndividualReport() {
             gap: 8,
           }}
         >
-          {pdfLoading ? 'Generating PDF…' : '↓ Download Report as PDF'}
+          {pdfLoading ? 'Generating PDF…' : 'Download Report as PDF'}
         </button>
 
         {/* Compatibility CTA — for anonymous users */}

@@ -141,7 +141,7 @@ export default function CompatibilityReport() {
             gap: 8,
           }}
         >
-          {pdfLoading ? 'Generating PDF…' : '↓ Download Report as PDF'}
+          {pdfLoading ? 'Generating PDF…' : 'Download Report as PDF'}
         </button>
 
         {/* Duo Score */}
@@ -159,9 +159,6 @@ export default function CompatibilityReport() {
           </div>
           <div className="compat-duo-score">{compat.overall}%</div>
           <div className="compat-duo-label">Overall Compatibility</div>
-          <p style={{ fontSize: 12, color: 'var(--text-light)', textAlign: 'center', marginTop: 8, fontStyle: 'italic', lineHeight: 1.5, padding: '0 12px' }}>
-            Compatibility isn&apos;t about being the same — it&apos;s about understanding where you click and where you grow.
-          </p>
         </div>
 
         {/* Strengths */}

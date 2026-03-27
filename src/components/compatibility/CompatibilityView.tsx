@@ -131,7 +131,7 @@ export default function CompatibilityView() {
         <div className="compat-share-card" ref={compatCardRef}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
           <div className="compat-share-card-names">{myName} & {conn.name}</div>
-          <div className="compat-share-card-score">{compat.overall}% — here&apos;s how your worlds align</div>
+          <div className="compat-share-card-score">{compat.overall}% Overall Compatibility</div>
           <div className="compat-share-card-grid">
             <div className="compat-share-card-item">
               <div className="compat-share-card-item-label">Personality</div>
@@ -177,7 +177,7 @@ export default function CompatibilityView() {
           <div className="compat-share-card-url">innermaps.io</div>
         </div>
         <button className="compat-share-cta" onClick={handleSaveImage} style={{ marginBottom: 24 }}>
-          Save ↓
+          Save
         </button>
 
         {/* Star Sign */}

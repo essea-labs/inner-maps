@@ -129,7 +129,7 @@ export default function Results() {
 
         {/* Save Button */}
         <div className="share-buttons">
-          <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleSaveImage}>Save ↓</button>
+          <button className="share-btn" style={{ width: '100%', maxWidth: 280, fontSize: 15, padding: '14px 24px', textAlign: 'center', justifyContent: 'center' }} onClick={handleSaveImage}>Save</button>
         </div>
 
         {/* Compatibility CTA */}
