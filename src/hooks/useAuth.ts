@@ -19,7 +19,6 @@ export default function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const loadConnections = useQuizStore((s) => s.loadConnections);
-  const restoreUserState = useQuizStore((s) => s.restoreUserState);
 
   useEffect(() => {
     let subscription: ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | null = null;
@@ -34,19 +33,10 @@ export default function useAuth() {
     _authPromise
       .then(async (u) => {
         setUser(u);
-        if (u && !u.is_anonymous) {
-          // Don't restore if auth callback is handling navigation
-          if (_authCallbackInProgress) return;
-
-          // Don't restore during password reset
-          const currentScreen = useQuizStore.getState().screen;
-          if (currentScreen === 'resetPassword') return;
-
-          const storeResults = useQuizStore.getState().results;
-          if (!storeResults) {
-            await restoreUserState(u.id, u.email ?? '');
-          }
-        }
+        // Quiz data restoration is handled exclusively by quiz/page.tsx's
+        // auto-restore effect. Doing it here too caused a race condition
+        // where two concurrent restoreUserState calls could flash the
+        // landing page between them.
       })
       .finally(() => {
         setLoading(false);
