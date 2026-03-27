@@ -10,7 +10,7 @@ const PISCES: StarSign = {
 
 function makeAnswers(overrides: Partial<QuizAnswers> = {}): QuizAnswers {
   return {
-    cognitive: Array(12).fill('a'),
+    cognitive: Array(15).fill('a'),
     attachment: Array(8).fill(3),
     connection: Array(10).fill('a'),
     enneagram: [5, 3, 3, 3, 3, 3, 3, 3, 3, 'a'],
@@ -22,80 +22,87 @@ function makeAnswers(overrides: Partial<QuizAnswers> = {}): QuizAnswers {
 
 describe('Cognitive Type scoring', () => {
   it('all-A answers produce ESTJ', () => {
-    const r = calculateResults(makeAnswers({ cognitive: Array(12).fill('a') }), PISCES);
+    const r = calculateResults(makeAnswers({ cognitive: Array(15).fill('a') }), PISCES);
     expect(r.cognitiveType).toBe('ESTJ');
   });
 
   it('all-B answers produce INFP', () => {
-    const r = calculateResults(makeAnswers({ cognitive: Array(12).fill('b') }), PISCES);
+    const r = calculateResults(makeAnswers({ cognitive: Array(15).fill('b') }), PISCES);
     expect(r.cognitiveType).toBe('INFP');
   });
 
-  it('2/3 A in E/I dimension selects E', () => {
-    const cognitive = ['a', 'a', 'b', ...Array(9).fill('b')];
+  it('3/4 A in E/I dimension selects E', () => {
+    // E/I: indices 0-3 (4q). 3 a's → E
+    const cognitive = ['a', 'a', 'a', 'b', ...Array(11).fill('b')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[0]).toBe('E');
   });
 
-  it('1/3 A in E/I dimension selects I', () => {
-    const cognitive = ['a', 'b', 'b', ...Array(9).fill('a')];
+  it('1/4 A in E/I dimension selects I', () => {
+    // E/I: indices 0-3 (4q). 1 a → I
+    const cognitive = ['a', 'b', 'b', 'b', ...Array(11).fill('a')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[0]).toBe('I');
   });
 
-  it('2/3 A in S/N dimension selects S', () => {
-    const cognitive = [...Array(3).fill('b'), 'a', 'a', 'b', ...Array(6).fill('b')];
+  it('3/4 A in S/N dimension selects S', () => {
+    // S/N: indices 4-7 (4q). 3 a's → S
+    const cognitive = [...Array(4).fill('b'), 'a', 'a', 'a', 'b', ...Array(7).fill('b')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[1]).toBe('S');
   });
 
-  it('1/3 A in S/N dimension selects N', () => {
-    const cognitive = [...Array(3).fill('a'), 'a', 'b', 'b', ...Array(6).fill('a')];
+  it('1/4 A in S/N dimension selects N', () => {
+    // S/N: indices 4-7 (4q). 1 a → N
+    const cognitive = [...Array(4).fill('a'), 'a', 'b', 'b', 'b', ...Array(7).fill('a')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[1]).toBe('N');
   });
 
-  it('2/3 A in T/F dimension selects T', () => {
-    const cognitive = [...Array(6).fill('b'), 'a', 'a', 'b', ...Array(3).fill('b')];
+  it('3/4 A in T/F dimension selects T', () => {
+    // T/F: indices 8-11 (4q). 3 a's → T
+    const cognitive = [...Array(8).fill('b'), 'a', 'a', 'a', 'b', ...Array(3).fill('b')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[2]).toBe('T');
   });
 
-  it('1/3 A in T/F dimension selects F', () => {
-    const cognitive = [...Array(6).fill('a'), 'a', 'b', 'b', ...Array(3).fill('a')];
+  it('1/4 A in T/F dimension selects F', () => {
+    // T/F: indices 8-11 (4q). 1 a → F
+    const cognitive = [...Array(8).fill('a'), 'a', 'b', 'b', 'b', ...Array(3).fill('a')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[2]).toBe('F');
   });
 
   it('2/3 A in J/P dimension selects J', () => {
-    const cognitive = [...Array(9).fill('b'), 'a', 'a', 'b'];
+    // J/P: indices 12-14 (3q). 2 a's → J
+    const cognitive = [...Array(12).fill('b'), 'a', 'a', 'b'];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[3]).toBe('J');
   });
 
   it('1/3 A in J/P dimension selects P', () => {
-    const cognitive = [...Array(9).fill('a'), 'a', 'b', 'b'];
+    // J/P: indices 12-14 (3q). 1 a → P
+    const cognitive = [...Array(12).fill('a'), 'a', 'b', 'b'];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[3]).toBe('P');
   });
 
   it('produces ENFP with correct answers', () => {
-    // E: 2a, I: 1a → E; S: 1a, N: 2a → N nope — a=S, b=N. So for N: need <2 a
-    // E/I: indices 0-2, a=E. For E: 2+ a. 'a','a','b'
-    // S/N: indices 3-5, a=S. For N: <2 a. 'b','b','b'
-    // T/F: indices 6-8, a=T. For F: <2 a. 'b','b','b'
-    // J/P: indices 9-11, a=J. For P: <2 a. 'b','b','b'
-    const cognitive = ['a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b'];
+    // E/I: indices 0-3, a=E. For E: 3+ a. 'a','a','a','b'
+    // S/N: indices 4-7, a=S. For N: ≤1 a. 'b','b','b','b'
+    // T/F: indices 8-11, a=T. For F: ≤1 a. 'b','b','b','b'
+    // J/P: indices 12-14, a=J. For P: ≤1 a. 'b','b','b'
+    const cognitive = ['a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b'];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType).toBe('ENFP');
   });
 
   it('produces ISTJ with correct answers', () => {
-    // I: <2 a in 0-2 → 'b','b','b'
-    // S: ≥2 a in 3-5 → 'a','a','b'
-    // T: ≥2 a in 6-8 → 'a','a','b'
-    // J: ≥2 a in 9-11 → 'a','a','b'
-    const cognitive = ['b', 'b', 'b', 'a', 'a', 'b', 'a', 'a', 'b', 'a', 'a', 'b'];
+    // I: ≤1 a in 0-3 → 'b','b','b','b'
+    // S: ≥3 a in 4-7 → 'a','a','a','b'
+    // T: ≥3 a in 8-11 → 'a','a','a','b'
+    // J: ≥2 a in 12-14 → 'a','a','b'
+    const cognitive = ['b', 'b', 'b', 'b', 'a', 'a', 'a', 'b', 'a', 'a', 'a', 'b', 'a', 'a', 'b'];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType).toBe('ISTJ');
   });
