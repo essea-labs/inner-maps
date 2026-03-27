@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { calculateCompatibility, ZODIAC_ELEMENTS } from '@/lib/compatibility';
 import { TYPE_DEEP_DIVE, ATTACHMENT_DEEP_DIVE, CONNECTION_DEEP_DIVE, COMPAT_DEEP, generatePairStrengths, generatePairChallenges } from '@/lib/deep-dive-data';
@@ -88,13 +88,46 @@ export default function CompatibilityReport() {
   const myConnKey = r.connectionSorted[0]?.[0] || 'quality';
   const theirConnKey = Object.keys(tr.connectionNames).find((k) => tr.connectionNames[k] === tr.topConnection) || 'quality';
 
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+
   return (
     <>
       <div className="report-topnav">
         <button className="report-topnav-back" onClick={() => setScreen('compatibility')}>←</button>
         <span className="report-topnav-title">{myName} & {conn.name}</span>
+        <button
+          onClick={async () => {
+            if (!reportRef.current || pdfLoading) return;
+            setPdfLoading(true);
+            try {
+              const { generateReportPDF } = await import('@/lib/generate-pdf');
+              const name = `${(myName).toLowerCase()}-${(conn.name || 'friend').toLowerCase()}`.replace(/\s+/g, '-');
+              await generateReportPDF(reportRef.current, `${name}-compatibility-report.pdf`);
+            } catch (err) {
+              console.error('PDF generation failed:', err);
+            } finally {
+              setPdfLoading(false);
+            }
+          }}
+          disabled={pdfLoading}
+          style={{
+            background: 'var(--peach)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 20,
+            padding: '6px 14px',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: pdfLoading ? 'wait' : 'pointer',
+            opacity: pdfLoading ? 0.6 : 1,
+            fontFamily: 'var(--font-dm-sans-family)',
+          }}
+        >
+          {pdfLoading ? 'Generating…' : 'Download PDF ↓'}
+        </button>
       </div>
-      <div className="report-page">
+      <div className="report-page" ref={reportRef}>
 
         <div className="report-header">
           <span className="report-badge">✦ Full Compatibility Report</span>

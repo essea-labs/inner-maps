@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import {
   TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE,
@@ -16,8 +16,11 @@ export default function IndividualReport() {
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
   const purchasedIndividual = useQuizStore((s) => s.purchasedIndividual);
+  const receiptUrl = useQuizStore((s) => s.receiptUrl);
   const { user } = useAuth();
   const [signupOpen, setSignupOpen] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
   const isRealUser = !!user && !user.is_anonymous;
 
   // Purchase gate — redirect back to results if not purchased (useEffect avoids render-time setState)
@@ -50,18 +53,37 @@ export default function IndividualReport() {
         <button className="report-topnav-back" onClick={() => setScreen('results')}>←</button>
         <span className="report-topnav-title">Full Report</span>
         <button
-          className="report-topnav-action"
           onClick={async () => {
-            const { generateReport } = await import('@/lib/generate-pdf');
-            await generateReport(r, userName || 'Your');
+            if (!reportRef.current || pdfLoading) return;
+            setPdfLoading(true);
+            try {
+              const { generateReportPDF } = await import('@/lib/generate-pdf');
+              const name = (userName || 'your').toLowerCase().replace(/\s+/g, '-');
+              await generateReportPDF(reportRef.current, `${name}-inner-maps-report.pdf`);
+            } catch (err) {
+              console.error('PDF generation failed:', err);
+            } finally {
+              setPdfLoading(false);
+            }
           }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 8px', color: 'var(--text-secondary)' }}
-          title="Download PDF"
+          disabled={pdfLoading}
+          style={{
+            background: 'var(--peach)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 20,
+            padding: '6px 14px',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: pdfLoading ? 'wait' : 'pointer',
+            opacity: pdfLoading ? 0.6 : 1,
+            fontFamily: 'var(--font-dm-sans-family)',
+          }}
         >
-          ↓
+          {pdfLoading ? 'Generating…' : 'Download PDF ↓'}
         </button>
       </div>
-      <div className="report-page">
+      <div className="report-page" ref={reportRef}>
 
         <div className="report-header">
           <span className="report-badge">✦ Full Report</span>
@@ -331,6 +353,19 @@ export default function IndividualReport() {
             Check Your Compatibility →
           </button>
         </div>
+
+        {receiptUrl && (
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <a
+              href={receiptUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 12, color: 'var(--text-light)', textDecoration: 'underline' }}
+            >
+              View purchase receipt →
+            </a>
+          </div>
+        )}
 
         <div className="disclaimer">
           This assessment is not affiliated with The Myers-Briggs Company or the MBTI® instrument.

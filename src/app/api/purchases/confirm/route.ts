@@ -18,8 +18,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });
     }
 
-    // Retrieve the session from Stripe to verify payment status
-    const session = await getStripe().checkout.sessions.retrieve(session_id);
+    // Retrieve the session from Stripe (expand payment_intent for receipt_url)
+    const session = await getStripe().checkout.sessions.retrieve(session_id, {
+      expand: ['payment_intent'],
+    });
 
     if (session.payment_status !== 'paid') {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
@@ -49,10 +51,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to record purchase' }, { status: 500 });
     }
 
+    // Extract receipt URL from the payment intent's latest charge
+    let receipt_url: string | null = null;
+    const pi = session.payment_intent;
+    if (pi && typeof pi === 'object' && 'latest_charge' in pi) {
+      const charge = pi.latest_charge;
+      if (charge && typeof charge === 'object' && 'receipt_url' in charge) {
+        receipt_url = (charge as any).receipt_url;
+      }
+    }
+
     return NextResponse.json({
       confirmed: true,
       product_type,
       connection_id: connection_id || null,
+      receipt_url,
     });
   } catch (err) {
     console.error('Purchase confirm error:', err);

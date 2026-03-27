@@ -127,6 +127,7 @@ interface QuizStore {
   purchasedIndividual: boolean;
   purchasedCompatibility: Record<string, boolean>; // keyed by connection id
   purchaseIntent: string | null; // 'purchase_individual' | 'purchase_compatibility'
+  receiptUrl: string | null;
 
   // Auth
   currentUserId: string | null;
@@ -241,6 +242,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   purchasedIndividual: false,
   purchasedCompatibility: {},
   purchaseIntent: null,
+  receiptUrl: null,
   currentUserId: null,
   // Always start with loading so we never flash the wrong screen.
   // Each code path (restore, auth callback, purchase, recovery) clears this

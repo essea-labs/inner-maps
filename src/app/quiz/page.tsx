@@ -154,6 +154,10 @@ export default function QuizPage() {
             body: JSON.stringify({ session_id: sessionId }),
           });
           if (res.ok) {
+            const data = await res.json();
+            if (data.receipt_url) {
+              useQuizStore.setState({ receiptUrl: data.receipt_url });
+            }
             console.log('Purchase confirmed via direct verification');
             return; // Confirmed — no need for retry loop
           }
