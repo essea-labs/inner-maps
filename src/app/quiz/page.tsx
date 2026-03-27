@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
+import { useQuizStore, restoreStateFromSession, clearSessionState, isReturningUser } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 import { setAuthCallbackInProgress } from '@/hooks/useAuth';
 
@@ -84,7 +84,17 @@ export default function QuizPage() {
     // the local cookie without a network round-trip, saving ~200-400ms.
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user ?? null;
+      let user = session?.user ?? null;
+
+      // getSession() reads the local cookie — fast but can fail if the token
+      // is stale. For returning users, fall back to getUser() which validates
+      // server-side and auto-refreshes the token. This prevents flashing the
+      // landing page when the cookie is expired but the account is valid.
+      if (!user && isReturningUser()) {
+        const { data } = await supabase.auth.getUser();
+        user = data.user ?? null;
+      }
+
       if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
         await restoreUserState(user.id, user.email ?? '');
       } else {

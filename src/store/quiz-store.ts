@@ -191,7 +191,7 @@ function makeDefaultAnswers(): QuizAnswers {
 // Check localStorage synchronously on store creation to know whether to show
 // loading screen on first render (prevents landing page flash for returning users).
 
-function isReturningUser(): boolean {
+export function isReturningUser(): boolean {
   try {
     if (typeof window === 'undefined') return false;
     // Don't show loading screen for password reset — show the form immediately
