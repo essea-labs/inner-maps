@@ -96,36 +96,7 @@ export default function CompatibilityReport() {
       <div className="report-topnav">
         <button className="report-topnav-back" onClick={() => setScreen('compatibility')}>←</button>
         <span className="report-topnav-title">{myName} & {conn.name}</span>
-        <button
-          onClick={async () => {
-            if (!reportRef.current || pdfLoading) return;
-            setPdfLoading(true);
-            try {
-              const { generateScreenshotPDF } = await import('@/lib/generate-pdf');
-              const name = `${(myName).toLowerCase()}-${(conn.name || 'friend').toLowerCase()}`.replace(/\s+/g, '-');
-              await generateScreenshotPDF(reportRef.current, `${name}-compatibility-report.pdf`);
-            } catch (err) {
-              console.error('PDF generation failed:', err);
-            } finally {
-              setPdfLoading(false);
-            }
-          }}
-          disabled={pdfLoading}
-          style={{
-            background: 'var(--peach)',
-            color: 'white',
-            border: 'none',
-            borderRadius: 20,
-            padding: '6px 14px',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: pdfLoading ? 'wait' : 'pointer',
-            opacity: pdfLoading ? 0.6 : 1,
-            fontFamily: 'var(--font-dm-sans-family)',
-          }}
-        >
-          {pdfLoading ? 'Generating…' : 'Download PDF ↓'}
-        </button>
+        <div style={{ width: 32 }} />
       </div>
       <div className="report-page" ref={reportRef}>
 
@@ -134,6 +105,44 @@ export default function CompatibilityReport() {
           <h1>{myName} & {conn.name}</h1>
           <p>Your complete compatibility across 5 dimensions</p>
         </div>
+
+        {/* Download PDF button — matches individual report style */}
+        <button
+          onClick={async () => {
+            if (!reportRef.current || pdfLoading) return;
+            setPdfLoading(true);
+            try {
+              const { generateCompatPDF } = await import('@/lib/generate-pdf');
+              const n = `${(myName).toLowerCase()}-${(conn.name || 'friend').toLowerCase()}`.replace(/\s+/g, '-');
+              await generateCompatPDF(n + '-compatibility-report.pdf', r, tr, myName, conn.name, compat, strengths, challenges);
+            } catch (err) {
+              console.error('PDF generation failed:', err);
+            } finally {
+              setPdfLoading(false);
+            }
+          }}
+          disabled={pdfLoading}
+          style={{
+            width: '100%',
+            padding: '14px 24px',
+            background: 'var(--card-bg)',
+            border: '1.5px solid var(--peach)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--peach)',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: pdfLoading ? 'wait' : 'pointer',
+            opacity: pdfLoading ? 0.6 : 1,
+            fontFamily: 'var(--font-dm-sans-family)',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
+        >
+          {pdfLoading ? 'Generating PDF…' : '↓ Download Report as PDF'}
+        </button>
 
         {/* Duo Score */}
         <div className="compat-duo-card" style={{ marginBottom: 24 }}>
