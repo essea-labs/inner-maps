@@ -23,17 +23,30 @@ async function captureAndSave(element: HTMLElement, fileName: string) {
     windowWidth: printWidth,
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFF8F5', // Match the app's ivory background
     logging: false,
     removeContainer: true,
     onclone: (clonedDoc, clonedEl) => {
+      // ── CRITICAL: Force all animations to end state ──
+      // Without this, html2canvas captures elements at animation start
+      // (opacity: 0, translateY: 20px, etc.) causing the faded look
+      const style = clonedDoc.createElement('style');
+      style.textContent = `
+        *, *::before, *::after {
+          animation: none !important;
+          transition: none !important;
+          opacity: 1 !important;
+        }
+      `;
+      clonedDoc.head.appendChild(style);
+
       // Widen the cloned element to fill the print width
       clonedEl.style.width = `${printWidth}px`;
       clonedEl.style.maxWidth = 'none';
       clonedEl.style.overflow = 'visible';
       clonedEl.style.height = 'auto';
       clonedEl.style.maxHeight = 'none';
-      clonedEl.style.backgroundColor = '#FFFFFF';
+      clonedEl.style.backgroundColor = '#FFF8F5';
       clonedEl.style.padding = '24px 32px';
 
       // Also widen any parent containers that might constrain width
@@ -88,7 +101,7 @@ async function captureAndSave(element: HTMLElement, fileName: string) {
     slice.height = srcH;
     const ctx = slice.getContext('2d', { alpha: false });
     if (ctx) {
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = '#FFF8F5';
       ctx.fillRect(0, 0, imgW, srcH);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
