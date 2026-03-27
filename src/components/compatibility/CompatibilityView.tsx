@@ -147,7 +147,7 @@ export default function CompatibilityView() {
                 Save your results
               </div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)' }}>
-                Sign up to keep your compatibility and invite others to compare
+                Sign up to save this and discover your compatibility with anyone
               </div>
             </div>
             <div style={{ color: 'white', fontSize: 16, flexShrink: 0 }}>→</div>
