@@ -156,6 +156,16 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
         <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12 }}>
           Don&apos;t see it? Check your spam folder.
         </p>
+        <button
+          onClick={() => { setMagicLinkSent(false); setEmail(''); setError(''); }}
+          style={{
+            background: 'none', border: 'none', color: 'var(--peach)',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 12,
+            textDecoration: 'underline',
+          }}
+        >
+          Use a different email
+        </button>
         {!isFullScreen && (
           <button className="signup-skip" onClick={onClose} style={{ marginTop: 8 }}>Close</button>
         )}

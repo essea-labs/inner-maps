@@ -52,36 +52,7 @@ export default function IndividualReport() {
       <div className="report-topnav">
         <button className="report-topnav-back" onClick={() => setScreen('results')}>←</button>
         <span className="report-topnav-title">Full Report</span>
-        <button
-          onClick={async () => {
-            if (!reportRef.current || pdfLoading) return;
-            setPdfLoading(true);
-            try {
-              const { generateReportPDF } = await import('@/lib/generate-pdf');
-              const name = (userName || 'your').toLowerCase().replace(/\s+/g, '-');
-              await generateReportPDF(reportRef.current, `${name}-inner-maps-report.pdf`);
-            } catch (err) {
-              console.error('PDF generation failed:', err);
-            } finally {
-              setPdfLoading(false);
-            }
-          }}
-          disabled={pdfLoading}
-          style={{
-            background: 'var(--peach)',
-            color: 'white',
-            border: 'none',
-            borderRadius: 20,
-            padding: '6px 14px',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: pdfLoading ? 'wait' : 'pointer',
-            opacity: pdfLoading ? 0.6 : 1,
-            fontFamily: 'var(--font-dm-sans-family)',
-          }}
-        >
-          {pdfLoading ? 'Generating…' : 'Download PDF ↓'}
-        </button>
+        <div style={{ width: 32 }} /> {/* spacer for alignment */}
       </div>
       <div className="report-page" ref={reportRef}>
 
@@ -91,7 +62,45 @@ export default function IndividualReport() {
           <p>Your complete 5-dimension profile</p>
         </div>
 
-        {/* Save to Profile CTA — only for anonymous users */}
+        {/* Download PDF button */}
+        <button
+          onClick={async () => {
+            if (!reportRef.current || pdfLoading) return;
+            setPdfLoading(true);
+            try {
+              const { generateReportPDF } = await import('@/lib/generate-pdf');
+              const n = (userName || 'your').toLowerCase().replace(/\s+/g, '-');
+              await generateReportPDF(reportRef.current, `${n}-inner-maps-report.pdf`, r, userName || 'Your');
+            } catch (err) {
+              console.error('PDF generation failed:', err);
+            } finally {
+              setPdfLoading(false);
+            }
+          }}
+          disabled={pdfLoading}
+          style={{
+            width: '100%',
+            padding: '14px 24px',
+            background: 'var(--card-bg)',
+            border: '1.5px solid var(--peach)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--peach)',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: pdfLoading ? 'wait' : 'pointer',
+            opacity: pdfLoading ? 0.6 : 1,
+            fontFamily: 'var(--font-dm-sans-family)',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
+        >
+          {pdfLoading ? 'Generating PDF…' : '↓ Download Report as PDF'}
+        </button>
+
+        {/* Compatibility CTA — for anonymous users */}
         {!isRealUser && (
           <div
             onClick={() => setSignupOpen(true)}
@@ -107,13 +116,13 @@ export default function IndividualReport() {
               border: '1px solid var(--peach-pale)',
             }}
           >
-            <div style={{ fontSize: 24, flexShrink: 0 }}>✦</div>
+            <div style={{ fontSize: 24, flexShrink: 0 }}>⟡</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
-                Save your report forever
+                How compatible are you?
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                Create a free account to keep it — and discover compatibility with friends
+                Create a free account to compare your profile with friends, family, or partners
               </div>
             </div>
             <div style={{ color: 'var(--peach)', fontSize: 16 }}>→</div>

@@ -101,9 +101,9 @@ export default function CompatibilityReport() {
             if (!reportRef.current || pdfLoading) return;
             setPdfLoading(true);
             try {
-              const { generateReportPDF } = await import('@/lib/generate-pdf');
+              const { generateScreenshotPDF } = await import('@/lib/generate-pdf');
               const name = `${(myName).toLowerCase()}-${(conn.name || 'friend').toLowerCase()}`.replace(/\s+/g, '-');
-              await generateReportPDF(reportRef.current, `${name}-compatibility-report.pdf`);
+              await generateScreenshotPDF(reportRef.current, `${name}-compatibility-report.pdf`);
             } catch (err) {
               console.error('PDF generation failed:', err);
             } finally {
