@@ -28,7 +28,7 @@ export default function ProfileTab() {
 
         {results ? (
           <div className="share-card" style={{ marginBottom: 24 }}>
-            <div className="share-card-title">✦ {userName ? `${userName}'s` : 'Your'} Inner Maps ✦</div>
+            <div className="share-card-title">✦ Inner Maps ✦</div>
             <div className="share-card-results">
               <div className="share-card-item">
                 <div className="share-card-item-label">Personality</div>
@@ -39,11 +39,11 @@ export default function ProfileTab() {
                 <div className="share-card-item-value">{results.enneagramDisplay}</div>
               </div>
               <div className="share-card-item">
-                <div className="share-card-item-label">Attachment</div>
-                <div className="share-card-item-value">{results.attachmentStyle}</div>
+                <div className="share-card-item-label">Attachment Style</div>
+                <div className="share-card-item-value" style={{ fontSize: results.attachmentStyle.length > 12 ? 14 : 18 }}>{results.attachmentStyle}</div>
               </div>
               <div className="share-card-item">
-                <div className="share-card-item-label">Connection</div>
+                <div className="share-card-item-label">Connection Style</div>
                 <div className="share-card-item-value" style={{ fontSize: results.topConnection.length > 12 ? 14 : 18 }}>
                   {results.topConnection}
                 </div>
@@ -53,6 +53,7 @@ export default function ProfileTab() {
                 <div className="share-card-item-value">{results.starSign?.sign} {results.starSign?.symbol}</div>
               </div>
             </div>
+            <div className="share-card-url">innermaps.io</div>
           </div>
         ) : restoringState ? (
           <div className="connections-empty" style={{ marginBottom: 24 }}>
