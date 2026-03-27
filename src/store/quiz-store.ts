@@ -640,7 +640,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         get().loadConnections(userId),
         get().checkPurchases(userId),
       ]);
-      if (!data) { set({ restoringState: false }); return; } // User hasn't taken the quiz yet
+      if (!data) { clearReturningUser(); set({ restoringState: false }); return; } // User hasn't taken the quiz yet
       const { results, name, birthMonth, birthDay } = data;
       const { screen: prev, prevScreens } = get();
       set({ results, userName: name, birthMonth, birthDay, starSign: results.starSign, email: email || '', screen: 'results', prevScreens: [...prevScreens, prev], restoringState: false });
