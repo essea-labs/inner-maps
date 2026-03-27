@@ -309,7 +309,7 @@ export default function CompatibilityView() {
         <div className="upsell-section" style={{ marginTop: 24 }}>
           {conn.id && purchasedCompatibility[conn.id] ? (
             <>
-              <h2>Your Report is <em>Unlocked</em></h2>
+              <h2>Your Full Report is <em>Unlocked</em></h2>
               <p className="upsell-subtitle">View the full picture of how you and {conn.name} connect</p>
               <button className="upsell-cta" onClick={() => setScreen('compatibilityReport')}>
                 View Compatibility Report &rarr;
