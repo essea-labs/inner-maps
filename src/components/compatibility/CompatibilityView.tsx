@@ -127,6 +127,33 @@ export default function CompatibilityView() {
           <p>Here&apos;s how your inner worlds align</p>
         </div>
 
+        {/* Signup CTA for anonymous users */}
+        {!isRealUser && (
+          <div
+            onClick={() => setSignupOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, var(--peach), var(--peach-deep, #D4956A))',
+              borderRadius: 'var(--radius)',
+              padding: '16px 20px',
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'white', marginBottom: 3 }}>
+                Save your results
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)' }}>
+                Sign up to keep your compatibility and invite others to compare
+              </div>
+            </div>
+            <div style={{ color: 'white', fontSize: 16, flexShrink: 0 }}>→</div>
+          </div>
+        )}
+
         {/* Shareable Card */}
         <div className="compat-share-card" ref={compatCardRef}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>

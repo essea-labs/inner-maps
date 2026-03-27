@@ -361,11 +361,12 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         screen: 'results',
         prevScreens: [...prevScreens, current],
       });
-      // Sign in anonymously and persist quiz data to Supabase
+      // Sign in anonymously, persist quiz data, and complete invite if applicable
       (async () => {
         try {
           const { data: { user } } = await supabase.auth.signInAnonymously();
           if (user) {
+            set({ currentUserId: user.id });
             await saveUserProfile(user.id, {
               name: userName,
               birthMonth,
@@ -373,9 +374,29 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
               isAnonymous: true,
             });
             await saveQuizResults(user.id, results, answers);
+
+            // Complete invite immediately if user arrived via invite link
+            let inviterCode: string | null = null;
+            try { inviterCode = sessionStorage.getItem('innerMapsInviterCode'); } catch { /* */ }
+            if (inviterCode) {
+              try {
+                const completed = await completeInvite(inviterCode, user.id);
+                if (completed) {
+                  // Load connections so compat tab works immediately
+                  await get().loadConnections(user.id);
+                  const conns = get().connections;
+                  if (conns.length > 0) {
+                    get().setActiveConnection(conns[0]);
+                    get().setActiveTab('compat');
+                    set({ screen: 'compatibility' });
+                  }
+                }
+              } catch (err) {
+                console.warn('Invite complete on quiz finish failed:', err);
+              }
+            }
           }
         } catch (err) {
-          // Non-fatal: user still sees results even if DB write fails
           console.warn('Anon save failed:', err);
         }
       })();
@@ -698,6 +719,21 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
           body: JSON.stringify({ stripe_session_id: stripeSessionId }),
         });
         sessionStorage.removeItem('im_stripe_session_id');
+      }
+    } catch { /* non-fatal */ }
+
+    // Claim any anonymous invite completed before signup (edge case: signed into different account)
+    try {
+      const inviteCodeForClaim = sessionStorage.getItem('innerMapsInviterCode');
+      if (inviteCodeForClaim) {
+        await fetch('/api/invites/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invite_code: inviteCodeForClaim }),
+        });
+        sessionStorage.removeItem('innerMapsInviterCode');
+        // Refresh connections after claiming
+        await get().loadConnections(userId);
       }
     } catch { /* non-fatal */ }
 
