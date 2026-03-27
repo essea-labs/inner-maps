@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('Quiz Navigation', () => {
   async function navigateToQuiz(page: import('@playwright/test').Page) {
     await page.goto('/quiz');
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
     await page.locator('input.name-input').fill('Test');
     await page.locator('button.nav-next').click();
     const selects = page.locator('select.birthday-select');
@@ -26,7 +26,7 @@ test.describe('Quiz Navigation', () => {
 
   test('back button from name goes to landing', async ({ page }) => {
     await page.goto('/quiz');
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
     await expect(page.locator('.name-screen')).toBeVisible();
     await page.locator('button.quiz-back-bottom').click();
     await expect(page.locator('.landing')).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('Quiz Navigation', () => {
 
   test('birthday shows star sign on selection', async ({ page }) => {
     await page.goto('/quiz');
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
     await page.locator('input.name-input').fill('Test');
     await page.locator('button.nav-next').click();
 
@@ -68,7 +68,7 @@ test.describe('Quiz Navigation', () => {
 
   test('continue button is disabled until name entered', async ({ page }) => {
     await page.goto('/quiz');
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
     await expect(page.locator('button.nav-next')).toBeDisabled();
     await page.locator('input.name-input').fill('A');
     await expect(page.locator('button.nav-next')).toBeEnabled();
@@ -76,7 +76,7 @@ test.describe('Quiz Navigation', () => {
 
   test('continue button is disabled until birthday selected', async ({ page }) => {
     await page.goto('/quiz');
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
     await page.locator('input.name-input').fill('Test');
     await page.locator('button.nav-next').click();
     await expect(page.locator('button.nav-next')).toBeDisabled();

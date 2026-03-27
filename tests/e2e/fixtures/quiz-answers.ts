@@ -12,7 +12,7 @@ export interface QuizAnswerSet {
   birthDay: number;
   /** Expected star sign */
   expectedStarSign: string;
-  /** 12 cognitive answers: 'a' or 'b' */
+  /** 15 cognitive answers: 'a' or 'b' (4 E/I + 4 S/N + 4 T/F + 3 J/P) */
   cognitive: ('a' | 'b')[];
   /** 8 attachment answers: 1-5 */
   attachment: number[];
@@ -35,8 +35,8 @@ export const GOLDEN_PATH: QuizAnswerSet = {
   birthMonth: 3,
   birthDay: 15,
   expectedStarSign: 'Pisces',
-  // E: Q0-2 → a,a,b (2a=E), N: Q3-5 → b,b,b (0a=N), F: Q6-8 → b,b,b (0a=F), P: Q9-11 → b,b,b (0a=P)
-  cognitive: ['a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b'],
+  // E/I(0-3): a,a,a,b (3a→E), S/N(4-7): b,b,b,b (0a→N), T/F(8-11): b,b,b,b (0a→F), J/P(12-14): b,b,b (0a→P)
+  cognitive: ['a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b'],
   // All low → Secure
   attachment: [1, 2, 1, 2, 1, 2, 1, 2],
   // All A → Words of Affirmation wins (4 tallies)
@@ -57,8 +57,8 @@ export const CONTRASTING_PROFILE: QuizAnswerSet = {
   birthMonth: 8,
   birthDay: 10,
   expectedStarSign: 'Leo',
-  // I: Q0-2 → b,b,b (0a=I), S: Q3-5 → a,a,a (3a=S), T: Q6-8 → a,a,a (3a=T), J: Q9-11 → a,a,a (3a=J)
-  cognitive: ['b', 'b', 'b', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+  // E/I(0-3): b,b,b,b (0a→I), S/N(4-7): a,a,a,a (4a→S), T/F(8-11): a,a,a,a (4a→T), J/P(12-14): a,a,a (3a→J)
+  cognitive: ['b', 'b', 'b', 'b', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
   // Low anxiety, high avoidance → Avoidant
   attachment: [1, 1, 1, 1, 5, 5, 5, 5],
   // All B → Physical Touch wins (4 tallies)

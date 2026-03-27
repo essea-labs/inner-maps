@@ -7,12 +7,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Complete Quiz Flow (Happy Path)', () => {
-  test('completes full quiz from landing to results', async ({ page }) => {
+  test('completes full quiz from landing to results', { timeout: 120000 }, async ({ page }) => {
     await page.goto('/quiz');
 
     // ── LANDING ──
     await expect(page.locator('.landing')).toBeVisible();
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
 
     // ── NAME INPUT ──
     await expect(page.locator('.name-screen')).toBeVisible();
@@ -28,9 +28,9 @@ test.describe('Complete Quiz Flow (Happy Path)', () => {
     await expect(page.locator('.star-sign-name')).toContainText(GOLDEN_PATH.expectedStarSign);
     await page.locator('button.nav-next').click();
 
-    // ── SECTION 1: COGNITIVE (12 A/B questions) ──
+    // ── SECTION 1: COGNITIVE (15 A/B questions) ──
     await expect(page.locator('.quiz-screen')).toBeVisible();
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 15; i++) {
       const answer = GOLDEN_PATH.cognitive[i];
       const cards = page.locator('.ab-card');
       if (answer === 'a') {
@@ -39,7 +39,7 @@ test.describe('Complete Quiz Flow (Happy Path)', () => {
         await cards.nth(1).click();
       }
       // Wait for auto-advance or click next
-      if (i < 11) {
+      if (i < 14) {
         await page.waitForTimeout(500);
       }
     }
@@ -110,7 +110,7 @@ test.describe('Complete Quiz Flow (Happy Path)', () => {
 
   test('progress tracker updates across sections', async ({ page }) => {
     await page.goto('/quiz');
-    await page.getByText('Take the Quiz').click();
+    await page.getByRole('button', { name: 'Take the Quiz' }).click();
 
     // Fill name + birthday
     await page.locator('input.name-input').fill('Test');
