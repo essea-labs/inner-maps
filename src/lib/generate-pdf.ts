@@ -565,7 +565,11 @@ export async function generateCompatPDF(
   doc.setFontSize(10);
   doc.setTextColor(...LIGHT);
   doc.text('Overall Compatibility', _.W / 2, _.y, { align: 'center' });
-  _.y += 16;
+  _.y += 6;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8.5);
+  doc.text('Compatibility isn\'t about being the same \u2014 it\'s about understanding where you click and where you grow.', _.W / 2, _.y, { align: 'center' });
+  _.y += 12;
 
   _.box('Your Biggest Strengths', `Your strongest dimensions are ${strengths[0]} and ${strengths[1]}. These are the areas where you naturally click \u2014 lean into them.`, GREEN, DEEP_GREEN);
   _.box('Where to Be Intentional', `Your growth edges are ${challenges[0]} and ${challenges[1]}. These aren't weaknesses \u2014 they're invitations to learn from each other.`, PEACH);
@@ -574,7 +578,7 @@ export async function generateCompatPDF(
   _.newPage();
   _.h1('Star Sign Compatibility');
   _.vs(myName, `${r.starSign?.sign || ''} ${r.starSign?.symbol || ''}`, connName, `${tr.starSign?.sign || ''} ${tr.starSign?.symbol || ''}`);
-  _.scoreBar('Compatibility', compat.zodiac.score);
+  _.scoreBar('Your dynamic', compat.zodiac.score);
   _.italic(compat.zodiac.insight);
   _.box('Strength', COMPAT_DEEP.zodiac.strength(r.starSign?.sign ?? 'Aries', tr.starSign?.sign ?? 'Aries'), GREEN, DEEP_GREEN);
   _.box('Watch Out', COMPAT_DEEP.zodiac.watchOut(r.starSign?.sign ?? 'Aries', tr.starSign?.sign ?? 'Aries'), PEACH);
@@ -583,7 +587,7 @@ export async function generateCompatPDF(
   _.newPage();
   _.h1('Personality Compatibility');
   _.vs(myName, r.cognitiveType, connName, tr.cognitiveType);
-  _.scoreBar('Compatibility', compat.personality.score);
+  _.scoreBar('Your dynamic', compat.personality.score);
   _.italic(compat.personality.insight);
   _.h2(`How ${myName} Communicates`);
   _.body((TYPE_DEEP_DIVE[r.cognitiveType]?.think ?? '').substring(0, 150) + '...');
@@ -600,7 +604,7 @@ export async function generateCompatPDF(
   _.newPage();
   _.h1('Enneagram Compatibility');
   _.vs(myName, r.enneagramDisplay, connName, tr.enneagramDisplay);
-  _.scoreBar('Compatibility', compat.enneagram.score);
+  _.scoreBar('Your dynamic', compat.enneagram.score);
   _.italic(compat.enneagram.insight);
   _.box(`What ${myName} Brings`, enneagramBrings(r.enneagramType, myName), GREEN, DEEP_GREEN);
   _.box(`What ${connName} Brings`, enneagramBrings(tr.enneagramType, connName), GREEN, DEEP_GREEN);
@@ -609,7 +613,7 @@ export async function generateCompatPDF(
   _.newPage();
   _.h1('Attachment Compatibility');
   _.vs(myName, r.attachmentStyle, connName, tr.attachmentStyle);
-  _.scoreBar('Compatibility', compat.attachment.score);
+  _.scoreBar('Your dynamic', compat.attachment.score);
   _.italic(compat.attachment.insight);
   _.h2('During Conflict');
   _.body(`${myName}: ${ATTACHMENT_DEEP_DIVE[r.attachmentStyle]?.conflict || ''}`);
@@ -623,7 +627,7 @@ export async function generateCompatPDF(
   _.newPage();
   _.h1('Connection Style Compatibility');
   _.vs(myName, r.topConnection, connName, tr.topConnection);
-  _.scoreBar('Compatibility', compat.connection.score);
+  _.scoreBar('Your dynamic', compat.connection.score);
   _.italic(compat.connection.insight);
   _.h2(`How to Show Love to ${myName}`);
   _.body(CONNECTION_DEEP_DIVE[myConnKey]?.askForIt || '');

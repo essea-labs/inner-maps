@@ -79,10 +79,10 @@ export const ATTACHMENT_DEEP_DIVE: Record<string, { triggers: string[]; patterns
     strategies: ["Practice naming one emotion per day — even just to yourself. Building emotional vocabulary builds emotional access", "When you feel the urge to pull away, try staying 10% longer than feels comfortable. That's where growth lives", "Let someone help you with something small. Notice that depending on others doesn't mean losing yourself"],
   },
   'Fearful-Avoidant': {
-    triggers: ["Getting close to someone and then feeling the urge to sabotage it", "Feeling simultaneously desperate for connection and terrified of it", "Unpredictable behaviour from partners that mirrors early experiences", "Any situation that feels emotionally high-stakes"],
-    patterns: ["You oscillate between pursuing closeness and creating distance", "You may test partners to see if they'll stay through your worst", "You crave intimacy but distrust it when it arrives"],
-    conflict: "Conflict activates both anxiety and avoidance simultaneously — you might lash out and then withdraw, or shut down and then panic about the disconnect. It feels chaotic inside.",
-    strategies: ["Therapy is genuinely transformative for this attachment style — a secure base with a professional can rewire your patterns", "Track your push-pull cycles. Just noticing the pattern gives you a moment of choice before reacting", "Build trust slowly with safe people. You don't have to go from 0 to 100 — small, consistent vulnerability is enough"],
+    triggers: ["Getting close to someone and then feeling the urge to pull back", "Wanting deep connection while also feeling wary of it", "Unpredictable dynamics that echo past experiences", "Any situation that feels emotionally high-stakes"],
+    patterns: ["You move between seeking closeness and needing distance — this isn't broken, it's a protective pattern you learned", "You may need extra reassurance that people will stay, even as part of you creates distance", "You crave intimacy deeply — trusting it when it arrives is your growth edge"],
+    conflict: "Conflict can activate both your need for closeness and your instinct to withdraw at the same time. This inner tug-of-war can feel overwhelming — but naming it ('I'm feeling pulled in two directions right now') gives you power over it.",
+    strategies: ["Working with a therapist can be genuinely transformative — having one consistently safe relationship rewires your expectations over time", "Notice when you're cycling between reaching out and pulling away. Just seeing the pattern gives you a moment of choice", "Build trust at your own pace. You don't have to go from 0 to 100 — small, consistent vulnerability is enough"],
   },
 };
 

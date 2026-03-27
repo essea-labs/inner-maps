@@ -131,7 +131,7 @@ export default function CompatibilityView() {
         <div className="compat-share-card" ref={compatCardRef}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
           <div className="compat-share-card-names">{myName} & {conn.name}</div>
-          <div className="compat-share-card-score">{compat.overall}% compatible</div>
+          <div className="compat-share-card-score">{compat.overall}% — here&apos;s how your worlds align</div>
           <div className="compat-share-card-grid">
             <div className="compat-share-card-item">
               <div className="compat-share-card-item-label">Personality</div>
