@@ -275,9 +275,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           <button
             onClick={() => { setMode('forgot'); setError(''); }}
             style={{
-              background: 'none', border: 'none', color: 'var(--peach)',
-              fontSize: 13, fontWeight: 500, cursor: 'pointer', marginTop: 12,
-              textDecoration: 'underline',
+              display: 'block', width: '100%', background: 'none', border: 'none',
+              color: 'var(--peach)', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              marginTop: 12, textDecoration: 'underline', textAlign: 'center',
             }}
           >
             Forgot password?
@@ -287,8 +287,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         <button
           onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setPassword(''); }}
           style={{
-            background: 'none', border: 'none', color: 'var(--text-light)',
-            fontSize: 13, cursor: 'pointer', marginTop: 12,
+            display: 'block', width: '100%', background: 'none', border: 'none',
+            color: 'var(--text-light)', fontSize: 13, cursor: 'pointer',
+            marginTop: 8, textAlign: 'center',
           }}
         >
           {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
