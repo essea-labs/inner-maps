@@ -202,6 +202,14 @@ export function isReturningUser(): boolean {
   catch { return false; }
 }
 
+/** Check if this page load is any auth callback (magic link, OAuth, etc.) */
+function isAuthCallback(): boolean {
+  try {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('authCallback') === '1';
+  } catch { return false; }
+}
+
 /** Check if this page load is a password recovery callback */
 function isRecoveryCallback(): boolean {
   try {
@@ -245,10 +253,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   purchaseIntent: null,
   receiptUrl: null,
   currentUserId: null,
-  // Always start with loading so we never flash the wrong screen.
-  // Each code path (restore, auth callback, purchase, recovery) clears this
-  // once it knows which screen to show.
-  restoringState: true,
+  // Start with loading only when we expect to restore state or handle an auth
+  // callback. New/anonymous users see the landing page immediately.
+  restoringState: isReturningUser() || isRecoveryCallback() || isAuthCallback(),
   toastMessage: null,
 
   // ===== NAVIGATION =====
@@ -653,7 +660,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   handlePostAuth: async (userId: string, email: string, intent: string, inviterCode?: string | null) => {
-    markReturningUser();
+    // Only mark as returning user if they have quiz results — otherwise the
+    // next page load shows a loading spinner while checking the DB for nothing.
+    if (get().results) markReturningUser();
     try {
       const { results, answers, userName, birthMonth, birthDay } = get();
 
@@ -667,11 +676,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       if (existingData) {
         // Existing results in DB — restore them (don't overwrite with new quiz)
         // Pass the current in-memory name so it's preserved if the user just entered it
+        markReturningUser();
         await saveUserProfile(userId, { name: userName || existingData.name || undefined, email, isAnonymous: false });
         set({ results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, starSign: existingData.results.starSign });
         saveProfileCache({ userId, results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, email });
       } else if (results) {
         // First time saving — persist current in-memory results
+        markReturningUser();
         await saveUserProfile(userId, { name: userName, email, birthMonth, birthDay, isAnonymous: false });
         await saveQuizResults(userId, results, answers);
         saveProfileCache({ userId, results, userName, birthMonth, birthDay, email });
