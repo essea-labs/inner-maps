@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState, isReturningUser } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
-import { setAuthCallbackInProgress } from '@/hooks/useAuth';
 
 import LandingPage from '@/components/LandingPage';
 import NameInput from '@/components/quiz/NameInput';
@@ -42,7 +41,6 @@ export default function QuizPage() {
 
   const screen = useQuizStore((s) => s.screen);
   const inviteModalOpen = useQuizStore((s) => s.inviteModalOpen);
-  const handlePostAuth = useQuizStore((s) => s.handlePostAuth);
   const showToast = useQuizStore((s) => s.showToast);
   const setScreen = useQuizStore((s) => s.setScreen);
   const setPurchased = useQuizStore((s) => s.setPurchased);
@@ -204,88 +202,35 @@ export default function QuizPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle post-OAuth / magic-link / password-reset callback
+  // Handle password-reset callback (the only remaining redirect-based auth flow)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('authCallback') !== '1') return;
 
-    // Prevent useAuth from double-restoring while we handle this callback
-    setAuthCallbackInProgress(true);
-
     let intent = params.get('intent') ?? 'save';
     const authError = params.get('authError');
 
-    // Detect expired/reused recovery links: Supabase may redirect without
-    // type=recovery on failure, so the callback falls back to intent=save.
-    // The localStorage flag set when requesting the reset survives this.
+    // Detect expired/reused recovery links
     let recoveryPending = false;
     try { recoveryPending = localStorage.getItem('im_recovery_pending') === '1'; } catch { /* */ }
     if (intent !== 'recovery' && recoveryPending) intent = 'recovery';
 
-    // Password reset callback
     if (intent === 'recovery') {
-      // Valid recovery token — show the reset form (already set by store init).
-      // Keep im_recovery_pending — only clear it after successful password update
-      // (in ResetPasswordForm) so we can detect re-clicks on expired links.
       if (!authError) {
+        // Valid recovery token — ResetPasswordForm is already shown (set by store init)
         useQuizStore.setState({ restoringState: false });
-        window.history.replaceState({}, '', '/quiz');
-        setAuthCallbackInProgress(false);
-        return;
-      }
-
-      // Token expired or already used — navigate to the right place
-      try { localStorage.removeItem('im_recovery_pending'); } catch { /* */ }
-      (async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && !user.is_anonymous) {
-          const storeResults = useQuizStore.getState().results;
-          if (!storeResults) await restoreUserState(user.id, user.email ?? '');
-          else useQuizStore.setState({ screen: 'results', restoringState: false });
-        } else {
-          showToast('This reset link has expired. Please request a new one.');
-          useQuizStore.setState({ screen: 'landing', restoringState: false });
-        }
-        window.history.replaceState({}, '', '/quiz');
-        setAuthCallbackInProgress(false);
-      })();
-      return;
-    }
-
-    // Check if auth failed during callback (non-recovery)
-    if (authError) {
-      showToast('Sign-in failed. Please try again.');
-      useQuizStore.setState({ restoringState: false });
-      window.history.replaceState({}, '', '/quiz');
-      setAuthCallbackInProgress(false);
-      return;
-    }
-
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      // Check both URL param (cookie-passed from auth callback) and sessionStorage (from invite landing)
-      const inviterCode = params.get('inviterCode') ?? sessionStorage.getItem('innerMapsInviterCode');
-
-      // Restore quiz state saved before Google OAuth redirect
-      const sessionPatch = restoreStateFromSession();
-      if (sessionPatch) {
-        useQuizStore.setState(sessionPatch);
-      }
-      clearSessionState();
-
-      if (user) {
-        // Pass inviterCode to handlePostAuth — it handles completeInvite + navigation
-        await handlePostAuth(user.id, user.email ?? '', intent, inviterCode);
       } else {
-        showToast('Signed in! Take the quiz to save your results.');
-        setScreen('landing');
+        // Token expired or already used
+        try { localStorage.removeItem('im_recovery_pending'); } catch { /* */ }
+        showToast('This reset link has expired. Please request a new one.');
+        useQuizStore.setState({ screen: 'landing', restoringState: false });
       }
+    } else {
+      // Non-recovery callback (shouldn't happen anymore) — just clear loading
+      useQuizStore.setState({ restoringState: false });
+    }
 
-      // Clean up URL without triggering a navigation
-      window.history.replaceState({}, '', '/quiz');
-      // Allow useAuth to resume normal behavior
-      setAuthCallbackInProgress(false);
-    })();
+    window.history.replaceState({}, '', '/quiz');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

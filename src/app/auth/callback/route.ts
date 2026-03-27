@@ -4,22 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
-  const code = searchParams.get('code');           // Google OAuth or PKCE recovery
-  const token_hash = searchParams.get('token_hash'); // OTP / legacy password reset
-  const type = searchParams.get('type');             // e.g. "email" | "magiclink" | "recovery"
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
 
   const cookieStore = await cookies();
 
-  // Read intent + inviter code cookies set before the auth redirect
-  // For password reset, override intent to 'recovery' so the client shows the new-password form
-  const isRecovery = type === 'recovery';
-  let intent = isRecovery ? 'recovery' : (cookieStore.get('innerMapsIntent')?.value ?? 'save');
-  const inviterCode = cookieStore.get('innerMapsInviterCode')?.value;
-
   // Supabase may redirect with error params (e.g., expired recovery token)
   const supabaseError = searchParams.get('error_description') || searchParams.get('error');
-
-  // Exchange the token first so we can detect recovery from the session event
   let authError: string | null = supabaseError || null;
 
   const supabase = createServerClient(
@@ -29,7 +20,6 @@ export async function GET(request: NextRequest) {
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll(cookiesToSet) {
-          // Will be written onto the redirect response below
           cookiesToSet.forEach(({ name, value }) =>
             cookieStore.set(name, value)
           );
@@ -38,13 +28,8 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      console.error('Auth code exchange failed:', error.message);
-      authError = error.message;
-    }
-  } else if (token_hash && type) {
+  // Exchange recovery token for a session
+  if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
     if (error) {
       console.error('OTP verification failed:', error.message);
@@ -52,11 +37,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Build redirect URL with all params
+  // Build redirect — only recovery callbacks use this route now
   const redirectUrl = new URL('/quiz', origin);
   redirectUrl.searchParams.set('authCallback', '1');
-  redirectUrl.searchParams.set('intent', intent);
-  if (inviterCode) redirectUrl.searchParams.set('inviterCode', inviterCode);
+  redirectUrl.searchParams.set('intent', 'recovery');
   if (authError) redirectUrl.searchParams.set('authError', authError);
 
   const response = NextResponse.redirect(redirectUrl);
@@ -65,10 +49,6 @@ export async function GET(request: NextRequest) {
   cookieStore.getAll().forEach((cookie) => {
     response.cookies.set(cookie.name, cookie.value);
   });
-
-  // Clear the one-time cookies we just consumed
-  response.cookies.delete('innerMapsIntent');
-  if (inviterCode) response.cookies.delete('innerMapsInviterCode');
 
   return response;
 }

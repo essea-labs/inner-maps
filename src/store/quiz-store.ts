@@ -207,14 +207,6 @@ export function isReturningUser(): boolean {
   catch { return false; }
 }
 
-/** Check if this page load is any auth callback (magic link, OAuth, etc.) */
-function isAuthCallback(): boolean {
-  try {
-    if (typeof window === 'undefined') return false;
-    return new URLSearchParams(window.location.search).get('authCallback') === '1';
-  } catch { return false; }
-}
-
 /** Check if this page load is a password recovery callback */
 function isRecoveryCallback(): boolean {
   try {
@@ -260,7 +252,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   currentUserId: null,
   // Start with loading only when we expect to restore state or handle an auth
   // callback. New/anonymous users see the landing page immediately.
-  restoringState: isReturningUser() || isRecoveryCallback() || isAuthCallback(),
+  restoringState: isReturningUser() || isRecoveryCallback(),
   toastMessage: null,
 
   // ===== NAVIGATION =====
