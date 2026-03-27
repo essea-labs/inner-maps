@@ -1,6 +1,6 @@
 /**
  * Screenshot-based PDF generation for both individual and compatibility reports.
- * Captures the web report DOM at high resolution for sharp, pixel-perfect output.
+ * Widens the clone to 800px before capture for print-quality resolution.
  */
 
 async function captureAndSave(element: HTMLElement, fileName: string) {
@@ -9,34 +9,51 @@ async function captureAndSave(element: HTMLElement, fileName: string) {
     import('html2canvas'),
   ]);
 
-  // Wait for fonts and images to finish rendering
+  // Wait for fonts and images
   await new Promise((r) => setTimeout(r, 300));
+
+  // The mobile viewport is ~440px. At scale 3 that's only 1320px wide —
+  // not enough for sharp A4 print. We widen the clone to 800px and use
+  // scale 3 to get 2400px, which maps cleanly to A4 at ~300dpi.
+  const printWidth = 800;
 
   const canvas = await html2canvas(element, {
     scale: 3,
+    width: printWidth,
+    windowWidth: printWidth,
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#FFFFFF', // Pure white background for maximum contrast
+    backgroundColor: '#FFFFFF',
     logging: false,
     removeContainer: true,
-    onclone: (clonedDoc) => {
-      const el = clonedDoc.querySelector('.report-page') as HTMLElement;
-      if (el) {
-        el.style.overflow = 'visible';
-        el.style.height = 'auto';
-        el.style.maxHeight = 'none';
-        // Force white background on the cloned element for clean capture
-        el.style.backgroundColor = '#FFFFFF';
+    onclone: (clonedDoc, clonedEl) => {
+      // Widen the cloned element to fill the print width
+      clonedEl.style.width = `${printWidth}px`;
+      clonedEl.style.maxWidth = 'none';
+      clonedEl.style.overflow = 'visible';
+      clonedEl.style.height = 'auto';
+      clonedEl.style.maxHeight = 'none';
+      clonedEl.style.backgroundColor = '#FFFFFF';
+      clonedEl.style.padding = '24px 32px';
+
+      // Also widen any parent containers that might constrain width
+      let parent = clonedEl.parentElement;
+      while (parent) {
+        parent.style.maxWidth = 'none';
+        parent.style.width = `${printWidth}px`;
+        parent = parent.parentElement;
       }
-      // Force all text to be fully opaque in the clone
-      clonedDoc.querySelectorAll('*').forEach((node) => {
-        const el = node as HTMLElement;
-        if (el.style) {
-          const computed = clonedDoc.defaultView?.getComputedStyle(el);
-          if (computed && parseFloat(computed.opacity) < 1) {
-            // Keep opacity but boost slightly for print
-          }
+
+      // Remove the download PDF button and save CTA from the clone
+      clonedEl.querySelectorAll('button').forEach((btn) => {
+        if (btn.textContent?.includes('PDF') || btn.textContent?.includes('Compare')) {
+          btn.style.display = 'none';
         }
+      });
+
+      // Hide any signup CTAs
+      clonedEl.querySelectorAll('[style*="linear-gradient"]').forEach((el) => {
+        (el as HTMLElement).style.display = 'none';
       });
     },
   });
@@ -46,7 +63,7 @@ async function captureAndSave(element: HTMLElement, fileName: string) {
 
   const pdfW = 210;
   const pdfH = 297;
-  const margin = 6;
+  const margin = 8;
   const contentW = pdfW - margin * 2;
   const scaledH = (imgH * contentW) / imgW;
   const pageH = pdfH - margin * 2;
@@ -56,41 +73,34 @@ async function captureAndSave(element: HTMLElement, fileName: string) {
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: false, // No compression for maximum quality
+    compress: false,
   });
 
   for (let p = 0; p < totalPages; p++) {
     if (p > 0) doc.addPage();
 
-    // Calculate which slice of the source canvas to use for this page
     const srcY = Math.round((p * pageH * imgW) / contentW);
     const srcH = Math.round(Math.min((pageH * imgW) / contentW, imgH - srcY));
-
     if (srcH <= 0) continue;
 
-    // Create a slice canvas for this page
     const slice = document.createElement('canvas');
     slice.width = imgW;
     slice.height = srcH;
     const ctx = slice.getContext('2d', { alpha: false });
     if (ctx) {
-      // White background fill to prevent any transparency issues
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, imgW, srcH);
-      // Draw the source slice
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(canvas, 0, srcY, imgW, srcH, 0, 0, imgW, srcH);
     }
 
-    // Use JPEG at max quality — smaller file than PNG but still sharp
-    // PNG can actually cause issues with jsPDF's internal handling
     const sliceData = slice.toDataURL('image/jpeg', 1.0);
     const sliceH = (srcH * contentW) / imgW;
 
     doc.addImage(sliceData, 'JPEG', margin, margin, contentW, sliceH, undefined, 'NONE');
 
-    // Page footer
+    // Footer
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(155, 139, 122);
@@ -112,7 +122,7 @@ export async function generateReportPDF(
 }
 
 /**
- * Generate compatibility report PDF. Finds the report-page element in the DOM.
+ * Generate compatibility report PDF.
  */
 export async function generateCompatPDF(
   fileName: string,

@@ -149,7 +149,7 @@ export default function CompatibilityReport() {
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
           <div className="compat-share-card-names">{myName} & {conn.name}</div>
           <div className="compat-share-card-score">{compat.overall}%</div>
-          <div style={{ fontSize: 10, color: 'white', fontWeight: 600, letterSpacing: 2, marginTop: -2, marginBottom: 12, textAlign: 'center', opacity: 0.85 }}>OVERALL COMPATIBILITY</div>
+          <div style={{ fontSize: 10, color: 'white', fontWeight: 600, letterSpacing: 2, marginTop: -6, marginBottom: 16, textAlign: 'center', opacity: 0.85 }}>OVERALL COMPATIBILITY</div>
           <div className="compat-share-card-grid">
             <div className="compat-share-card-item">
               <div className="compat-share-card-item-label">Personality</div>
