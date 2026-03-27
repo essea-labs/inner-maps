@@ -127,8 +127,8 @@ export default function CompatibilityView() {
           <p>Here&apos;s how your inner worlds align</p>
         </div>
 
-        {/* Signup CTA for anonymous users */}
-        {!isRealUser && (
+        {/* Signup CTA — only for confirmed anonymous users (hide while auth loading) */}
+        {!authLoading && !isRealUser && (
           <div
             onClick={() => setSignupOpen(true)}
             style={{
