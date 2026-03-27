@@ -131,7 +131,7 @@ export default function IndividualReport() {
 
         {/* Summary Card */}
         <div className="share-card" style={{ marginBottom: 24 }}>
-          <div className="share-card-title">✦ Your Complete Profile ✦</div>
+          <div className="share-card-title">✦ Inner Maps ✦</div>
           <div className="share-card-results">
             <div className="share-card-item">
               <div className="share-card-item-label">Personality</div>
@@ -142,11 +142,11 @@ export default function IndividualReport() {
               <div className="share-card-item-value">{r.enneagramDisplay}</div>
             </div>
             <div className="share-card-item">
-              <div className="share-card-item-label">Attachment</div>
+              <div className="share-card-item-label">Attachment Style</div>
               <div className="share-card-item-value">{r.attachmentStyle}</div>
             </div>
             <div className="share-card-item">
-              <div className="share-card-item-label">Connection</div>
+              <div className="share-card-item-label">Connection Style</div>
               <div className="share-card-item-value" style={{ fontSize: r.topConnection.length > 12 ? 14 : 18 }}>{r.topConnection}</div>
             </div>
             <div className="share-card-item-wide">
@@ -154,6 +154,7 @@ export default function IndividualReport() {
               <div className="share-card-item-value">{r.starSign?.sign} {r.starSign?.symbol}</div>
             </div>
           </div>
+          <div className="share-card-url">innermaps.io</div>
         </div>
 
         {/* 1. Personality Deep Dive */}

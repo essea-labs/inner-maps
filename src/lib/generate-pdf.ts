@@ -220,6 +220,108 @@ function engine(doc: any) {
       y += 6;
     },
 
+    // ── Two-column layout (matching reference PDF) ─────────────
+    twoCol(
+      leftTitle: string, leftBody: string,
+      rightTitle: string, rightBody: string,
+      opts?: { bodyBold?: boolean }
+    ) {
+      const colW = (CW - 10) / 2;
+      const leftLines = doc.splitTextToSize(leftBody, colW);
+      const rightLines = doc.splitTextToSize(rightBody, colW);
+      const maxLines = Math.max(leftLines.length, rightLines.length);
+      const blockH = 8 + maxLines * 4.5 + 8;
+      $.need(blockH);
+
+      // Left title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...C.brown);
+      doc.text(leftTitle, M, y);
+      // Right title
+      doc.text(rightTitle, M + colW + 10, y);
+      y += 8;
+
+      // Left body
+      doc.setFont('helvetica', opts?.bodyBold ? 'bold' : 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...(opts?.bodyBold ? C.brown : C.body));
+      let ly = y;
+      for (const ln of leftLines) { doc.text(ln, M, ly); ly += 4.5; }
+
+      // Right body
+      let ry = y;
+      for (const ln of rightLines) { doc.text(ln, M + colW + 10, ry); ry += 4.5; }
+
+      y = Math.max(ly, ry) + 6;
+    },
+
+    // ── Two-column label-value (for Core Fear / Core Desire) ──
+    twoColLabelValue(
+      label1: string, value1: string,
+      label2: string, value2: string,
+    ) {
+      const colW = (CW - 10) / 2;
+      const lines1 = doc.splitTextToSize(value1, colW);
+      const lines2 = doc.splitTextToSize(value2, colW);
+      const maxLines = Math.max(lines1.length, lines2.length);
+      const blockH = 12 + maxLines * 4.5 + 4;
+      $.need(blockH);
+
+      // Labels
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.muted);
+      doc.text(label1.toUpperCase(), M, y);
+      doc.text(label2.toUpperCase(), M + colW + 10, y);
+      y += 6;
+
+      // Values
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C.brown);
+      let ly = y;
+      for (const ln of lines1) { doc.text(ln, M, ly); ly += 4.5; }
+      let ry = y;
+      for (const ln of lines2) { doc.text(ln, M + colW + 10, ry); ry += 4.5; }
+      y = Math.max(ly, ry) + 6;
+    },
+
+    // ── Three-column layout (for Personality) ─────────────────
+    threeCol(
+      titles: string[], bodies: string[],
+    ) {
+      const colW = (CW - 16) / 3;
+      const allLines = bodies.map(b => doc.splitTextToSize(b, colW));
+      const maxLines = Math.max(...allLines.map(l => l.length));
+      const blockH = 8 + maxLines * 4.5 + 8;
+      $.need(blockH);
+
+      // Titles
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...C.brown);
+      for (let i = 0; i < titles.length; i++) {
+        doc.text(titles[i], M + i * (colW + 8), y);
+      }
+      y += 8;
+
+      // Bodies
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...C.body);
+      let maxY = y;
+      for (let i = 0; i < allLines.length; i++) {
+        let cy = y;
+        for (const ln of allLines[i]) {
+          doc.text(ln, M + i * (colW + 8), cy);
+          cy += 4.5;
+        }
+        if (cy > maxY) maxY = cy;
+      }
+      y = maxY + 6;
+    },
+
     // ── Score bar (compat) ───────────────────────────────────
     scoreBar(pct: number) {
       $.need(10);
@@ -232,7 +334,7 @@ function engine(doc: any) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(...C.subtitle);
-      doc.text('Your dynamic', barX + barW + 4, y);
+      doc.text('Compatibility', barX + barW + 4, y);
       y += 10;
     },
 
@@ -370,27 +472,26 @@ export async function generateReportPDF(
     $.y += 6;
   }
 
-  // ── PERSONALITY TYPE ──────────────────────────────────────
+  // ── PERSONALITY TYPE (3-column layout matching reference) ──
   $.newPage('Personality Type');
   $.title('Your Type');
   $.value(`${r.cognitiveType} - ${r.cognitiveTypeName}`);
   if (dd) {
-    $.sub('How You Think');  $.body(dd.think);
-    $.sub('How You Love');   $.body(dd.love);
-    $.sub('How You Work');   $.body(dd.work);
+    $.threeCol(
+      ['How You Think', 'How You Love', 'How You Work'],
+      [dd.think, dd.love, dd.work],
+    );
     $.highlight('Your Superpower', dd.superpower, C.teal);
     $.highlight('Your Blind Spot', dd.blindspot, C.peach);
   }
 
-  // ── ENNEAGRAM ─────────────────────────────────────────────
+  // ── ENNEAGRAM (2-column for fear/desire and stress/best) ──
   $.newPage('Enneagram');
   $.title('Your Type');
   $.value(`${r.enneagramDisplay} - ${r.enneagramName}`);
   if (edd) {
-    $.labelValue('Core Fear', edd.fear);
-    $.labelValue('Core Desire', edd.desire);
-    $.sub('Under Stress');  $.body(edd.stress);
-    $.sub('At Your Best');  $.body(edd.best);
+    $.twoColLabelValue('Core Fear', edd.fear, 'Core Desire', edd.desire);
+    $.twoCol('Under Stress', edd.stress, 'At Your Best', edd.best);
     $.sub('Growth Strategies');
     edd.strategies.forEach((s: string, i: number) => {
       const parts = s.split(/[.\u2014\u2013\-](.+)/);
@@ -398,25 +499,23 @@ export async function generateReportPDF(
     });
   }
 
-  // ── ATTACHMENT STYLE ──────────────────────────────────────
+  // ── ATTACHMENT STYLE (2-column for triggers/patterns) ─────
   $.newPage('Attachment Style');
   $.title('Your Style');
   $.value(r.attachmentStyle);
   if (add) {
-    $.sub('Your Triggers');   $.bullets(add.triggers);
-    $.sub('Your Patterns');   $.bullets(add.patterns);
+    $.twoCol('Your Triggers', add.triggers.join('\n\n'), 'Your Patterns', add.patterns.join('\n\n'));
     $.sub('In Conflict');     $.body(add.conflict);
     $.sub('Growth Strategies');
     add.strategies.forEach((s: string, i: number) => $.numbered(i + 1, '', s));
   }
 
-  // ── CONNECTION STYLE ──────────────────────────────────────
+  // ── CONNECTION STYLE (2-column for day-to-day/ask) ────────
   $.newPage('Connection Style');
   $.title('Primary');
   $.value(r.topConnection);
   if (cdd) {
-    $.sub('What This Means Day-to-Day'); $.body(cdd.dayToDay);
-    $.sub('How to Ask For It');          $.body(cdd.askForIt);
+    $.twoCol('What This Means Day-to-Day', cdd.dayToDay, 'How to Ask For It', cdd.askForIt, { bodyBold: false });
     $.sub('When This Need Isn\'t Met');  $.body(cdd.unmet);
     // Ranking
     $.sep();

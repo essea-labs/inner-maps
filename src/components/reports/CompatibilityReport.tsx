@@ -144,21 +144,54 @@ export default function CompatibilityReport() {
           {pdfLoading ? 'Generating PDF…' : 'Download Report as PDF'}
         </button>
 
-        {/* Duo Score */}
-        <div className="compat-duo-card" style={{ marginBottom: 24 }}>
-          <div className="compat-duo-names">
-            <div className="compat-duo-person">
-              <div className="compat-duo-avatar">{(myName)[0]}</div>
-              <div className="compat-duo-name">{myName}</div>
+        {/* Share Card — matches unpaid CompatibilityView */}
+        <div className="compat-share-card" style={{ marginBottom: 24 }}>
+          <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
+          <div className="compat-share-card-names">{myName} & {conn.name}</div>
+          <div className="compat-share-card-score">{compat.overall}% <span style={{ fontSize: '0.45em', fontWeight: 400, color: 'var(--text-light)' }}>Overall Compatibility</span></div>
+          <div className="compat-share-card-grid">
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Personality</div>
+              <div className="compat-share-card-item-values">
+                <span>{r.cognitiveType}</span>
+                <span className="vs">&amp;</span>
+                <span>{tr.cognitiveType}</span>
+              </div>
             </div>
-            <div className="compat-duo-ampersand">&amp;</div>
-            <div className="compat-duo-person">
-              <div className="compat-duo-avatar">{conn.name[0]}</div>
-              <div className="compat-duo-name">{conn.name}</div>
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Enneagram</div>
+              <div className="compat-share-card-item-values">
+                <span>{r.enneagramDisplay}</span>
+                <span className="vs">&amp;</span>
+                <span>{tr.enneagramDisplay}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Attachment</div>
+              <div className="compat-share-card-item-values" style={{ fontSize: r.attachmentStyle.length > 10 ? 11 : 14 }}>
+                <span>{r.attachmentStyle}</span>
+                <span className="vs">&amp;</span>
+                <span>{tr.attachmentStyle}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item">
+              <div className="compat-share-card-item-label">Connection</div>
+              <div className="compat-share-card-item-values" style={{ fontSize: r.topConnection.length > 12 ? 11 : 14 }}>
+                <span>{r.topConnection}</span>
+                <span className="vs">&amp;</span>
+                <span>{tr.topConnection}</span>
+              </div>
+            </div>
+            <div className="compat-share-card-item-wide">
+              <div className="compat-share-card-item-label">Star Sign</div>
+              <div className="compat-share-card-item-values">
+                <span>{r.starSign?.sign} {r.starSign?.symbol}</span>
+                <span className="vs">&amp;</span>
+                <span>{tr.starSign?.sign} {tr.starSign?.symbol}</span>
+              </div>
             </div>
           </div>
-          <div className="compat-duo-score">{compat.overall}%</div>
-          <div className="compat-duo-label">Overall Compatibility</div>
+          <div className="compat-share-card-url">innermaps.io</div>
         </div>
 
         {/* Strengths */}
@@ -195,7 +228,7 @@ export default function CompatibilityReport() {
             </div>
           </div>
           <div className="report-score-bar">
-            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Your dynamic</span>
+            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Compatibility</span>
             <div className="report-score-bar-track"><div className="report-score-bar-fill" style={{ width: `${compat.zodiac.score}%` }} /></div>
             <span className="report-score-label">{compat.zodiac.score}%</span>
           </div>
@@ -228,7 +261,7 @@ export default function CompatibilityReport() {
             </div>
           </div>
           <div className="report-score-bar">
-            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Your dynamic</span>
+            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Compatibility</span>
             <div className="report-score-bar-track"><div className="report-score-bar-fill" style={{ width: `${compat.personality.score}%` }} /></div>
             <span className="report-score-label">{compat.personality.score}%</span>
           </div>
@@ -261,7 +294,7 @@ export default function CompatibilityReport() {
             </div>
           </div>
           <div className="report-score-bar">
-            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Your dynamic</span>
+            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Compatibility</span>
             <div className="report-score-bar-track"><div className="report-score-bar-fill" style={{ width: `${compat.enneagram.score}%` }} /></div>
             <span className="report-score-label">{compat.enneagram.score}%</span>
           </div>
@@ -294,7 +327,7 @@ export default function CompatibilityReport() {
             </div>
           </div>
           <div className="report-score-bar">
-            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Your dynamic</span>
+            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Compatibility</span>
             <div className="report-score-bar-track"><div className="report-score-bar-fill" style={{ width: `${compat.attachment.score}%` }} /></div>
             <span className="report-score-label">{compat.attachment.score}%</span>
           </div>
@@ -330,7 +363,7 @@ export default function CompatibilityReport() {
             </div>
           </div>
           <div className="report-score-bar">
-            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Your dynamic</span>
+            <span style={{ fontSize: 12, color: 'var(--text-light)' }}>Compatibility</span>
             <div className="report-score-bar-track"><div className="report-score-bar-fill" style={{ width: `${compat.connection.score}%` }} /></div>
             <span className="report-score-label">{compat.connection.score}%</span>
           </div>

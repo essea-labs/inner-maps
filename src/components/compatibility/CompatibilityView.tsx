@@ -131,7 +131,7 @@ export default function CompatibilityView() {
         <div className="compat-share-card" ref={compatCardRef}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
           <div className="compat-share-card-names">{myName} & {conn.name}</div>
-          <div className="compat-share-card-score">{compat.overall}% Overall Compatibility</div>
+          <div className="compat-share-card-score">{compat.overall}% <span style={{ fontSize: '0.45em', fontWeight: 400, color: 'var(--text-light)' }}>Overall Compatibility</span></div>
           <div className="compat-share-card-grid">
             <div className="compat-share-card-item">
               <div className="compat-share-card-item-label">Personality</div>
