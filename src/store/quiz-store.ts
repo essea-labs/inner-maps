@@ -6,44 +6,49 @@ import { supabase } from '@/lib/supabase';
 import { saveUserProfile, saveQuizResults, fetchConnections, fetchUserQuizResults, completeInvite } from '@/lib/db';
 
 // ===== SESSION PERSISTENCE HELPERS =====
-// Save navigation + quiz state to sessionStorage before external redirects (Stripe, OAuth, magic link).
-// This ensures the user lands back on the correct screen when they return.
+// Save navigation + quiz state before external redirects (Stripe, magic link).
+// Uses localStorage so the state survives even when the magic link opens in a
+// new tab (sessionStorage is per-tab and would be empty in a new tab).
+// A timestamp is stored so stale data (>1 hour) is ignored.
 
-const SESSION_KEYS = ['im_results','im_userName','im_birthMonth','im_birthDay','im_starSign','im_activeConnection','im_screen','im_activeTab'] as const;
+const SESSION_KEY = 'im_redirect_state';
+const SESSION_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 
 export function saveStateToSession() {
-  const s = useQuizStore.getState();
-  if (s.results) sessionStorage.setItem('im_results', JSON.stringify(s.results));
-  if (s.userName) sessionStorage.setItem('im_userName', s.userName);
-  if (s.birthMonth != null) sessionStorage.setItem('im_birthMonth', String(s.birthMonth));
-  if (s.birthDay != null) sessionStorage.setItem('im_birthDay', String(s.birthDay));
-  if (s.starSign) sessionStorage.setItem('im_starSign', JSON.stringify(s.starSign));
-  if (s.activeConnection) sessionStorage.setItem('im_activeConnection', JSON.stringify(s.activeConnection));
-  // Save current screen/tab so we can return to the right place
-  sessionStorage.setItem('im_screen', s.screen);
-  sessionStorage.setItem('im_activeTab', s.activeTab);
+  try {
+    const s = useQuizStore.getState();
+    const data: Record<string, any> = { _ts: Date.now() };
+    if (s.results) data.results = s.results;
+    if (s.userName) data.userName = s.userName;
+    if (s.birthMonth != null) data.birthMonth = s.birthMonth;
+    if (s.birthDay != null) data.birthDay = s.birthDay;
+    if (s.starSign) data.starSign = s.starSign;
+    if (s.activeConnection) data.activeConnection = s.activeConnection;
+    data.screen = s.screen;
+    data.activeTab = s.activeTab;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  } catch { /* non-fatal */ }
 }
 
 export function restoreStateFromSession(): Record<string, any> | null {
   try {
-    const savedResults = sessionStorage.getItem('im_results');
-    if (!savedResults) return null; // No saved state
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Ignore stale data
+    if (!data._ts || Date.now() - data._ts > SESSION_MAX_AGE_MS) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
     const patch: Record<string, any> = {};
-    patch.results = JSON.parse(savedResults);
-    const savedUserName = sessionStorage.getItem('im_userName');
-    const savedBirthMonth = sessionStorage.getItem('im_birthMonth');
-    const savedBirthDay = sessionStorage.getItem('im_birthDay');
-    const savedStarSign = sessionStorage.getItem('im_starSign');
-    const savedConnection = sessionStorage.getItem('im_activeConnection');
-    const savedScreen = sessionStorage.getItem('im_screen');
-    const savedTab = sessionStorage.getItem('im_activeTab');
-    if (savedUserName) patch.userName = savedUserName;
-    if (savedBirthMonth) patch.birthMonth = Number(savedBirthMonth) || null;
-    if (savedBirthDay) patch.birthDay = Number(savedBirthDay) || null;
-    if (savedStarSign) patch.starSign = JSON.parse(savedStarSign);
-    if (savedConnection) patch.activeConnection = JSON.parse(savedConnection);
-    if (savedScreen) patch.screen = savedScreen;
-    if (savedTab) patch.activeTab = savedTab;
+    if (data.results) patch.results = data.results;
+    if (data.userName) patch.userName = data.userName;
+    if (data.birthMonth != null) patch.birthMonth = data.birthMonth;
+    if (data.birthDay != null) patch.birthDay = data.birthDay;
+    if (data.starSign) patch.starSign = data.starSign;
+    if (data.activeConnection) patch.activeConnection = data.activeConnection;
+    if (data.screen) patch.screen = data.screen;
+    if (data.activeTab) patch.activeTab = data.activeTab;
     return patch;
   } catch {
     return null;
@@ -51,7 +56,7 @@ export function restoreStateFromSession(): Record<string, any> | null {
 }
 
 export function clearSessionState() {
-  SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
+  try { localStorage.removeItem(SESSION_KEY); } catch { /* non-fatal */ }
 }
 
 // ===== PROFILE CACHE =====

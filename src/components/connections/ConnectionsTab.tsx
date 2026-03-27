@@ -7,6 +7,7 @@ import TabBar from '@/components/ui/TabBar';
 
 export default function ConnectionsTab() {
   const results = useQuizStore((s) => s.results);
+  const restoringState = useQuizStore((s) => s.restoringState);
   const connections = useQuizStore((s) => s.connections);
   const loadConnections = useQuizStore((s) => s.loadConnections);
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
@@ -29,8 +30,8 @@ export default function ConnectionsTab() {
     setActiveTab('compat');
   }
 
-  // Still loading user data from DB
-  if (!results && user && !user.is_anonymous) {
+  // Only show loading while quiz/page.tsx is actively restoring state
+  if (!results && restoringState) {
     return (
       <div style={{ paddingBottom: 80 }}>
         <div className="connections-page">
