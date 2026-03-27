@@ -24,17 +24,12 @@ export default function ResetPasswordForm() {
       showToast('Password updated ✓');
       try { localStorage.removeItem('im_recovery_pending'); } catch { /* non-fatal */ }
 
-      // Navigate optimistically — password update succeeded, so show results
-      // immediately while loading data in the background. Uses getSession()
-      // (reads local cookie) instead of getUser() (network call) since
-      // middleware already refreshed the token.
+      // Restore user profile in the background — show loading spinner
+      // immediately instead of blocking on the password form.
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user ?? null;
       if (user) {
-        // Navigate first, then load data — user sees results screen instantly
-        setScreen('results');
-        const restoreUserState = useQuizStore.getState().restoreUserState;
-        restoreUserState(user.id, user.email ?? '');
+        useQuizStore.getState().restoreUserState(user.id, user.email ?? '');
       } else {
         setScreen('landing');
       }
