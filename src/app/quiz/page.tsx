@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
+import { setAuthCallbackInProgress } from '@/hooks/useAuth';
 
 import LandingPage from '@/components/LandingPage';
 import NameInput from '@/components/quiz/NameInput';
@@ -183,10 +184,13 @@ export default function QuizPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle post-OAuth / password-reset callback
+  // Handle post-OAuth / magic-link / password-reset callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('authCallback') !== '1') return;
+
+    // Prevent useAuth from double-restoring while we handle this callback
+    setAuthCallbackInProgress(true);
 
     let intent = params.get('intent') ?? 'save';
     const authError = params.get('authError');
@@ -206,6 +210,7 @@ export default function QuizPage() {
       if (!authError) {
         useQuizStore.setState({ restoringState: false });
         window.history.replaceState({}, '', '/quiz');
+        setAuthCallbackInProgress(false);
         return;
       }
 
@@ -222,6 +227,7 @@ export default function QuizPage() {
           useQuizStore.setState({ screen: 'landing', restoringState: false });
         }
         window.history.replaceState({}, '', '/quiz');
+        setAuthCallbackInProgress(false);
       })();
       return;
     }
@@ -231,6 +237,7 @@ export default function QuizPage() {
       showToast('Sign-in failed. Please try again.');
       useQuizStore.setState({ restoringState: false });
       window.history.replaceState({}, '', '/quiz');
+      setAuthCallbackInProgress(false);
       return;
     }
 
@@ -256,6 +263,8 @@ export default function QuizPage() {
 
       // Clean up URL without triggering a navigation
       window.history.replaceState({}, '', '/quiz');
+      // Allow useAuth to resume normal behavior
+      setAuthCallbackInProgress(false);
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -8,6 +8,13 @@ import type { User } from '@supabase/supabase-js';
 // Cache the auth fetch so multiple useAuth() consumers don't each hit the DB
 let _authPromise: Promise<User | null> | null = null;
 
+// Flag set by quiz/page.tsx auth callback handler to prevent useAuth from
+// double-restoring state. The URL param check doesn't work because the
+// callback handler cleans the URL before useAuth runs.
+let _authCallbackInProgress = false;
+
+export function setAuthCallbackInProgress(v: boolean) { _authCallbackInProgress = v; }
+
 export default function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,11 +35,10 @@ export default function useAuth() {
       .then(async (u) => {
         setUser(u);
         if (u && !u.is_anonymous) {
-          // Don't restore if auth callback is handling navigation (prevents double-restore flash)
-          const params = new URLSearchParams(window.location.search);
-          if (params.get('authCallback') === '1') return;
+          // Don't restore if auth callback is handling navigation
+          if (_authCallbackInProgress) return;
 
-          // Don't restore during password reset — let the reset form handle navigation
+          // Don't restore during password reset
           const currentScreen = useQuizStore.getState().screen;
           if (currentScreen === 'resetPassword') return;
 
@@ -40,12 +46,10 @@ export default function useAuth() {
           if (!storeResults) {
             await restoreUserState(u.id, u.email ?? '');
           }
-          // loadConnections is called inside restoreUserState, no need to duplicate
         }
       })
       .finally(() => {
         setLoading(false);
-        // Clear cache after all consumers have resolved
         setTimeout(() => { _authPromise = null; }, 100);
       });
 
@@ -53,11 +57,13 @@ export default function useAuth() {
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         const u = session?.user ?? null;
         setUser(u);
+        // Don't trigger side effects during auth callback processing
+        if (_authCallbackInProgress) return;
         if (u && !u.is_anonymous) loadConnections(u.id);
       });
       subscription = data.subscription;
     } catch {
-      // Non-fatal — auth state changes just won't be tracked
+      // Non-fatal
     }
 
     return () => subscription?.unsubscribe();
