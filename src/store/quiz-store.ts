@@ -448,7 +448,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     try {
       localStorage.removeItem('im_purchased_individual');
       localStorage.removeItem('im_purchased_compat');
-      localStorage.removeItem('im_profile_cache');
+      // Keep im_profile_cache — it's keyed by userId so it won't leak to
+      // other users, and preserving it makes re-login instant.
     } catch { /* non-fatal */ }
     set({
       screen: 'landing',
