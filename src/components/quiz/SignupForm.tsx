@@ -180,13 +180,12 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         if (onClose) onClose();
 
       } else if (mode === 'forgot') {
-        const redirectTo = `${window.location.origin}/auth/callback`;
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-          redirectTo,
-        });
-        if (resetError) throw resetError;
+        // Show confirmation immediately — don't wait for the API call.
+        // This prevents leaking whether an email exists (always shows success).
         try { localStorage.setItem('im_recovery_pending', '1'); } catch { /* */ }
         setMode('resetSent');
+        const redirectTo = `${window.location.origin}/auth/callback`;
+        supabase.auth.resetPasswordForEmail(trimmedEmail, { redirectTo }).catch(() => { /* non-fatal */ });
       }
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong. Please try again.');
