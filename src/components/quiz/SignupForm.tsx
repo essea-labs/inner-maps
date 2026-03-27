@@ -104,34 +104,16 @@ export default function SignupForm({ intent = 'save', onClose }: SignupFormProps
       }
       saveStateToSession();
 
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
       const redirectTo = `${window.location.origin}/auth/callback`;
 
-      if (currentUser?.is_anonymous) {
-        // Convert anonymous user → link via magic link
-        // First update the email on the anonymous user, then send OTP
-        const { error: updateError } = await supabase.auth.updateUser({ email: trimmedEmail });
-        if (updateError) {
-          if (updateError.message?.toLowerCase().includes('already registered')
-              || updateError.message?.toLowerCase().includes('already been registered')) {
-            // Email exists — send a regular magic link to sign in
-            const { error: otpError } = await supabase.auth.signInWithOtp({
-              email: trimmedEmail,
-              options: { emailRedirectTo: redirectTo },
-            });
-            if (otpError) throw otpError;
-          } else {
-            throw updateError;
-          }
-        }
-      } else {
-        // Fresh user or returning — send magic link
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email: trimmedEmail,
-          options: { emailRedirectTo: redirectTo },
-        });
-        if (otpError) throw otpError;
-      }
+      // Always use signInWithOtp — works for both new and existing emails,
+      // and always sends a proper magic link (unlike updateUser which sends
+      // a confirmation email that doesn't redirect back to the app)
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: trimmedEmail,
+        options: { emailRedirectTo: redirectTo },
+      });
+      if (otpError) throw otpError;
 
       setMagicLinkSent(true);
     } catch (err: any) {
