@@ -144,10 +144,10 @@ export default function CompatibilityView() {
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'white', marginBottom: 3 }}>
-                Save your results
+                Keep your results
               </div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)' }}>
-                Sign up to save this and discover your compatibility with anyone
+                Create a free account to save your profile and invite others
               </div>
             </div>
             <div style={{ color: 'white', fontSize: 16, flexShrink: 0 }}>→</div>

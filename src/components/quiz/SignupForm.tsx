@@ -42,26 +42,26 @@ const SIGNUP_CONTENT: Record<string, IntentContent> = {
   },
   save_after_purchase: {
     title: <>Save your <em>report</em></>,
-    subtitle: 'Keep your report forever — and find out how you match with anyone.',
+    subtitle: 'Create a free account to keep your report and see how you match with anyone.',
     benefits: [
-      'Access your full report anytime from any device',
-      'Invite friends to discover your compatibility',
+      'Deep dive into all 5 dimensions of your personality',
+      'Invite friends and family to discover your compatibility',
     ],
   },
   purchase_individual: {
     title: <>Unlock your <em>full report</em></>,
-    subtitle: 'Create a free account to purchase and keep your report forever.',
+    subtitle: 'Create a free account to purchase your full personality report.',
     benefits: [
       'Deep dive into all 5 dimensions of your personality',
       'Personalised growth strategies and tips',
     ],
   },
   purchase_compatibility: {
-    title: <>Unlock <em>compatibility</em></>,
-    subtitle: 'Create a free account to purchase your compatibility report.',
+    title: <>Keep your results — unlock <em>compatibility</em></>,
+    subtitle: 'Create a free account to save your results and purchase your full compatibility report.',
     benefits: [
       'Full breakdown of your dynamic across all 5 dimensions',
-      'Communication guide based on both your styles',
+      'Invite friends and family to discover your compatibility',
     ],
   },
 };
@@ -341,7 +341,9 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
           </button>
         </p>
 
-        <button className="signup-skip" onClick={handleSkip} style={{ marginTop: 16 }}>Skip for now</button>
+        <button className="signup-skip" onClick={handleSkip} style={{ marginTop: 16 }}>
+          {intent.startsWith('purchase_') ? 'Maybe later' : 'Skip for now'}
+        </button>
       </div>
 
       {isFullScreen && (
