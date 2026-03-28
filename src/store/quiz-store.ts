@@ -620,7 +620,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   loadConnections: async (userId: string) => {
     try {
-      const conns = await fetchConnections(userId);
+      const { data: conns, error } = await fetchConnections(userId);
+      // Don't overwrite existing connections with empty on API error —
+      // this prevents useAuth.onAuthStateChange, ConnectionsTab remount,
+      // and other triggers from wiping valid connection data.
+      if (error && conns.length === 0 && get().connections.length > 0) {
+        return;
+      }
       set({ connections: conns });
     } catch (err) {
       console.warn('loadConnections failed:', err);

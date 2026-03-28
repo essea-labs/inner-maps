@@ -211,17 +211,18 @@ export async function hasPurchase(
 // ===== CONNECTIONS =====
 
 /** Fetch completed connections for a user — both as inviter AND as invitee.
- *  Uses server-side API route to bypass RLS (anon key can't join to other users' profiles). */
-export async function fetchConnections(userId: string): Promise<Connection[]> {
+ *  Uses server-side API route to bypass RLS (anon key can't join to other users' profiles).
+ *  Returns { data, error } so callers can distinguish "no connections" from "API failed". */
+export async function fetchConnections(userId: string): Promise<{ data: Connection[]; error: boolean }> {
   try {
     const res = await fetch(`/api/connections?userId=${encodeURIComponent(userId)}`);
     if (!res.ok) {
       console.error('fetchConnections API error:', await res.text());
-      return [];
+      return { data: [], error: true };
     }
-    return await res.json();
+    return { data: await res.json(), error: false };
   } catch (err) {
     console.error('fetchConnections fetch error:', err);
-    return [];
+    return { data: [], error: true };
   }
 }
