@@ -24,6 +24,7 @@ export function saveStateToSession() {
     if (s.birthDay != null) data.birthDay = s.birthDay;
     if (s.starSign) data.starSign = s.starSign;
     if (s.activeConnection) data.activeConnection = s.activeConnection;
+    if (s.connections && s.connections.length > 0) data.connections = s.connections;
     if (s.currentUserId) data.currentUserId = s.currentUserId;
     if (s.email) data.email = s.email;
     data.screen = s.screen;
@@ -52,6 +53,7 @@ export function restoreStateFromSession(): Record<string, any> | null {
     if (data.birthDay != null) patch.birthDay = data.birthDay;
     if (data.starSign) patch.starSign = data.starSign;
     if (data.activeConnection) patch.activeConnection = data.activeConnection;
+    if (data.connections) patch.connections = data.connections;
     if (data.currentUserId) patch.currentUserId = data.currentUserId;
     if (data.email) patch.email = data.email;
     if (data.screen) patch.screen = data.screen;
