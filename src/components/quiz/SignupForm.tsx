@@ -342,7 +342,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         </p>
 
         <button className="signup-skip" onClick={handleSkip} style={{ marginTop: 16 }}>
-          {intent.startsWith('purchase_') ? 'Maybe later' : 'Skip for now'}
+          {isFullScreen ? 'Continue without an account' : 'Maybe later'}
         </button>
       </div>
 
