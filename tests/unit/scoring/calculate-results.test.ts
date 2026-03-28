@@ -45,9 +45,9 @@ describe('Cognitive Type scoring', () => {
     expect(r.cognitiveType[0]).toBe('I');
   });
 
-  it('3/4 A in S/N dimension selects S', () => {
-    // S/N: indices 4-7 (4q). 3 a's → S
-    const cognitive = [...Array(4).fill('b'), 'a', 'a', 'a', 'b', ...Array(7).fill('b')];
+  it('3/4 S answers in S/N dimension selects S', () => {
+    // S/N: indices 4-7 (4q). Q4 flip, Q6 flip. For S: flip→'b', normal→'a'
+    const cognitive = [...Array(4).fill('b'), 'b', 'a', 'b', 'b', ...Array(7).fill('b')];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType[1]).toBe('S');
   });
@@ -99,10 +99,10 @@ describe('Cognitive Type scoring', () => {
 
   it('produces ISTJ with correct answers', () => {
     // I: ≤1 a in 0-3 → 'b','b','b','b'
-    // S: ≥3 a in 4-7 → 'a','a','a','b'
+    // S: Q4 flip→'b', Q5→'a', Q6 flip→'b', Q7→'a' (3 S, 1 N at Q7)
     // T: ≥3 a in 8-11 → 'a','a','a','b'
     // J: ≥2 a in 12-14 → 'a','a','b'
-    const cognitive = ['b', 'b', 'b', 'b', 'a', 'a', 'a', 'b', 'a', 'a', 'a', 'b', 'a', 'a', 'b'];
+    const cognitive = ['b', 'b', 'b', 'b', 'b', 'a', 'b', 'b', 'a', 'a', 'a', 'b', 'a', 'a', 'b'];
     const r = calculateResults(makeAnswers({ cognitive }), PISCES);
     expect(r.cognitiveType).toBe('ISTJ');
   });

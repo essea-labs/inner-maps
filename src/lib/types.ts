@@ -27,6 +27,7 @@ export interface CognitiveQuestion {
   q: string;
   a: string;
   b: string;
+  flip?: boolean; // when true, 'a' maps to second letter (N/F/I/P) instead of first
 }
 
 export interface AttachmentQuestion {

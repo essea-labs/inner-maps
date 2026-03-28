@@ -19,7 +19,8 @@ export const SECTIONS: Section[] = [
 ];
 
 // ===== COGNITIVE QUESTIONS (15 A/B) =====
-// E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 4), T/F = 8-11 (anchor: 11), J/P = 12-14
+// E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 7), T/F = 8-11 (anchor: 11), J/P = 12-14
+// Some questions have flip:true — 'a' maps to second letter instead of first
 export const COGNITIVE_QS: CognitiveQuestion[] = [
   // --- E/I (4 questions) ---
   { q: "You've got a free Saturday. What sounds better?", a: "Rally the group chat, let's do something!", b: "Keep it open. Solo time sounds perfect." },
@@ -27,15 +28,15 @@ export const COGNITIVE_QS: CognitiveQuestion[] = [
   { q: "When you're working through a problem, you prefer to...", a: "Talk it through with someone — ideas click when you say them out loud.", b: "Think it through alone first — you need space to sort your thoughts." },
   { q: "In a group conversation, you usually...", a: "Jump right in. You think best out loud.", b: "Listen first, then speak once your thoughts are formed." },
   // --- S/N (4 questions) ---
-  { q: "When you're telling a story, you tend to...", a: "Include the details — who was there, what was said, exactly how it happened.", b: "Skip to the meaning — the punchline or the bigger point, not every detail." },
-  { q: "Someone describes a trip they went on. What are you more interested in hearing about?", a: "The actual experience — what they did each day, the food, the weather, the funny moments.", b: "How it changed them — what they realized, what shifted in how they see things." },
-  { q: "You just finished a really good book or show. You find yourself thinking about...", a: "The scenes that stuck with you — specific moments, lines, or images you keep replaying.", b: "The ideas it sparked — connections to other things, questions it raised, what it made you think about." },
-  { q: "When you hear about a new project at work or school, your first question is usually...", a: "What does it actually involve? What are the concrete steps?", b: "What's the vision? What are we ultimately trying to achieve?" },
+  { q: "When you recommend something — a book, a show, a place — you tend to describe...", a: "What it's like — the vibe, the overall experience, what makes it feel different from other things.", b: "What makes it great — specific things about it, the details that stood out.", flip: true },
+  { q: "When you're trying to predict how something will turn out, you go by...", a: "How similar things have gone before — past experience is your best guide.", b: "A gut sense of how this particular one will play out." },
+  { q: "You overhear an interesting conversation between strangers. Afterwards, you find yourself thinking about...", a: "What was going on — what the conversation was really about, the story behind it.", b: "What they actually said — the words, the facts, the specific details of their conversation.", flip: true },
+  { q: "After watching a great movie, you find yourself thinking about...", a: "Certain moments — a scene, an image, a line you can't get out of your head.", b: "The overall meaning — what it was really trying to say, the idea underneath." },
   // --- T/F (4 questions) ---
   { q: "What makes you feel truly understood?", a: "When someone follows your reasoning and gets why you think the way you do.", b: "When someone picks up on how you're feeling without you having to spell it out." },
   { q: "When you read something that really resonates with you, it's usually because...", a: "It put into words something you've been thinking — the logic just clicked.", b: "It put into words something you've been feeling — it captured something personal." },
   { q: "You're helping a friend settle an argument with someone. You'd probably...", a: "Help them see the situation clearly — what actually happened and what's fair.", b: "Help them figure out how they feel about it — what's really bugging them underneath." },
-  { q: "When you disagree with someone, the thing that bothers you most is...", a: "That their reasoning doesn't hold up — there's a flaw in the logic.", b: "That they don't seem to care how their position affects other people." },
+  { q: "A close friend asks if you like their new haircut. You don't. You...", a: "Say it's not your favourite — they asked for your honest take.", b: "Find something nice to say — why hurt their feelings over a haircut?" },
   // --- J/P (3 questions) ---
   { q: "Your approach to a weekend trip:", a: "Itinerary first. I like knowing what's happening.", b: "Wing it. The best stuff is unplanned anyway." },
   { q: "When you've got a deadline:", a: "Steady progress. I aim to finish early.", b: "Last-minute magic. Pressure is my fuel." },
@@ -173,7 +174,7 @@ export function rehydrateResults(r: QuizResults, starSign: StarSign | null): Qui
 
 export function calculateResults(answers: QuizAnswers, starSign: StarSign | null): QuizResults {
   // Cognitive Type — with continuous dimension scores & anchor tiebreaker
-  // E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 4), T/F = 8-11 (anchor: 11), J/P = 12-14
+  // E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 7), T/F = 8-11 (anchor: 11), J/P = 12-14
   const dims = [
     { letters: ['E', 'I'] as const, range: [0, 4], anchor: 1 },
     { letters: ['S', 'N'] as const, range: [4, 8], anchor: 7 },
@@ -183,19 +184,24 @@ export function calculateResults(answers: QuizAnswers, starSign: StarSign | null
   let type = '';
   const dimensionScores: Record<string, number> = {};
   dims.forEach(d => {
-    let aCount = 0;
+    let firstLetterCount = 0;
     const total = d.range[1] - d.range[0];
     for (let i = d.range[0]; i < d.range[1]; i++) {
-      if (answers.cognitive[i] === 'a') aCount++;
+      const pickedA = answers.cognitive[i] === 'a';
+      // flip reverses which answer maps to the first letter
+      const isFirstLetter = COGNITIVE_QS[i].flip ? !pickedA : pickedA;
+      if (isFirstLetter) firstLetterCount++;
     }
-    dimensionScores[`${d.letters[0]}/${d.letters[1]}`] = aCount / total;
-    const bCount = total - aCount;
-    if (aCount !== bCount) {
+    dimensionScores[`${d.letters[0]}/${d.letters[1]}`] = firstLetterCount / total;
+    const secondLetterCount = total - firstLetterCount;
+    if (firstLetterCount !== secondLetterCount) {
       // Clear majority — pick the winner
-      type += aCount > bCount ? d.letters[0] : d.letters[1];
+      type += firstLetterCount > secondLetterCount ? d.letters[0] : d.letters[1];
     } else {
       // Tie — anchor question decides
-      type += answers.cognitive[d.anchor] === 'a' ? d.letters[0] : d.letters[1];
+      const anchorPickedA = answers.cognitive[d.anchor] === 'a';
+      const anchorIsFirstLetter = COGNITIVE_QS[d.anchor].flip ? !anchorPickedA : anchorPickedA;
+      type += anchorIsFirstLetter ? d.letters[0] : d.letters[1];
     }
   });
 
