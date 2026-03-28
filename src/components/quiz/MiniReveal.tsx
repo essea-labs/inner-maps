@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuizStore } from '@/store/quiz-store';
-import { SECTIONS, CONNECTION_QS, TYPE_NAMES } from '@/lib/quiz-data';
+import { SECTIONS, COGNITIVE_QS, CONNECTION_QS, TYPE_NAMES } from '@/lib/quiz-data';
 
 export default function MiniReveal() {
   const currentSection = useQuizStore((s) => s.currentSection);
@@ -20,22 +20,26 @@ export default function MiniReveal() {
     // Just finished cognitive — mirror scoring from quiz-data.ts
     const dims = [
       { letters: ['E', 'I'], range: [0, 4], anchor: 1 },
-      { letters: ['S', 'N'], range: [4, 8], anchor: 4 },
+      { letters: ['S', 'N'], range: [4, 8], anchor: 7 },
       { letters: ['T', 'F'], range: [8, 12], anchor: 11 },
       { letters: ['J', 'P'], range: [12, 15], anchor: -1 },
     ];
     let type = '';
     dims.forEach((d) => {
-      let aCount = 0;
+      let firstLetterCount = 0;
       const total = d.range[1] - d.range[0];
       for (let i = d.range[0]; i < d.range[1]; i++) {
-        if (answers.cognitive[i] === 'a') aCount++;
+        const pickedA = answers.cognitive[i] === 'a';
+        const isFirstLetter = COGNITIVE_QS[i].flip ? !pickedA : pickedA;
+        if (isFirstLetter) firstLetterCount++;
       }
-      const bCount = total - aCount;
-      if (aCount !== bCount) {
-        type += aCount > bCount ? d.letters[0] : d.letters[1];
+      const secondLetterCount = total - firstLetterCount;
+      if (firstLetterCount !== secondLetterCount) {
+        type += firstLetterCount > secondLetterCount ? d.letters[0] : d.letters[1];
       } else {
-        type += answers.cognitive[d.anchor] === 'a' ? d.letters[0] : d.letters[1];
+        const anchorPickedA = answers.cognitive[d.anchor] === 'a';
+        const anchorIsFirstLetter = COGNITIVE_QS[d.anchor].flip ? !anchorPickedA : anchorPickedA;
+        type += anchorIsFirstLetter ? d.letters[0] : d.letters[1];
       }
     });
     emoji = '🧠';
