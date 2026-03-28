@@ -137,7 +137,7 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
   }, []);
 
   if (currentQuestion < 9) {
-    // Q1-9: Likert scale (1-7)
+    // Q1-9: Likert scale (1-5)
     const q = ENNEAGRAM_QS[currentQuestion];
     const sel = answers.enneagram[currentQuestion];
 
@@ -153,7 +153,7 @@ function EnneagramQuestion({ isLastQ }: { isLastQ: boolean }) {
         <div className="question-instruction">How much does this resonate with who you naturally are?</div>
         <div className="enneagram-statement">&ldquo;{q.q}&rdquo;</div>
         <div className="scale-options">
-          {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+          {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               className={`scale-btn${sel === n ? ' selected' : ''}`}
