@@ -46,9 +46,10 @@ test.describe('Complete Quiz Flow (Happy Path)', () => {
 
     // ── MINI REVEAL (after section 1) ──
     await expect(page.locator('.mini-reveal')).toBeVisible({ timeout: 5000 });
-    await page.locator('button.continue-btn').click();
+    await page.locator('button.continue-btn').click({ timeout: 5000 });
 
     // ── SECTION 2: ATTACHMENT (8 Likert questions) ──
+    await expect(page.locator('.scale-btn').first()).toBeVisible({ timeout: 5000 });
     for (let i = 0; i < 8; i++) {
       const value = GOLDEN_PATH.attachment[i];
       await page.locator(`button.scale-btn`).nth(value - 1).click();
@@ -57,9 +58,10 @@ test.describe('Complete Quiz Flow (Happy Path)', () => {
 
     // ── MINI REVEAL (after section 2) ──
     await expect(page.locator('.mini-reveal')).toBeVisible({ timeout: 5000 });
-    await page.locator('button.continue-btn').click();
+    await page.locator('button.continue-btn').click({ timeout: 5000 });
 
     // ── SECTION 3: CONNECTION (10 forced-choice pairs) ──
+    await expect(page.locator('.pair-card').first()).toBeVisible({ timeout: 5000 });
     for (let i = 0; i < 10; i++) {
       const answer = GOLDEN_PATH.connection[i];
       const cards = page.locator('.pair-card');
@@ -73,7 +75,7 @@ test.describe('Complete Quiz Flow (Happy Path)', () => {
 
     // ── MINI REVEAL (after section 3) ──
     await expect(page.locator('.mini-reveal')).toBeVisible({ timeout: 5000 });
-    await page.locator('button.continue-btn').click();
+    await page.locator('button.continue-btn').click({ timeout: 5000 });
 
     // ── SECTION 4: ENNEAGRAM (9 Likert + 1 tiebreaker) ──
     for (let i = 0; i < 9; i++) {

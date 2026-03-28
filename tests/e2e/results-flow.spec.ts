@@ -52,30 +52,17 @@ test.describe('Connections Tab', () => {
 
 test.describe('Compatibility View', () => {
   test('renders compatibility cards with scores', async ({ page }) => {
-    const userResults = buildMockResults(GOLDEN_PATH);
     const connResults = buildMockResults(CONTRASTING_PROFILE);
 
-    // Use addInitScript to inject all state before page loads
-    await page.addInitScript(({ userResults, userName, connResults, connName }) => {
-      sessionStorage.setItem('im_results', JSON.stringify(userResults));
-      sessionStorage.setItem('im_userName', userName);
-      sessionStorage.setItem('im_birthMonth', '3');
-      sessionStorage.setItem('im_birthDay', '15');
-      sessionStorage.setItem('im_screen', 'compatibility');
-      sessionStorage.setItem('im_activeTab', 'compat');
-      sessionStorage.setItem('im_activeConnection', JSON.stringify({
+    await injectQuizState(page, GOLDEN_PATH, 'compatibility', {
+      activeTab: 'compat',
+      activeConnection: {
         id: 'test-conn-1',
-        name: connName,
+        name: CONTRASTING_PROFILE.name,
         status: 'completed',
         results: connResults,
-      }));
-    }, {
-      userResults,
-      userName: GOLDEN_PATH.name,
-      connResults,
-      connName: CONTRASTING_PROFILE.name,
+      },
     });
-    await page.goto('/quiz');
 
     // Should see compatibility view with dimension cards
     const compatCards = page.locator('.compat-card, .compat-dimension, [class*="compat-card"]');
@@ -83,28 +70,21 @@ test.describe('Compatibility View', () => {
   });
 
   test('displays both user names', async ({ page }) => {
-    const userResults = buildMockResults(GOLDEN_PATH);
     const connResults = buildMockResults(CONTRASTING_PROFILE);
 
-    await page.addInitScript(({ userResults, connResults }) => {
-      sessionStorage.setItem('im_results', JSON.stringify(userResults));
-      sessionStorage.setItem('im_userName', 'Test User');
-      sessionStorage.setItem('im_birthMonth', '3');
-      sessionStorage.setItem('im_birthDay', '15');
-      sessionStorage.setItem('im_screen', 'compatibility');
-      sessionStorage.setItem('im_activeTab', 'compat');
-      sessionStorage.setItem('im_activeConnection', JSON.stringify({
+    await injectQuizState(page, GOLDEN_PATH, 'compatibility', {
+      activeTab: 'compat',
+      activeConnection: {
         id: 'test-conn-1',
         name: 'Friend User',
         status: 'completed',
         results: connResults,
-      }));
-    }, { userResults, connResults });
-    await page.goto('/quiz');
+      },
+    });
 
     // Both names should appear somewhere on the compatibility page
     const pageContent = page.locator('body');
-    await expect(pageContent).toContainText('Test User', { timeout: 10000 });
+    await expect(pageContent).toContainText(GOLDEN_PATH.name, { timeout: 10000 });
     await expect(pageContent).toContainText('Friend User');
   });
 });

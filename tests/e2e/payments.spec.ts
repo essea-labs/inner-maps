@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { mockSupabase } from './fixtures/mock-supabase';
-import { mockStripe, mockStripeAlreadyPurchased } from './fixtures/mock-stripe';
+import { mockStripe } from './fixtures/mock-stripe';
+import { GOLDEN_PATH } from './fixtures/quiz-answers';
+import { injectQuizState } from './fixtures/inject-state';
 
 test.beforeEach(async ({ page }) => {
   await mockSupabase(page);
@@ -23,39 +25,19 @@ test.describe('Payments', () => {
       });
     });
 
-    await page.goto('/quiz');
-
-    // Set up authenticated state with results
-    await page.evaluate(() => {
-      const results = {
-        cognitiveType: 'ENFP', cognitiveTypeName: 'The Campaigner', cognitiveTypeDesc: 'desc',
-        attachmentStyle: 'Secure', attachmentDesc: 'desc', anxiety: '2.0', avoidance: '2.0',
-        connectionScores: { words: 4, acts: 2, gifts: 1, quality: 2, touch: 1 },
-        connectionSorted: [['words', 4]], connectionNames: {}, connectionDescs: {},
-        topConnection: 'Words of Affirmation',
-        enneagramType: 4, enneagramWing: 3, enneagramName: 'The Individualist', enneagramDisplay: '4w3',
-        starSign: { sign: 'Pisces', symbol: '♓', emoji: '🐟', dates: '', tagline: '', desc: '', month: [2,19,3,20] },
-      };
-      sessionStorage.setItem('im_results', JSON.stringify(results));
-      sessionStorage.setItem('im_userName', 'Test User');
-      sessionStorage.setItem('im_screen', 'results');
-    });
-
-    await page.reload();
+    await injectQuizState(page, GOLDEN_PATH, 'results');
     await expect(page.locator('.results-page')).toBeVisible({ timeout: 10000 });
 
     // Click the upsell CTA
     const upsellBtn = page.locator('.upsell-cta');
     if (await upsellBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Prevent actual navigation to Stripe
-      await page.evaluate(() => {
-        window.open = () => null;
-        Object.defineProperty(window, 'location', {
-          value: { ...window.location, href: window.location.href },
-          writable: true,
-        });
+      // Intercept any navigation to Stripe checkout
+      await page.route('**/checkout.stripe.com/**', async (route) => {
+        await route.abort();
       });
       await upsellBtn.click();
+      // Verify checkout was called
+      expect(checkoutCalled).toBeTruthy();
     }
   });
 
@@ -75,25 +57,36 @@ test.describe('Payments', () => {
       });
     });
 
-    // Set session storage with results (simulating state before Stripe redirect)
-    await page.goto('/quiz');
-    await page.evaluate(() => {
-      // Simulate a returning user (quiz completion sets this flag)
+    // Use addInitScript to set localStorage before page loads
+    const results = {
+      cognitiveType: 'ENFP', cognitiveTypeName: 'The Campaigner', cognitiveTypeDesc: 'desc',
+      attachmentStyle: 'Secure', attachmentDesc: 'desc', anxiety: '2.0', avoidance: '2.0',
+      connectionScores: { words: 4, acts: 2, gifts: 1, quality: 2, touch: 1 },
+      connectionSorted: [['words', 4]], connectionNames: {}, connectionDescs: {},
+      topConnection: 'Words of Affirmation',
+      enneagramType: 4, enneagramWing: 3, enneagramName: 'The Individualist', enneagramDisplay: '4w3',
+      starSign: { sign: 'Pisces', symbol: '♓', emoji: '🐟', dates: '', tagline: '', desc: '', month: [2,19,3,20] },
+    };
+
+    await page.addInitScript((payload) => {
+      localStorage.setItem('im_redirect_state', JSON.stringify({
+        _ts: Date.now(),
+        results: payload.results,
+        userName: 'Test User',
+        birthMonth: 3,
+        birthDay: 15,
+        screen: 'results',
+      }));
       localStorage.setItem('im_returning', '1');
-      const results = {
-        cognitiveType: 'ENFP', cognitiveTypeName: 'The Campaigner', cognitiveTypeDesc: 'desc',
-        attachmentStyle: 'Secure', attachmentDesc: 'desc', anxiety: '2.0', avoidance: '2.0',
-        connectionScores: { words: 4, acts: 2, gifts: 1, quality: 2, touch: 1 },
-        connectionSorted: [['words', 4]], connectionNames: {}, connectionDescs: {},
-        topConnection: 'Words of Affirmation',
-        enneagramType: 4, enneagramWing: 3, enneagramName: 'The Individualist', enneagramDisplay: '4w3',
-        starSign: { sign: 'Pisces', symbol: '♓', emoji: '🐟', dates: '', tagline: '', desc: '', month: [2,19,3,20] },
-      };
-      sessionStorage.setItem('im_results', JSON.stringify(results));
-      sessionStorage.setItem('im_userName', 'Test User');
-      sessionStorage.setItem('im_birthMonth', '3');
-      sessionStorage.setItem('im_birthDay', '15');
-    });
+      localStorage.setItem('im_profile_cache', JSON.stringify({
+        userId: 'test-user-id-123',
+        results: payload.results,
+        userName: 'Test User',
+        birthMonth: 3,
+        birthDay: 15,
+        email: '',
+      }));
+    }, { results });
 
     // Navigate as if returning from Stripe
     await page.goto('/quiz?purchase=success&product=individual_report');

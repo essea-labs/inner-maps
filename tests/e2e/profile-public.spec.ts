@@ -15,7 +15,7 @@ test.describe('Public Profile Page', () => {
     await page.goto('/profile/invalid-slug');
 
     // Should show some kind of fallback or error
-    const quizCta = page.getByText(/Take the Quiz/i);
+    const quizCta = page.locator('a').filter({ hasText: /Take the Quiz/i }).first();
     await expect(quizCta).toBeVisible({ timeout: 10000 });
   });
 
