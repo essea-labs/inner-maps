@@ -28,6 +28,9 @@ export function saveStateToSession() {
     if (s.email) data.email = s.email;
     data.screen = s.screen;
     data.activeTab = s.activeTab;
+    data.answers = s.answers;
+    data.currentSection = s.currentSection;
+    data.currentQuestion = s.currentQuestion;
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
   } catch { /* non-fatal */ }
 }
@@ -53,6 +56,9 @@ export function restoreStateFromSession(): Record<string, any> | null {
     if (data.email) patch.email = data.email;
     if (data.screen) patch.screen = data.screen;
     if (data.activeTab) patch.activeTab = data.activeTab;
+    if (data.answers) patch.answers = data.answers;
+    if (data.currentSection != null) patch.currentSection = data.currentSection;
+    if (data.currentQuestion != null) patch.currentQuestion = data.currentQuestion;
     return patch;
   } catch {
     return null;
@@ -398,21 +404,14 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
               saveProfileCache({ userId: user.id, results, userName, birthMonth, birthDay, email: user.email ?? '' });
             }
 
-            // Complete invite immediately if user arrived via invite link
+            // Complete invite in background if user arrived via invite link
             let inviterCode: string | null = null;
             try { inviterCode = sessionStorage.getItem('innerMapsInviterCode'); } catch { /* */ }
             if (inviterCode) {
               try {
                 const completed = await completeInvite(inviterCode, user.id);
                 if (completed) {
-                  // Load connections so compat tab works immediately
                   await get().loadConnections(user.id);
-                  const conns = get().connections;
-                  if (conns.length > 0) {
-                    get().setActiveConnection(conns[0]);
-                    get().setActiveTab('compat');
-                    set({ screen: 'compatibility' });
-                  }
                 }
               } catch (err) {
                 console.warn('Invite complete on quiz finish failed:', err);
@@ -728,16 +727,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         get().checkPurchases(userId),
       ]);
 
-      // If invite was just completed, auto-navigate to compatibility
-      if (inviterCode && inviteCompleted) {
-        const conns = get().connections;
-        if (conns.length > 0) {
-          get().setActiveConnection(conns[0]);
-          get().setActiveTab('compat');
-          set({ screen: 'compatibility', restoringState: false });
-          return;
-        }
-      }
+      // Invitee stays on results — connection is loaded and ready
+      // when they tap the Compatibility tab.
     } catch (err) {
       console.warn('handlePostAuth save failed:', err);
     }
