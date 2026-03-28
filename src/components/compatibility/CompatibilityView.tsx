@@ -127,33 +127,6 @@ export default function CompatibilityView() {
           <p>Here&apos;s how your inner worlds align</p>
         </div>
 
-        {/* Signup CTA — only for confirmed anonymous users (hide while auth loading) */}
-        {!authLoading && !isRealUser && (
-          <div
-            onClick={() => setSignupOpen(true)}
-            style={{
-              background: 'linear-gradient(135deg, var(--peach), var(--peach-deep, #D4956A))',
-              borderRadius: 'var(--radius)',
-              padding: '16px 20px',
-              marginBottom: 20,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'white', marginBottom: 3 }}>
-                Keep your results
-              </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)' }}>
-                Create a free account to save your profile and invite others
-              </div>
-            </div>
-            <div style={{ color: 'white', fontSize: 16, flexShrink: 0 }}>→</div>
-          </div>
-        )}
-
         {/* Shareable Card */}
         <div className="compat-share-card" ref={compatCardRef}>
           <div className="compat-share-card-brand">✦ Inner Maps ✦</div>
@@ -204,9 +177,38 @@ export default function CompatibilityView() {
           </div>
           <div className="compat-share-card-url">innermaps.io</div>
         </div>
-        <button className="compat-share-cta" onClick={handleSaveImage} style={{ marginBottom: 24 }}>
+        <button className="compat-share-cta" onClick={handleSaveImage} style={{ marginBottom: 16 }}>
           Save
         </button>
+
+        {/* Keep your results — only for anonymous users */}
+        {!authLoading && !isRealUser && (
+          <div
+            onClick={() => setSignupOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, var(--peach-pale), var(--card-bg))',
+              border: '1px solid var(--peach-pale)',
+              borderRadius: 'var(--radius)',
+              padding: '16px 20px',
+              marginBottom: 24,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ fontSize: 24, flexShrink: 0 }}>⟡</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-playfair-family)', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+                Keep your results
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                Create a free account to save your results and invite others to discover your compatibility
+              </div>
+            </div>
+            <div style={{ color: 'var(--peach)', fontSize: 16 }}>→</div>
+          </div>
+        )}
 
         {/* Star Sign */}
         <div className="compat-card" style={{ animationDelay: '0.1s' }}>
