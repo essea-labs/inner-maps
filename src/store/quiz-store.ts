@@ -24,6 +24,8 @@ export function saveStateToSession() {
     if (s.birthDay != null) data.birthDay = s.birthDay;
     if (s.starSign) data.starSign = s.starSign;
     if (s.activeConnection) data.activeConnection = s.activeConnection;
+    if (s.currentUserId) data.currentUserId = s.currentUserId;
+    if (s.email) data.email = s.email;
     data.screen = s.screen;
     data.activeTab = s.activeTab;
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
@@ -47,6 +49,8 @@ export function restoreStateFromSession(): Record<string, any> | null {
     if (data.birthDay != null) patch.birthDay = data.birthDay;
     if (data.starSign) patch.starSign = data.starSign;
     if (data.activeConnection) patch.activeConnection = data.activeConnection;
+    if (data.currentUserId) patch.currentUserId = data.currentUserId;
+    if (data.email) patch.email = data.email;
     if (data.screen) patch.screen = data.screen;
     if (data.activeTab) patch.activeTab = data.activeTab;
     return patch;
@@ -379,7 +383,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
           }
 
           if (user) {
-            set({ currentUserId: user.id });
+            if (isExistingRealUser) {
+              set({ currentUserId: user.id });
+            }
             await saveUserProfile(user.id, {
               name: userName,
               email: isExistingRealUser ? (user.email ?? '') : undefined,

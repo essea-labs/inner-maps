@@ -96,8 +96,15 @@ export default function QuizPage() {
       if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
         await restoreUserState(user.id, user.email ?? '');
       } else {
-        // Not a returning user or already have results — clear loading
-        useQuizStore.setState({ restoringState: false });
+        // Not a returning user or already have results — clear loading.
+        // Still set currentUserId/email if we have a real user session so
+        // the Profile tab's isRealUser check works immediately.
+        const patch: Record<string, any> = { restoringState: false };
+        if (user && !user.is_anonymous) {
+          patch.currentUserId = user.id;
+          patch.email = user.email ?? '';
+        }
+        useQuizStore.setState(patch);
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps

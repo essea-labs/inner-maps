@@ -11,10 +11,13 @@ export default function TabBar() {
   const activeTab = useQuizStore((s) => s.activeTab);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
   const setScreen = useQuizStore((s) => s.setScreen);
+  const currentUserId = useQuizStore((s) => s.currentUserId);
   const { user, loading } = useAuth();
   const [signInOpen, setSignInOpen] = useState(false);
 
-  const isRealUser = !loading && !!user && !user.is_anonymous;
+  // Trust the Zustand store as a fallback — handlePostAuth sets currentUserId
+  // before the Supabase auth subscription fires in useAuth.
+  const isRealUser = (!loading && !!user && !user.is_anonymous) || !!currentUserId;
 
   function handleMyMap() {
     setActiveTab('mymap');
@@ -34,7 +37,9 @@ export default function TabBar() {
     if (isRealUser) {
       setActiveTab('profile');
       setScreen('profile');
-    } else {
+    } else if (!loading) {
+      // Only show login modal when auth has definitively resolved —
+      // prevents false login prompts while useAuth is still loading.
       setSignInOpen(true);
     }
   }
