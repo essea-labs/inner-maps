@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // Verify the invite exists and is still pending
     const { data: invite, error: lookupError } = await admin
       .from('invites')
-      .select('id, status, inviter_id')
+      .select('id, status, inviter_id, invitee_id')
       .eq('invite_code', inviteCode)
       .single();
 
@@ -36,7 +36,23 @@ export async function POST(request: NextRequest) {
     }
 
     if (invite.status === 'completed') {
-      // Already completed — not an error, just a no-op
+      // If the invite was completed by an anonymous user who has since signed up
+      // with a new real account, reassign invitee_id so loadConnections() works.
+      // This mirrors the safety checks in /api/invites/claim.
+      if (invite.invitee_id && invite.invitee_id !== inviteeId && invite.inviter_id !== inviteeId) {
+        const { data: prevOwner } = await admin
+          .from('users')
+          .select('is_anonymous')
+          .eq('id', invite.invitee_id)
+          .single();
+
+        if (prevOwner?.is_anonymous) {
+          await admin
+            .from('invites')
+            .update({ invitee_id: inviteeId })
+            .eq('id', invite.id);
+        }
+      }
       return NextResponse.json({ success: true, already_completed: true });
     }
 

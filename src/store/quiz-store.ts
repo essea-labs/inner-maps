@@ -717,8 +717,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         } catch (err) {
           console.warn('completeInvite threw:', err);
         }
-        sessionStorage.removeItem('innerMapsInviterCode');
-        sessionStorage.removeItem('innerMapsInviterName');
+        // Don't remove sessionStorage here — the claim block below (invites/claim)
+        // needs the key as a fallback if completeInvite didn't fully migrate.
       }
 
       // Load connections and purchases (must await before checking connections)
@@ -755,12 +755,16 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ invite_code: inviteCodeForClaim }),
         });
-        sessionStorage.removeItem('innerMapsInviterCode');
-        sessionStorage.removeItem('innerMapsInviterName');
         // Refresh connections after claiming
         await get().loadConnections(userId);
       }
     } catch { /* non-fatal */ }
+
+    // Clean up invite sessionStorage after both complete and claim paths have run
+    try {
+      sessionStorage.removeItem('innerMapsInviterCode');
+      sessionStorage.removeItem('innerMapsInviterName');
+    } catch { /* */ }
 
     // Handle save_after_purchase intent — return to report
     if (intent === 'save_after_purchase') {
