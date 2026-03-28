@@ -28,14 +28,14 @@ export const COGNITIVE_QS: CognitiveQuestion[] = [
   { q: "In a group conversation, you usually...", a: "Jump right in. You think best out loud.", b: "Listen first, then speak once your thoughts are formed." },
   // --- S/N (4 questions) ---
   { q: "When you're telling a story, you tend to...", a: "Include the details — who was there, what was said, exactly how it happened.", b: "Skip to the meaning — the punchline or the bigger point, not every detail." },
-  { q: "When you meet someone new, you're more curious about...", a: "Their story — what they do, where they've been, how they got here.", b: "Their mind — what drives them, how they see the world, what lights them up." },
-  { q: "You just finished a really good book or show. You think about...", a: "The scenes that stuck with you — specific moments, lines, images.", b: "What it was really about underneath — the themes, the message." },
-  { q: "When learning something new, you'd rather...", a: "Follow a step-by-step approach with concrete examples.", b: "Get the big picture first, then fill in details as needed." },
+  { q: "Someone describes a trip they went on. What are you more interested in hearing about?", a: "The actual experience — what they did each day, the food, the weather, the funny moments.", b: "How it changed them — what they realized, what shifted in how they see things." },
+  { q: "You just finished a really good book or show. You find yourself thinking about...", a: "The scenes that stuck with you — specific moments, lines, or images you keep replaying.", b: "The ideas it sparked — connections to other things, questions it raised, what it made you think about." },
+  { q: "When you hear about a new project at work or school, your first question is usually...", a: "What does it actually involve? What are the concrete steps?", b: "What's the vision? What are we ultimately trying to achieve?" },
   // --- T/F (4 questions) ---
-  { q: "A friend is upset about something you think is a misunderstanding. You...", a: "Explain what you think actually happened — clearing it up will help.", b: "Acknowledge their feelings first — they need to feel heard before logic helps." },
-  { q: "When you're processing a big life decision, you mostly...", a: "Weigh the pros and cons and go with what makes the most sense.", b: "Sit with how each option feels — you trust your gut to guide you." },
-  { q: "When you need to make a group decision, you focus on...", a: "What makes the most logical sense for everyone — fairness through reason.", b: "How everyone feels about the options — fairness through making sure nobody's upset." },
-  { q: "When two friends are in a conflict, you instinctively...", a: "Try to figure out who's actually right.", b: "Try to understand how each person feels." },
+  { q: "What makes you feel truly understood?", a: "When someone follows your reasoning and gets why you think the way you do.", b: "When someone picks up on how you're feeling without you having to spell it out." },
+  { q: "When you read something that really resonates with you, it's usually because...", a: "It put into words something you've been thinking — the logic just clicked.", b: "It put into words something you've been feeling — it captured something personal." },
+  { q: "You're helping a friend settle an argument with someone. You'd probably...", a: "Help them see the situation clearly — what actually happened and what's fair.", b: "Help them figure out how they feel about it — what's really bugging them underneath." },
+  { q: "When you disagree with someone, the thing that bothers you most is...", a: "That their reasoning doesn't hold up — there's a flaw in the logic.", b: "That they don't seem to care how their position affects other people." },
   // --- J/P (3 questions) ---
   { q: "Your approach to a weekend trip:", a: "Itinerary first. I like knowing what's happening.", b: "Wing it. The best stuff is unplanned anyway." },
   { q: "When you've got a deadline:", a: "Steady progress. I aim to finish early.", b: "Last-minute magic. Pressure is my fuel." },
@@ -176,7 +176,7 @@ export function calculateResults(answers: QuizAnswers, starSign: StarSign | null
   // E/I = 0-3 (anchor: 1), S/N = 4-7 (anchor: 4), T/F = 8-11 (anchor: 11), J/P = 12-14
   const dims = [
     { letters: ['E', 'I'] as const, range: [0, 4], anchor: 1 },
-    { letters: ['S', 'N'] as const, range: [4, 8], anchor: 4 },
+    { letters: ['S', 'N'] as const, range: [4, 8], anchor: 7 },
     { letters: ['T', 'F'] as const, range: [8, 12], anchor: 11 },
     { letters: ['J', 'P'] as const, range: [12, 15], anchor: -1 }, // odd count, no ties
   ];
