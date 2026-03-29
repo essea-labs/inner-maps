@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuizStore } from '@/store/quiz-store';
+import { analytics } from '@/lib/analytics';
 import TabBar from '@/components/ui/TabBar';
 
 export default function LandingPage() {
@@ -42,7 +43,7 @@ export default function LandingPage() {
         <h1>Discover Your <em>Full Self</em> in Under 12 Minutes</h1>
         <p className="subtitle">One quiz. Five dimensions. Understand yourself — then see how you match with others.</p>
 
-        <button className="cta-button" onClick={() => setScreen('name')}>
+        <button className="cta-button" onClick={() => { analytics.quizStarted(); setScreen('name'); }}>
           Take the Quiz
         </button>
 

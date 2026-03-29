@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
+import { analytics } from '@/lib/analytics';
 
 export default function ResetPasswordForm() {
   const setScreen = useQuizStore((s) => s.setScreen);
@@ -23,6 +24,7 @@ export default function ResetPasswordForm() {
       if (updateError) throw updateError;
 
       showToast('Password updated ✓');
+      analytics.passwordResetCompleted();
       try { localStorage.removeItem('im_recovery_pending'); } catch { /* non-fatal */ }
 
       // Restore profile data, then navigate to results (or landing if no data)

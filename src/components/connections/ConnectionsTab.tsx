@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { analytics } from '@/lib/analytics';
 import useAuth from '@/hooks/useAuth';
 import TabBar from '@/components/ui/TabBar';
 
@@ -25,6 +26,7 @@ export default function ConnectionsTab() {
   }, [user?.id]);
 
   function handleViewCompat(index: number) {
+    analytics.connectionViewed();
     setActiveConnection(connections[index]);
     setScreen('compatibility');
     setActiveTab('compat');

@@ -7,6 +7,7 @@ import {
   CONNECTION_DEEP_DIVE, STARSIGN_DEEP_DIVE, generateIntersectionInsights,
 } from '@/lib/deep-dive-data';
 import { ZODIAC_ELEMENTS } from '@/lib/compatibility';
+import { analytics } from '@/lib/analytics';
 import SignupForm from '@/components/quiz/SignupForm';
 import useAuth from '@/hooks/useAuth';
 
@@ -27,6 +28,8 @@ export default function IndividualReport() {
   useEffect(() => {
     if (results && !purchasedIndividual) {
       setScreen('results');
+    } else if (results && purchasedIndividual) {
+      analytics.individualReportViewed();
     }
   }, [results, purchasedIndividual, setScreen]);
 
@@ -71,6 +74,7 @@ export default function IndividualReport() {
               const { generateReportPDF } = await import('@/lib/generate-pdf');
               const n = (userName || 'your').toLowerCase().replace(/\s+/g, '-');
               await generateReportPDF(reportRef.current, `${n}-inner-maps-report.pdf`);
+              analytics.reportPdfDownloaded('individual');
             } catch (err) {
               console.error('PDF generation failed:', err);
             } finally {

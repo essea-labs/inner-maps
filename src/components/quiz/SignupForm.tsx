@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type React from 'react';
 import Link from 'next/link';
 import { useQuizStore } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
+import { analytics } from '@/lib/analytics';
 
 interface IntentContent {
   title: React.ReactNode;
@@ -125,7 +126,12 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
 
   const isFullScreen = !onClose;
 
+  // Track signup form shown
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { analytics.signupStarted(intent); }, []);
+
   function handleSkip() {
+    analytics.signupSkipped(intent);
     if (onClose) onClose();
     else setScreen('results');
   }
@@ -154,6 +160,8 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
 
         const inviterCode = sessionStorage.getItem('innerMapsInviterCode') ?? undefined;
         await handlePostAuth(data.user.id, trimmedEmail, intent, inviterCode);
+        analytics.signupCompleted(intent);
+        analytics.identify(data.user.id, { email: trimmedEmail });
         if (onClose) onClose();
 
       } else if (mode === 'login') {
@@ -177,6 +185,8 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         // (instant if cached) and only hits the DB as fallback. Much faster
         // than handlePostAuth which does multiple sequential DB writes.
         await restoreUserState(data.user.id, trimmedEmail);
+        analytics.loginCompleted();
+        analytics.identify(data.user.id, { email: trimmedEmail });
         if (onClose) onClose();
 
       } else if (mode === 'forgot') {
@@ -184,6 +194,7 @@ export default function SignupForm({ intent = 'save', onClose, defaultMode = 'si
         // This prevents leaking whether an email exists (always shows success).
         try { localStorage.setItem('im_recovery_pending', '1'); } catch { /* */ }
         setMode('resetSent');
+        analytics.passwordResetRequested();
         const redirectTo = `${window.location.origin}/auth/callback`;
         supabase.auth.resetPasswordForEmail(trimmedEmail, { redirectTo }).catch(() => { /* non-fatal */ });
       }

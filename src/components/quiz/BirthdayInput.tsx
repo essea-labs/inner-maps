@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { analytics } from '@/lib/analytics';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -27,6 +28,7 @@ export default function BirthdayInput() {
 
   function handleContinue() {
     if (!month || !day) return;
+    analytics.birthdayEntered(starSign?.sign ?? '');
     setScreen('quiz');
   }
 

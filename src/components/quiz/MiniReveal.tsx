@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { SECTIONS, COGNITIVE_QS, CONNECTION_QS, TYPE_NAMES } from '@/lib/quiz-data';
+import { analytics } from '@/lib/analytics';
 
 export default function MiniReveal() {
   const currentSection = useQuizStore((s) => s.currentSection);
@@ -83,6 +85,10 @@ export default function MiniReveal() {
     name = '';
   }
 
+  // Track mini reveal viewed on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { analytics.miniRevealViewed(title, result); }, []);
+
   const nextSection = SECTIONS[currentSection];
   const sectionTimes: Record<string, string> = {
     attachment: '~1 min',
@@ -112,7 +118,7 @@ export default function MiniReveal() {
           </div>
         </div>
       )}
-      <button className="continue-btn" onClick={continueMini}>Continue</button>
+      <button className="continue-btn" onClick={() => { analytics.miniRevealContinued(); continueMini(); }}>Continue</button>
     </div>
   );
 }

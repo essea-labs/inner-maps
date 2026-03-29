@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useQuizStore, restoreStateFromSession, clearSessionState, isReturningUser } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
+import { analytics } from '@/lib/analytics';
 
 import LandingPage from '@/components/LandingPage';
 import NameInput from '@/components/quiz/NameInput';
@@ -115,6 +116,7 @@ export default function QuizPage() {
     const params = new URLSearchParams(window.location.search);
     const inviterCode = params.get('inviterCode');
     if (inviterCode && params.get('authCallback') !== '1') {
+      analytics.inviteLandingViewed(inviterCode);
       sessionStorage.setItem('innerMapsInviterCode', inviterCode);
       window.history.replaceState({}, '', '/quiz');
 
@@ -157,6 +159,7 @@ export default function QuizPage() {
     }
 
     // Unlock the report and navigate
+    analytics.checkoutCompleted(product, product === 'individual_report' ? 9.99 : 4.99);
     setPurchased(product, connectionId);
 
     if (product === 'individual_report') {

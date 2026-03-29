@@ -68,7 +68,7 @@ export async function injectQuizState(
   page: Page,
   profile: QuizAnswerSet,
   screen: string = 'results',
-  extras: Record<string, string> = {},
+  extras: Record<string, any> = {},
 ) {
   const results = buildMockResults(profile);
   const statePayload = {
@@ -80,16 +80,32 @@ export async function injectQuizState(
     extras,
   };
 
-  // addInitScript runs before any page JS — sessionStorage is ready before React hydrates
+  // addInitScript runs before any page JS — localStorage is ready before React hydrates.
+  // The app reads from localStorage key 'im_redirect_state' via restoreStateFromSession().
   await page.addInitScript((payload) => {
-    sessionStorage.setItem('im_results', JSON.stringify(payload.results));
-    sessionStorage.setItem('im_userName', payload.name);
-    sessionStorage.setItem('im_birthMonth', String(payload.birthMonth));
-    sessionStorage.setItem('im_birthDay', String(payload.birthDay));
-    sessionStorage.setItem('im_screen', payload.screen);
+    // Write the redirect-state format that the Zustand store reads on load
+    const redirectState: Record<string, any> = {
+      _ts: Date.now(),
+      results: payload.results,
+      userName: payload.name,
+      birthMonth: payload.birthMonth,
+      birthDay: payload.birthDay,
+      screen: payload.screen,
+    };
     for (const [k, v] of Object.entries(payload.extras)) {
-      sessionStorage.setItem(k, v);
+      redirectState[k] = v;
     }
+    localStorage.setItem('im_redirect_state', JSON.stringify(redirectState));
+
+    // Also write to profile cache so the results page can read it without DB
+    localStorage.setItem('im_profile_cache', JSON.stringify({
+      userId: 'test-user-id-123',
+      results: payload.results,
+      userName: payload.name,
+      birthMonth: payload.birthMonth,
+      birthDay: payload.birthDay,
+      email: '',
+    }));
   }, statePayload);
 
   await page.goto('/quiz');

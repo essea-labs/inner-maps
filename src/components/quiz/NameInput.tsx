@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { analytics } from '@/lib/analytics';
 
 export default function NameInput() {
   const userName = useQuizStore((s) => s.userName);
@@ -14,6 +15,7 @@ export default function NameInput() {
     const trimmed = value.trim();
     if (!trimmed) return;
     setUserName(trimmed);
+    analytics.nameEntered();
     setScreen('birthday');
   }
 

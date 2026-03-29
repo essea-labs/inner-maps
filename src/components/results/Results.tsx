@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
+import { analytics } from '@/lib/analytics';
 import { WING_COMMENTARY, STARSIGN_DEEP_DIVE, TYPE_DEEP_DIVE, ENNEAGRAM_DEEP_DIVE, ATTACHMENT_DEEP_DIVE, CONNECTION_DEEP_DIVE } from '@/lib/deep-dive-data';
 import { encodeProfileSlug } from '@/lib/profile-slug';
 import TabBar from '@/components/ui/TabBar';
@@ -27,11 +28,28 @@ export default function Results() {
     setSignupOpen(true);
   }
 
+  const currentUserId = useQuizStore((s) => s.currentUserId);
+
   // True when the user has a real (non-anonymous) account.
-  // Only evaluate once auth has resolved to avoid a brief flash of the save CTA.
-  const isRealUser = !authLoading && !!user && !user.is_anonymous;
+  // Trust the Zustand store as a fallback — handlePostAuth sets currentUserId
+  // before the Supabase auth subscription fires in useAuth.
+  const isRealUser = (!authLoading && !!user && !user.is_anonymous) || !!currentUserId;
 
   const shareCardRef = useRef<HTMLDivElement>(null);
+
+  // Track results viewed on mount
+  useEffect(() => {
+    if (results) {
+      analytics.resultsViewed({
+        cognitive_type: results.cognitiveType,
+        attachment_style: results.attachmentStyle,
+        connection_style: results.topConnection,
+        enneagram_type: results.enneagramDisplay,
+        star_sign: results.starSign?.sign ?? '',
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!results) return null;
 
@@ -65,6 +83,7 @@ export default function Results() {
       a.click();
       document.body.removeChild(a);
       showToast('✓ Image saved!');
+      analytics.profileCardDownloaded();
     } catch {
       showToast('Could not save image — try again.');
     }
@@ -79,6 +98,7 @@ export default function Results() {
       setScreen('individualReport');
       return;
     }
+    analytics.upsellClicked('individual_report', 'results');
     // Go straight to Stripe checkout — no signup required
     setCheckoutLoading(true);
     await startCheckout('individual_report');

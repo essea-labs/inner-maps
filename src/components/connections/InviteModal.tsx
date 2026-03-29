@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { createInvite } from '@/lib/db';
+import { analytics } from '@/lib/analytics';
 import useAuth from '@/hooks/useAuth';
 import SignupForm from '@/components/quiz/SignupForm';
 
@@ -11,26 +12,29 @@ export default function InviteModal() {
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
   const userName = useQuizStore((s) => s.userName);
   const showToast = useQuizStore((s) => s.showToast);
+  const currentUserId = useQuizStore((s) => s.currentUserId);
   const { user, loading: authLoading } = useAuth();
 
   const [cachedCode, setCachedCode] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const isRealUser = !!user && !user.is_anonymous;
+  const userId = user?.id ?? currentUserId;
+  const isRealUser = (!!user && !user.is_anonymous) || !!currentUserId;
 
   useEffect(() => {
-    if (!inviteModalOpen || !isRealUser || cachedCode || generating) return;
+    if (!inviteModalOpen || !isRealUser || !userId || cachedCode || generating) return;
+    analytics.inviteModalOpened();
     setGenerating(true);
-    createInvite(user!.id)
-      .then((code) => setCachedCode(code))
+    createInvite(userId)
+      .then((code) => { setCachedCode(code); analytics.inviteLinkCreated(); })
       .catch(() => showToast('Could not generate link — please try again.'))
       .finally(() => setGenerating(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inviteModalOpen, isRealUser, user?.id]);
+  }, [inviteModalOpen, isRealUser, userId]);
 
   if (!inviteModalOpen) return null;
-  if (authLoading) return null;
+  if (authLoading && !currentUserId) return null;
 
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
@@ -80,6 +84,7 @@ export default function InviteModal() {
     try {
       await navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
+      analytics.inviteLinkCopied();
       setTimeout(() => setCopied(false), 2000);
     } catch {
       showToast('Could not copy — try selecting the link manually.');
@@ -91,6 +96,7 @@ export default function InviteModal() {
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Inner Maps Invite', text: shareText, url: inviteUrl });
+        analytics.inviteLinkShared();
       } else {
         await handleCopyLink();
       }

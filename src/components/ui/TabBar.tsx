@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { analytics } from '@/lib/analytics';
 import useAuth from '@/hooks/useAuth';
 import SignupForm from '@/components/quiz/SignupForm';
 
@@ -20,6 +21,7 @@ export default function TabBar() {
   const isRealUser = (!loading && !!user && !user.is_anonymous) || !!currentUserId;
 
   function handleMyMap() {
+    analytics.tabChanged('my_map');
     setActiveTab('mymap');
     if (!results) {
       setScreen('landing');
@@ -29,11 +31,13 @@ export default function TabBar() {
   }
 
   function handleCompat() {
+    analytics.tabChanged('compatibility');
     setActiveTab('compat');
     setScreen('connections');
   }
 
   function handleProfile() {
+    analytics.tabChanged('profile');
     if (isRealUser) {
       setActiveTab('profile');
       setScreen('profile');

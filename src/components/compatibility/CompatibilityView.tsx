@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
 import { calculateCompatibility } from '@/lib/compatibility';
+import { analytics } from '@/lib/analytics';
 import TabBar from '@/components/ui/TabBar';
 import SignupForm from '@/components/quiz/SignupForm';
 import useAuth from '@/hooks/useAuth';
@@ -63,6 +64,10 @@ export default function CompatibilityView() {
   const compat = calculateCompatibility(results, conn.results!);
   const myName = userName || 'You';
 
+  // Track compatibility viewed on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { analytics.compatibilityViewed(compat.overall, conn.name ?? ''); }, []);
+
   function handleBack() {
     setActiveTab('compat');
     setScreen('compatibility');
@@ -87,6 +92,7 @@ export default function CompatibilityView() {
       a.click();
       document.body.removeChild(a);
       showToast('✓ Image saved!');
+      analytics.compatibilityCardDownloaded();
     } catch {
       showToast('Could not save image — try again.');
     }
@@ -105,6 +111,7 @@ export default function CompatibilityView() {
       return;
     }
     // Authenticated — go to Stripe
+    analytics.upsellClicked('compatibility_report', 'compatibility');
     setCheckoutLoading(true);
     await startCheckout('compatibility_report', connectionId);
     setCheckoutLoading(false);

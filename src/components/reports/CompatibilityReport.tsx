@@ -5,6 +5,7 @@ import { useQuizStore } from '@/store/quiz-store';
 import { calculateCompatibility, ZODIAC_ELEMENTS } from '@/lib/compatibility';
 import { TYPE_DEEP_DIVE, ATTACHMENT_DEEP_DIVE, CONNECTION_DEEP_DIVE, COMPAT_DEEP, generatePairStrengths, generatePairChallenges } from '@/lib/deep-dive-data';
 import { ENNEAGRAM_QS } from '@/lib/quiz-data';
+import { analytics } from '@/lib/analytics';
 
 export default function CompatibilityReport() {
   const results = useQuizStore((s) => s.results);
@@ -20,6 +21,8 @@ export default function CompatibilityReport() {
   useEffect(() => {
     if (results && activeConnection?.results && !isPurchased) {
       setScreen('compatibility');
+    } else if (results && activeConnection?.results && isPurchased) {
+      analytics.compatibilityReportViewed();
     }
   }, [results, activeConnection, isPurchased, setScreen]);
 
@@ -115,6 +118,7 @@ export default function CompatibilityReport() {
               const { generateCompatPDF } = await import('@/lib/generate-pdf');
               const n = `${(myName).toLowerCase()}-${(conn.name || 'friend').toLowerCase()}`.replace(/\s+/g, '-');
               await generateCompatPDF(n + '-compatibility-report.pdf');
+              analytics.reportPdfDownloaded('compatibility');
             } catch (err) {
               console.error('PDF generation failed:', err);
             } finally {

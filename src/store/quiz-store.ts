@@ -4,6 +4,7 @@ import { SECTIONS, getStarSign, calculateResults } from '@/lib/quiz-data';
 import { MOCK_CONNECTIONS } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
 import { saveUserProfile, saveQuizResults, fetchConnections, fetchUserQuizResults, completeInvite } from '@/lib/db';
+import { analytics } from '@/lib/analytics';
 
 // ===== SESSION PERSISTENCE HELPERS =====
 // Save navigation + quiz state before external redirects (Stripe, magic link).
@@ -370,6 +371,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       set({ currentQuestion: currentQuestion + 1 });
     } else if (isLastSection) {
       // Final question of final section → calculate results, show immediately, persist anonymously
+      analytics.sectionCompleted(section.name, currentSection);
+      analytics.quizCompleted();
       const { answers, starSign, userName, birthMonth, birthDay } = get();
       const results = calculateResults(answers, starSign);
       markReturningUser();
@@ -426,6 +429,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       })();
     } else {
       // End of non-final section → show miniReveal, increment section
+      analytics.sectionCompleted(section.name, currentSection);
       set({
         currentSection: currentSection + 1,
         currentQuestion: 0,
@@ -462,6 +466,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   resetQuiz: () => {
+    analytics.reset();
     clearReturningUser();
     clearSessionState();
     try {
@@ -579,6 +584,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   startCheckout: async (productType: string, connectionId?: string) => {
+    analytics.checkoutStarted(productType, productType === 'individual_report' ? 9.99 : 4.99);
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -634,6 +640,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   restoreUserState: async (userId: string, email?: string) => {
+    analytics.identify(userId, { email: email || '' });
     set({ restoringState: true, currentUserId: userId, ...(email ? { email } : {}) });
 
     // Try cached profile first — renders instantly without any network calls
@@ -695,6 +702,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       try { existingData = await fetchUserQuizResults(userId); } catch { /* non-fatal */ }
 
       set({ currentUserId: userId, email });
+      analytics.identify(userId, { email });
 
       if (existingData) {
         // Existing results in DB — restore them (don't overwrite with new quiz)
