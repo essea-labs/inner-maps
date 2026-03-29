@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Fake Tweet — Avoidant Space</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #000;
+    font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .page {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6vh 5vw;
+    background: #000;
+    gap: 4vh;
+  }
+
+  /* Tweet card */
+  .tweet {
+    background: #16181c;
+    border-radius: 3.5vw;
+    padding: 4vh 5vw;
+    width: 88vw;
+    max-width: 88vw;
+    border: 1px solid #2f3336;
+  }
+
+  .tweet-header {
+    display: flex;
+    align-items: center;
+    gap: 2.5vw;
+    margin-bottom: 2.5vh;
+  }
+  .tweet-avatar {
+    width: 11vw;
+    height: 11vw;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E8A87C, #d4956a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .tweet-avatar svg { width: 5.5vw; height: 5.5vw; }
+  .tweet-name {
+    font-size: 3.8vw;
+    font-weight: 700;
+    color: #e7e9ea;
+    line-height: 1.2;
+  }
+  .tweet-handle {
+    font-size: 3.2vw;
+    color: #71767b;
+  }
+  .tweet-verified {
+    width: 4vw;
+    height: 4vw;
+    margin-left: 1vw;
+    fill: #1d9bf0;
+  }
+
+  .tweet-body {
+    font-size: 5.5vw;
+    color: #e7e9ea;
+    line-height: 1.45;
+    margin-bottom: 3vh;
+  }
+
+  .tweet-time {
+    font-size: 3vw;
+    color: #71767b;
+    margin-bottom: 2.5vh;
+    padding-bottom: 2vh;
+    border-bottom: 1px solid #2f3336;
+  }
+
+  .tweet-stats {
+    display: flex;
+    gap: 6vw;
+  }
+  .tweet-stat {
+    display: flex;
+    align-items: center;
+    gap: 1.5vw;
+  }
+  .tweet-stat svg {
+    width: 4.5vw;
+    height: 4.5vw;
+    fill: #71767b;
+  }
+  .tweet-stat-num {
+    font-size: 3.2vw;
+    color: #71767b;
+  }
+
+  /* Reaction text */
+  .reaction {
+    font-size: 4.5vw;
+    color: #636366;
+    text-align: center;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* Footer CTA */
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2vh;
+  }
+  .footer-logo { width: 6vw; height: 6vw; }
+  .footer-cta {
+    font-size: 3.5vw;
+    color: #E8A87C;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .footer-link {
+    font-size: 2.8vw;
+    color: #5AC8FA;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Tweet -->
+  <div class="tweet">
+    <div class="tweet-header">
+      <div class="tweet-avatar">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M16 0C16.8 10 22 15.2 32 16C22 16.8 16.8 22 16 32C15.2 22 10 16.8 0 16C10 15.2 15.2 10 16 0Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <div style="display: flex; align-items: center;">
+          <span class="tweet-name">Inner Map</span>
+          <svg class="tweet-verified" viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.855-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.272.587.702 1.087 1.24 1.44s1.167.551 1.813.568c.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.225 1.261.272 1.893.143.636-.131 1.22-.437 1.69-.883.445-.47.75-1.055.88-1.69.131-.634.084-1.292-.139-1.9.584-.272 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+        </div>
+        <div class="tweet-handle">@innermap</div>
+      </div>
+    </div>
+
+    <div class="tweet-body">
+      the way avoidant people say "I just need space" like they're not about to disappear for 11 days and then come back with a meme as if nothing happened
+    </div>
+
+    <div class="tweet-time">2:47 AM · Mar 27, 2026</div>
+
+    <div class="tweet-stats">
+      <div class="tweet-stat">
+        <svg viewBox="0 0 24 24"><path d="M1.751 10c-.036-.002-.068-.023-.068-.068C1.616 6.392 4.18 3.825 7.72 3.76c2.04 0 3.28.944 4.28 2.24 1-1.296 2.24-2.24 4.28-2.24 3.54.066 6.104 2.632 6.036 6.172 0 .045-.032.066-.067.068-.593.026-3.234.368-6.452 3.428C13.036 16.188 12 17.26 12 17.26s-1.036-1.072-3.797-3.832C4.985 10.368 2.344 10.026 1.751 10z"/></svg>
+        <span class="tweet-stat-num">24.7K</span>
+      </div>
+      <div class="tweet-stat">
+        <svg viewBox="0 0 24 24"><path d="M1.5 3.75c0-.414.336-.75.75-.75h19.5c.414 0 .75.336.75.75v14.5c0 .414-.336.75-.75.75H8.068L3.22 22.29c-.223.19-.53.073-.53-.21V19H2.25c-.414 0-.75-.336-.75-.75V3.75z"/></svg>
+        <span class="tweet-stat-num">3,412</span>
+      </div>
+      <div class="tweet-stat">
+        <svg viewBox="0 0 24 24"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.791-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM19.5 20.12l-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2H11V4h5.5c2.209 0 4 1.791 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14z"/></svg>
+        <span class="tweet-stat-num">8,891</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reaction -->
+  <div class="reaction">tag someone who does this 👀</div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <svg class="footer-logo" viewBox="0 0 32 32" fill="none">
+      <path d="M16 0C16.8 10 22 15.2 32 16C22 16.8 16.8 22 16 32C15.2 22 10 16.8 0 16C10 15.2 15.2 10 16 0Z" fill="#E8A87C"/>
+    </svg>
+    <div class="footer-cta">Take the Inner Map Test</div>
+    <div class="footer-link">🔗 link in bio</div>
+  </div>
+</div>
+
+</body>
+</html>

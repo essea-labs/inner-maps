@@ -1,0 +1,21 @@
+{
+  "title": "Catch Feelings Poetry",
+  "hook": "The combo that says 'I don't catch feelings' then writes poetry at 2am",
+  "format": "carousel",
+  "slides": 5,
+  "platforms": ["tiktok", "instagram"],
+  "tiktok_dimensions": "1080x1920",
+  "instagram_dimensions": "1080x1350",
+  "pillar": "call-out",
+  "angle": "contradiction",
+  "personality_combo": "INTJ + Fearful-Avoidant + Quality Time",
+  "cta": "Take the Inner Map Test — link in bio",
+  "hashtags": [
+    "innermap", "personalitytest", "attachmentstyle", "mbti", "intj",
+    "fearfulavoidant", "qualitytime", "datingmemes", "relationshiptok",
+    "lovelanguages", "datinghumor", "selfawareness", "emotionallyunavailable",
+    "2amthoughts"
+  ],
+  "created": "2026-03-27",
+  "status": "ready"
+}

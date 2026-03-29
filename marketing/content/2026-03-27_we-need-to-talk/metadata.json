@@ -1,0 +1,16 @@
+{
+  "title": "We Need To Talk",
+  "hook": "How every Inner Map type responds to 'we need to talk'",
+  "format": "carousel",
+  "slides": 5,
+  "platforms": ["tiktok", "instagram"],
+  "tiktok_dimensions": "1080x1920",
+  "instagram_dimensions": "1080x1350",
+  "pillar": "meme",
+  "angle": "relatable",
+  "personality_combo": "Multiple types (Anxious, Avoidant, Secure)",
+  "cta": "Take the Inner Map Test — link in bio",
+  "hashtags": ["innermap", "personalitytest", "attachmentstyle", "anxiousattachment", "avoidantattachment", "secureattachment", "datingmemes", "relationshiptok", "weneedtotalk", "datinghumor", "selfawareness", "textingmemes", "coupletok"],
+  "created": "2026-03-27",
+  "status": "ready"
+}

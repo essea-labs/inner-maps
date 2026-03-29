@@ -1,5 +1,115 @@
 @AGENTS.md
 
+# Inner Map
+
+Personality discovery & relationship compatibility quiz app. "Discover your full self in under 12 minutes."
+
+## Project Structure
+
+```
+Inner Map/
+├── src/
+│   ├── app/            # Next.js App Router pages
+│   │   ├── page.tsx    # Redirects to /quiz
+│   │   ├── layout.tsx  # Root layout, fonts, globals
+│   │   └── quiz/page.tsx  # Main quiz orchestrator (client)
+│   ├── components/     # React components
+│   │   ├── quiz/       # LandingPage, NameInput, BirthdayInput, QuizScreen, MiniReveal, SignupForm
+│   │   ├── results/    # Results, ShareCard, AttachmentChart, UpsellSection
+│   │   ├── connections/ # ConnectionsTab, InviteModal
+│   │   ├── compatibility/ # CompatibilityView, CompatCard, CompatShareCard
+│   │   ├── reports/    # IndividualReport, CompatibilityReport
+│   │   └── ui/         # Logo, CtaButton, Toast, TabBar
+│   ├── store/
+│   │   └── quiz-store.ts  # Zustand global state
+│   ├── lib/
+│   │   ├── types.ts        # Shared TypeScript interfaces
+│   │   ├── quiz-data.ts    # Questions, SECTIONS, scoring, getStarSign
+│   │   ├── deep-dive-data.ts # Deep dive content, intersection insights
+│   │   └── compatibility.ts  # 5-dimension compat functions
+│   └── hooks/
+│       ├── useSwipeBack.ts
+│       ├── useKeyboardNav.ts
+│       └── useAuth.ts
+├── tests/              # Vitest unit + Playwright E2E
+├── docs/               # Design docs, migration history
+├── marketing/          # Social media content, carousel exports
+└── public/             # Static assets
+```
+
+## Tech Stack
+
+- **Next.js 16** App Router, TypeScript, Tailwind CSS
+- **Zustand** — global quiz state
+- **Supabase** — Postgres DB, Auth (email/password + Google OAuth), row-level security
+- **Stripe** — one-time purchases via Checkout
+- **PostHog** — analytics
+- **Legacy CSS** — original styles imported in `globals.css` → `legacy.css`
+- **next/font/google** — Playfair Display + DM Sans (CSS vars: `--font-playfair-family`, `--font-dm-sans-family`)
+
+## Local Dev
+
+```bash
+npm run dev        # http://localhost:3000
+npm run build      # verify production build
+npm test           # unit tests (Vitest)
+npm run test:e2e   # E2E tests (Playwright)
+```
+
+## Architecture
+
+- Single `/quiz` client page; `screen` state in Zustand drives rendering
+- `quiz/page.tsx` switches on `screen` → renders the appropriate component
+- Screen flow: `landing → name → birthday → quiz → miniReveal → signup → results → connections → compatibility → individualReport → compatibilityReport`
+- MiniReveal fires between sections 1→2, 2→3, 3→4 only (not after final enneagram section)
+- Final enneagram section → signup → results
+
+## Personality Frameworks (5 dimensions)
+
+| Framework | Questions | Scoring | Output |
+|-----------|-----------|---------|--------|
+| **Cognitive Type** (MBTI-like) | 12 A/B (3 per dimension) | Majority vote E/I, S/N, T/F, J/P | 4-letter code (e.g., ENFP) |
+| **Attachment Style** | 8 Likert (1-5) | Avg anxiety ≥3 = high, avg avoidance ≥3 = high → 2×2 matrix | Secure / Anxious / Avoidant / Fearful-Avoidant |
+| **Connection Style** | 10 forced-choice pairs | Tally per style, highest wins | Primary + secondary |
+| **Enneagram** | 9 Likert + Q10 dynamic tiebreaker | ennScores[1-9] + bonus point from Q10 | Type + wing (e.g., 4w3) |
+| **Star Sign** | Birthday (month + day) | Date range lookup | Zodiac sign + emoji |
+
+**Total: 40 questions (39 + dynamic enneagram tiebreaker) + birthday input**
+
+## Key Data Structures
+
+```ts
+// Zustand store (src/store/quiz-store.ts)
+state.answers = {
+  cognitive: Array(12).fill(null),   // 'a' | 'b'
+  attachment: Array(8).fill(null),   // 1-5
+  connection: Array(10).fill(null),  // 'a' | 'b'
+  enneagram: Array(10).fill(null),   // Q1-9: 1-5, Q10: 'a' | 'b'
+}
+
+// Section numbering: 0=starsign(0q), 1=cognitive(12q), 2=attachment(8q), 3=connection(10q), 4=enneagram(10q)
+state.currentSection: 1-4
+state.currentQuestion: 0-indexed within section
+```
+
+## Features
+
+### Free Tier
+- Full 5-dimension profile (type labels + brief descriptions)
+- Shareable profile card with radar chart (canvas)
+- Invite connections to take quiz
+- Compatibility score overview (0-100%)
+
+### Premium
+- Individual deep-dive report — $9.99
+- Compatibility report — $4.99
+
+## IP Notes
+
+- All questions are original (not adapted from copyrighted instruments)
+- Underlying frameworks (MBTI-adjacent, Enneagram, Attachment Theory, Love Languages) are public domain
+- App includes disclaimers: not affiliated with MBTI®, for entertainment/self-reflection only
+
 ## Style Reference
 
 All values extracted from `src/app/legacy.css` `:root` vars and component styles. Use these exact values when building new components.

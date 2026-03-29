@@ -1,0 +1,21 @@
+{
+  "title": "Haha Ranking",
+  "hook": "Ranking Inner Map types by who replies 'haha' after trauma dumping",
+  "format": "carousel",
+  "slides": 6,
+  "platforms": ["tiktok", "instagram"],
+  "tiktok_dimensions": "1080x1920",
+  "instagram_dimensions": "1080x1350",
+  "pillar": "meme",
+  "angle": "ranking",
+  "personality_combo": "Multiple types",
+  "cta": "Take the Inner Map Test — link in bio",
+  "hashtags": [
+    "innermap", "personalitytest", "attachmentstyle", "mbti", "enneagram",
+    "datingmemes", "traumadumping", "relationshiptok", "personalitycombo",
+    "datinghumor", "selfawareness", "textingmemes", "ranking",
+    "personalitytypes"
+  ],
+  "created": "2026-03-27",
+  "status": "ready"
+}

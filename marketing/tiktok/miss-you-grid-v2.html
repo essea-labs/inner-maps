@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Which One Are You — Miss You v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #000;
+    font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .page {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 6vh 5vw 4vh;
+    background: #000;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 5vh;
+  }
+  .header-emoji {
+    font-size: 10vw;
+    margin-bottom: 2vh;
+  }
+  .header-title {
+    font-size: 7vw;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .header-title em {
+    color: #5AC8FA;
+    font-style: normal;
+  }
+  .header-sub {
+    font-size: 3.5vw;
+    color: #a0a0a5;
+    margin-top: 1.2vh;
+  }
+
+  /* Grid */
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3vw;
+  }
+
+  .card {
+    border-radius: 5vw;
+    padding: 4vh 4.5vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 3.5vh;
+    gap: 2.5vh;
+    text-align: center;
+  }
+  .card-label {
+    min-height: 4vh;
+    display: flex;
+    align-items: center;
+    font-size: 3vw;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+  }
+
+  /* The text bubble — the star of the show */
+  .card-bubble {
+    padding: 2.5vh 4vw;
+    border-radius: 5vw;
+    font-size: 4.5vw;
+    line-height: 1.35;
+    font-weight: 500;
+  }
+
+  /* Card 1 - Avoidant (blue) */
+  .card-avoidant {
+    background: #0c1524;
+  }
+  .card-avoidant .card-label { color: #60a5fa; }
+  .card-avoidant .card-bubble {
+    background: #172a4a;
+    color: #93c5fd;
+  }
+
+  /* Card 2 - Anxious (pink) */
+  .card-anxious {
+    background: #1f0c18;
+  }
+  .card-anxious .card-label { color: #f472b6; }
+  .card-anxious .card-bubble {
+    background: #4a1942;
+    color: #f9a8d4;
+  }
+
+  /* Card 3 - Fearful-Avoidant (purple) */
+  .card-fearful {
+    background: #120e1f;
+  }
+  .card-fearful .card-label { color: #a78bfa; }
+  .card-fearful .card-bubble {
+    background: #271a4a;
+    color: #c4b5fd;
+  }
+
+  /* Card 4 - Secure (green) */
+  .card-secure {
+    background: #081410;
+  }
+  .card-secure .card-label { color: #34d399; }
+  .card-secure .card-bubble {
+    background: #0f3528;
+    color: #6ee7b7;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 4vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vh;
+  }
+  .footer-logo { width: 6vw; height: 6vw; }
+  .footer-cta {
+    font-size: 3.5vw;
+    color: #E8A87C;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .footer-link {
+    font-size: 2.8vw;
+    color: #5AC8FA;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div class="header-emoji">💬</div>
+    <div class="header-title">How you say <em>"I miss you"</em></div>
+    <div class="header-sub">which one are you?</div>
+  </div>
+
+  <div class="grid">
+    <div class="card card-avoidant">
+      <div class="card-label">The Avoidant</div>
+      <div class="card-bubble">wanna hang?</div>
+    </div>
+
+    <div class="card card-anxious">
+      <div class="card-label">The Anxious</div>
+      <div class="card-bubble">I MISS YOU SO MUCH 😭😭😭</div>
+    </div>
+
+    <div class="card card-fearful">
+      <div class="card-label">The Fearful-Avoidant</div>
+      <div class="card-bubble">🎵 sends a Spotify link at 2am</div>
+    </div>
+
+    <div class="card card-secure">
+      <div class="card-label">The Secure</div>
+      <div class="card-bubble">made extra dinner if you want some 🍝</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <svg class="footer-logo" viewBox="0 0 32 32" fill="none">
+      <path d="M16 0C16.8 10 22 15.2 32 16C22 16.8 16.8 22 16 32C15.2 22 10 16.8 0 16C10 15.2 15.2 10 16 0Z" fill="#E8A87C"/>
+    </svg>
+    <div class="footer-cta">innermaps.io</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "title": "I'm Fine",
+  "hook": "The combo that says 'I'm fine' and means absolutely none of it",
+  "format": "carousel",
+  "slides": 5,
+  "platforms": ["tiktok", "instagram"],
+  "tiktok_dimensions": "1080x1920",
+  "instagram_dimensions": "1080x1350",
+  "pillar": "call-out",
+  "angle": "contradiction",
+  "personality_combo": "ISFJ + Anxious Attachment + Acts of Service",
+  "cta": "Take the Inner Map Test — link in bio",
+  "hashtags": ["innermap", "personalitytest", "attachmentstyle", "mbti", "isfj", "anxiousattachment", "actsofservice", "datingmemes", "relationshiptok", "imfine", "peoplepleasertok", "selfawareness", "datinghumor", "situationship"],
+  "created": "2026-03-27",
+  "status": "ready"
+}

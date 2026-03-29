@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Inner Map — Content Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    color: #fff;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #E8A87C;
+  }
+  h2 {
+    font-size: 18px;
+    color: #888;
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #222;
+  }
+  .section-label {
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .row {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+  }
+  .card {
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .card img {
+    height: 400px;
+    border-radius: 12px;
+    border: 1px solid #222;
+  }
+  .card-title {
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+  }
+  .format-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .format-toggle button {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    background: #111;
+    color: #aaa;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .format-toggle button.active {
+    background: #E8A87C;
+    color: #000;
+    border-color: #E8A87C;
+    font-weight: 600;
+  }
+  .tiktok-content, .instagram-content { display: none; }
+  .tiktok-content.visible, .instagram-content.visible { display: block; }
+</style>
+</head>
+<body>
+
+<h1>✨ Inner Map Content Preview</h1>
+<p style="color: #666; margin-bottom: 24px;">All content ready to post. Scroll horizontally to see all slides.</p>
+
+<div class="format-toggle">
+  <button class="active" onclick="toggleFormat('tiktok')">TikTok (9:16)</button>
+  <button onclick="toggleFormat('instagram')">Instagram (4:5)</button>
+</div>
+
+<div class="tiktok-content visible" id="tiktok-content">
+
+<h2>📱 iMessage Carousels</h2>
+
+<div class="section-label">1. "No worries!" while worrying</div>
+<div class="row" id="tk-no-worries"></div>
+
+<div class="section-label">2. Star sign vs attachment style</div>
+<div class="row" id="tk-star-vs-attachment"></div>
+
+<div class="section-label">3. Both conflict avoidant</div>
+<div class="row" id="tk-conflict-avoidant"></div>
+
+<div class="section-label">4. Poetry at 2am</div>
+<div class="row" id="tk-catch-feelings"></div>
+
+<div class="section-label">5. Starts intense ends confusing</div>
+<div class="row" id="tk-intense-confusing"></div>
+
+<div class="section-label">6. Confident online panics IRL</div>
+<div class="row" id="tk-confident-online"></div>
+
+<div class="section-label">7. Haha after trauma dumping</div>
+<div class="row" id="tk-haha-ranking"></div>
+
+<div class="section-label">8. "I'm fine" means none of it</div>
+<div class="row" id="tk-im-fine"></div>
+
+<div class="section-label">9. Dating your ex again</div>
+<div class="row" id="tk-dating-your-ex"></div>
+
+<div class="section-label">10. "We need to talk" responses</div>
+<div class="row" id="tk-we-need-to-talk"></div>
+
+<div class="section-label">11. Overthinks double text</div>
+<div class="row" id="tk-overthink-double-text"></div>
+
+<div class="section-label">12. Love bombs then ghosts</div>
+<div class="row" id="tk-lovebomb-ghost"></div>
+
+<h2>🔲 "Which One Are You?" Grids</h2>
+
+<div class="row" id="tk-grids"></div>
+
+<h2>🐦 Fake Tweets</h2>
+
+<div class="row" id="tk-tweets"></div>
+
+</div>
+
+<div class="instagram-content" id="instagram-content">
+
+<h2>📱 iMessage Carousels</h2>
+
+<div class="section-label">1. "No worries!" while worrying</div>
+<div class="row" id="ig-no-worries"></div>
+
+<div class="section-label">2. Star sign vs attachment style</div>
+<div class="row" id="ig-star-vs-attachment"></div>
+
+<div class="section-label">3. Both conflict avoidant</div>
+<div class="row" id="ig-conflict-avoidant"></div>
+
+<div class="section-label">4. Poetry at 2am</div>
+<div class="row" id="ig-catch-feelings"></div>
+
+<div class="section-label">5. Starts intense ends confusing</div>
+<div class="row" id="ig-intense-confusing"></div>
+
+<div class="section-label">6. Confident online panics IRL</div>
+<div class="row" id="ig-confident-online"></div>
+
+<div class="section-label">7. Haha after trauma dumping</div>
+<div class="row" id="ig-haha-ranking"></div>
+
+<div class="section-label">8. "I'm fine" means none of it</div>
+<div class="row" id="ig-im-fine"></div>
+
+<div class="section-label">9. Dating your ex again</div>
+<div class="row" id="ig-dating-your-ex"></div>
+
+<div class="section-label">10. "We need to talk" responses</div>
+<div class="row" id="ig-we-need-to-talk"></div>
+
+<div class="section-label">11. Overthinks double text</div>
+<div class="row" id="ig-overthink-double-text"></div>
+
+<div class="section-label">12. Love bombs then ghosts</div>
+<div class="row" id="ig-lovebomb-ghost"></div>
+
+<h2>🔲 "Which One Are You?" Grids</h2>
+
+<div class="row" id="ig-grids"></div>
+
+<h2>🐦 Fake Tweets</h2>
+
+<div class="row" id="ig-tweets"></div>
+
+</div>
+
+<script>
+const BASE = '../content';
+
+const carousels = [
+  { slug: 'no-worries', slides: 5 },
+  { slug: 'star-vs-attachment', slides: 5 },
+  { slug: 'conflict-avoidant', slides: 5 },
+  { slug: 'catch-feelings', slides: 5 },
+  { slug: 'intense-confusing', slides: 5 },
+  { slug: 'confident-online', slides: 5 },
+  { slug: 'haha-ranking', slides: 6 },
+  { slug: 'im-fine', slides: 5 },
+  { slug: 'dating-your-ex', slides: 5 },
+  { slug: 'we-need-to-talk', slides: 5 },
+  { slug: 'overthink-double-text', slides: 5 },
+  { slug: 'lovebomb-ghost', slides: 5 },
+];
+
+const grids = [
+  { slug: 'miss-you-grid', label: 'How you say I miss you' },
+  { slug: 'apology-style-grid', label: 'Pick your apology style' },
+  { slug: 'texter-type-grid', label: 'Which texter are you' },
+  { slug: 'compliment-grid', label: 'How you handle a compliment' },
+  { slug: 'after-first-date-grid', label: 'After a first date' },
+  { slug: 'red-flag-grid', label: 'Your red flag' },
+];
+
+const tweets = [
+  { slug: 'fake-tweet-avoidant', label: 'Avoidant space tweet' },
+];
+
+// Populate carousels
+carousels.forEach(c => {
+  ['tk', 'ig'].forEach(prefix => {
+    const format = prefix === 'tk' ? 'tiktok' : 'instagram';
+    const row = document.getElementById(`${prefix}-${c.slug}`);
+    if (!row) return;
+    for (let i = 1; i <= c.slides; i++) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<img src="${BASE}/2026-03-27_${c.slug}/${format}/slide-${i}.png" onerror="this.style.opacity=0.2"><div class="card-title">Slide ${i}</div>`;
+      row.appendChild(card);
+    }
+  });
+});
+
+// Populate grids
+['tk', 'ig'].forEach(prefix => {
+  const format = prefix === 'tk' ? 'tiktok' : 'instagram';
+  const row = document.getElementById(`${prefix}-grids`);
+  grids.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<img src="${BASE}/2026-03-27_${g.slug}/${format}/slide-1.png" onerror="this.style.opacity=0.2"><div class="card-title">${g.label}</div>`;
+    row.appendChild(card);
+  });
+});
+
+// Populate tweets
+['tk', 'ig'].forEach(prefix => {
+  const format = prefix === 'tk' ? 'tiktok' : 'instagram';
+  const row = document.getElementById(`${prefix}-tweets`);
+  tweets.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<img src="${BASE}/2026-03-27_${t.slug}/${format}/slide-1.png" onerror="this.style.opacity=0.2"><div class="card-title">${t.label}</div>`;
+    row.appendChild(card);
+  });
+});
+
+function toggleFormat(format) {
+  document.querySelectorAll('.format-toggle button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tiktok-content').classList.toggle('visible', format === 'tiktok');
+  document.getElementById('instagram-content').classList.toggle('visible', format === 'instagram');
+}
+</script>
+</body>
+</html>

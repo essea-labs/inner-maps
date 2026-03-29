@@ -1,0 +1,21 @@
+{
+  "title": "Star Sign vs Attachment",
+  "hook": "Your star sign says chase love. Your attachment style says fear it.",
+  "format": "carousel",
+  "slides": 5,
+  "platforms": ["tiktok", "instagram"],
+  "tiktok_dimensions": "1080x1920",
+  "instagram_dimensions": "1080x1350",
+  "pillar": "call-out",
+  "angle": "contradiction",
+  "personality_combo": "Leo + Avoidant Attachment + Physical Touch",
+  "cta": "Take the Inner Map Test — link in bio",
+  "hashtags": [
+    "innermap", "personalitytest", "attachmentstyle", "zodiac", "leo",
+    "starsign", "avoidantattachment", "datingmemes", "relationshiptok",
+    "lovelanguages", "datinghumor", "selfawareness", "physicaltouch",
+    "zodiacmemes", "astrologytok"
+  ],
+  "created": "2026-03-27",
+  "status": "ready"
+}
