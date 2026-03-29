@@ -40,7 +40,7 @@ export default function LandingPage() {
           </div>
         )}
 
-        <h1>Discover Your <em>Full Self</em> in Under 12 Minutes</h1>
+        <h1>Discover Your <em>Full Self</em> in Under 10 Minutes</h1>
         <p className="subtitle">One quiz. Five dimensions. Understand yourself — then see how you match with others.</p>
 
         <button className="cta-button" onClick={() => { analytics.quizStarted(); setScreen('name'); }}>

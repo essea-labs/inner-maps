@@ -72,7 +72,7 @@ export default async function Image() {
           }}
         >
           <span>Discover Your <span style={{ fontStyle: 'italic', color: '#C4956B' }}>Full Self</span></span>
-          <span>in Under 12 Minutes</span>
+          <span>in Under 10 Minutes</span>
         </div>
 
         <div
