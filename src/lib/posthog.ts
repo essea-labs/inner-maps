@@ -6,8 +6,7 @@ export function initPostHog() {
   if (typeof window === 'undefined') return;
   if (initialized) return;
 
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim();
   if (!key) return;
 
   posthog.init(key, {
