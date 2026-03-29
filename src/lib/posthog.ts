@@ -11,7 +11,8 @@ export function initPostHog() {
   if (!key) return;
 
   posthog.init(key, {
-    api_host: host || 'https://us.i.posthog.com',
+    api_host: '/ingest',
+    ui_host: 'https://us.posthog.com',
     autocapture: false,
     capture_pageview: false,
     capture_pageleave: false,
