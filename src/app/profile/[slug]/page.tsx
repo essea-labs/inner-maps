@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${p.cognitiveType} · ${p.enneagramDisplay} · ${p.starSign} — Inner Maps`;
-  const description = `${p.cognitiveType} personality, ${p.enneagramDisplay} enneagram, ${p.attachmentStyle} attachment, ${p.connectionStyle} connection style, ${p.starSign} ${p.starSymbol}. Discover your full self in under 12 minutes.`;
+  const description = `${p.cognitiveType} personality, ${p.enneagramDisplay} enneagram, ${p.attachmentStyle} attachment, ${p.connectionStyle} connection style, ${p.starSign} ${p.starSymbol}. Discover your full self in under 10 minutes.`;
 
   return {
     title,
@@ -109,7 +109,7 @@ export default async function ProfilePage({ params }: Props) {
           Take the Quiz ✦
         </a>
         <p style={{ marginTop: 12, fontSize: 13, color: 'var(--text-light)' }}>
-          Discover your personality in under 12 minutes — it&apos;s free
+          Discover your personality in under 10 minutes — it&apos;s free
         </p>
       </div>
     </div>

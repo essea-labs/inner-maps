@@ -100,7 +100,7 @@ export default function LandingPage() {
               <div className="how-step-icon">✦</div>
               <div className="how-step-content">
                 <div className="how-step-title">Take the quiz</div>
-                <div className="how-step-sub">12 minutes. Five dimensions. Your full profile.</div>
+                <div className="how-step-sub">10 minutes. Five dimensions. Your full profile.</div>
               </div>
             </div>
             <div className="how-step">

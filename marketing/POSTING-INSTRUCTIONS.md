@@ -152,7 +152,7 @@ After 24-48 hours, record metrics in `metadata.json`:
 ## Account Setup Requirements
 
 ### TikTok (@innermap or @innermaptest)
-- Bio: "Discover your full self in under 12 minutes ✨"
+- Bio: "Discover your full self in under 10 minutes ✨"
 - Link in bio: inner map quiz URL
 - Profile pic: sparkle logo (peach on white)
 

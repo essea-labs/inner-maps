@@ -19,9 +19,9 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://innermaps.io"),
-  title: "Inner Map — Discover Your Full Self",
+  title: "Inner Maps — Discover Your Full Self",
   description:
-    "Discover your full self in under 12 minutes. Personality type, attachment style, connection style, enneagram, and star sign — all in one profile.",
+    "Discover your full self in under 10 minutes. Personality type, attachment style, connection style, enneagram, and star sign — all in one profile.",
   openGraph: {
     siteName: "Inner Maps",
     type: "website",
