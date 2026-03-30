@@ -8,6 +8,7 @@ import TabBar from '@/components/ui/TabBar';
 
 export default function LandingPage() {
   const setScreen = useQuizStore((s) => s.setScreen);
+  const setFeedbackModalOpen = useQuizStore((s) => s.setFeedbackModalOpen);
   const [inviterName, setInviterName] = useState<string | null>(null);
   const [isInviteFlow, setIsInviteFlow] = useState(false);
 
@@ -124,6 +125,8 @@ export default function LandingPage() {
           <Link href="/privacy">Privacy Policy</Link>
           <span> · </span>
           <Link href="/terms">Terms of Service</Link>
+          <span> · </span>
+          <a onClick={() => setFeedbackModalOpen(true)} style={{ color: 'var(--peach)', cursor: 'pointer' }}>Feedback</a>
         </div>
       </div>
 

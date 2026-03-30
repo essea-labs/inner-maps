@@ -11,6 +11,7 @@ export default function ProfileTab() {
   const email = useQuizStore((s) => s.email);
   const resetQuiz = useQuizStore((s) => s.resetQuiz);
   const restoringState = useQuizStore((s) => s.restoringState);
+  const setFeedbackModalOpen = useQuizStore((s) => s.setFeedbackModalOpen);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -93,6 +94,8 @@ export default function ProfileTab() {
           <Link href="/privacy">Privacy Policy</Link>
           <span> · </span>
           <Link href="/terms">Terms of Service</Link>
+          <span> · </span>
+          <a onClick={() => setFeedbackModalOpen(true)} style={{ color: 'var(--peach)', cursor: 'pointer' }}>Feedback</a>
         </div>
       </div>
       <TabBar />

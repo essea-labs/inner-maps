@@ -141,6 +141,7 @@ interface QuizStore {
   inviteModalOpen: boolean;
   shareModalOpen: boolean;
   reportModalOpen: boolean;
+  feedbackModalOpen: boolean;
 
   // Purchases
   purchasedIndividual: boolean;
@@ -181,6 +182,7 @@ interface QuizStore {
   setInviteModalOpen: (open: boolean) => void;
   setShareModalOpen: (open: boolean) => void;
   setReportModalOpen: (open: boolean) => void;
+  setFeedbackModalOpen: (open: boolean) => void;
   showToast: (message: string) => void;
   dismissToast: () => void;
 
@@ -257,6 +259,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   activeTab: 'mymap',
   inviteModalOpen: false,
   shareModalOpen: false,
+  feedbackModalOpen: false,
   reportModalOpen: false,
   purchasedIndividual: false,
   purchasedCompatibility: {},
@@ -495,6 +498,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       purchasedCompatibility: {},
       purchaseIntent: null,
       inviteModalOpen: false,
+      feedbackModalOpen: false,
     });
   },
 
@@ -506,6 +510,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   setInviteModalOpen: (open) => set({ inviteModalOpen: open }),
   setShareModalOpen: (open) => set({ shareModalOpen: open }),
+  setFeedbackModalOpen: (open) => set({ feedbackModalOpen: open }),
   setReportModalOpen: (open) => set({ reportModalOpen: open }),
 
   // ===== TOAST =====

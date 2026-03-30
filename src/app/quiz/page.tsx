@@ -20,6 +20,7 @@ import IndividualReport from '@/components/reports/IndividualReport';
 import CompatibilityReport from '@/components/reports/CompatibilityReport';
 import ProfileTab from '@/components/profile/ProfileTab';
 import Toast from '@/components/ui/Toast';
+import FeedbackModal from '@/components/ui/FeedbackModal';
 
 import useSwipeBack from '@/hooks/useSwipeBack';
 import useKeyboardNav from '@/hooks/useKeyboardNav';
@@ -291,6 +292,7 @@ export default function QuizPage() {
     <>
       {renderScreen()}
       {inviteModalOpen && <InviteModal />}
+      <FeedbackModal />
       <Toast />
     </>
   );

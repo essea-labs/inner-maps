@@ -16,6 +16,7 @@ export default function Results() {
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
   const setScreen = useQuizStore((s) => s.setScreen);
   const setActiveTab = useQuizStore((s) => s.setActiveTab);
+  const setFeedbackModalOpen = useQuizStore((s) => s.setFeedbackModalOpen);
   const showToast = useQuizStore((s) => s.showToast);
   const { user, loading: authLoading } = useAuth();
 
@@ -319,6 +320,10 @@ export default function Results() {
         <div className="disclaimer">
           This assessment is not affiliated with The Myers-Briggs Company or the MBTI® instrument.
           For entertainment and self-reflection purposes. Not a clinical assessment.
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, paddingBottom: 8 }}>
+          Questions or feedback?{' '}
+          <a onClick={() => setFeedbackModalOpen(true)} style={{ color: 'var(--peach)', cursor: 'pointer', fontWeight: 500 }}>Let us know</a>
         </div>
       </div>
       <TabBar />
