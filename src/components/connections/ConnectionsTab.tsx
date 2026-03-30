@@ -23,7 +23,7 @@ export default function ConnectionsTab() {
       loadConnections(user.id);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, !!results]);
 
   function handleViewCompat(index: number) {
     analytics.connectionViewed();
