@@ -111,6 +111,14 @@ export const analytics = {
     track('upsell_clicked', { product_type: productType, source });
   },
 
+  // --- Feedback ---
+  feedbackModalOpened(source: string) {
+    track('feedback_modal_opened', { source });
+  },
+  feedbackSubmitted(source: string, hasEmail: boolean) {
+    track('feedback_submitted', { source, has_email: hasEmail });
+  },
+
   // --- Navigation ---
   tabChanged(tab: string) {
     track('tab_changed', { tab });

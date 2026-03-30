@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuizStore } from '@/store/quiz-store';
+import { analytics } from '@/lib/analytics';
 import useAuth from '@/hooks/useAuth';
 
 export default function FeedbackModal() {
@@ -18,9 +19,10 @@ export default function FeedbackModal() {
 
   // Pre-fill email from store when modal opens
   const { user } = useAuth();
-  if (feedbackModalOpen && !emailPrefilled && email) {
-    setContactEmail(email);
+  if (feedbackModalOpen && !emailPrefilled) {
+    if (email) setContactEmail(email);
     setEmailPrefilled(true);
+    analytics.feedbackModalOpened(screen);
   }
 
   if (!feedbackModalOpen) return null;
@@ -46,6 +48,7 @@ export default function FeedbackModal() {
         }),
       });
       if (!res.ok) throw new Error('Failed');
+      analytics.feedbackSubmitted(screen, !!contactEmail.trim());
       showToast('Thanks for your feedback!');
       handleClose();
     } catch {
