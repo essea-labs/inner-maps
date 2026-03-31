@@ -13,6 +13,14 @@ Sentry.init({
   ],
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
+  beforeSend(event) {
+    // Filter out non-fatal Supabase Auth lock contention on Mobile Safari.
+    // Multiple concurrent auth requests race for a navigator.locks lock;
+    // the loser throws an AbortError that doesn't affect users.
+    const msg = event.exception?.values?.[0]?.value ?? '';
+    if (msg.includes('Lock was stolen by another request')) return null;
+    return event;
+  },
 });
 
 // Export router transition tracking for Sentry navigation instrumentation
