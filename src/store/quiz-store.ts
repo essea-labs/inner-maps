@@ -103,6 +103,25 @@ function loadProfileCache(userId: string | null | undefined): ProfileCache | nul
   } catch { return null; }
 }
 
+// ===== CONNECTIONS CACHE =====
+// Cache connections in localStorage so the Compatibility tab renders instantly
+// on return visits, then refresh from the DB in the background.
+
+function saveConnectionsCache(userId: string, connections: Connection[]) {
+  try { localStorage.setItem('im_connections_cache', JSON.stringify({ userId, connections })); } catch { /* non-fatal */ }
+}
+
+function loadConnectionsCache(userId: string | null | undefined): Connection[] | null {
+  if (!userId) return null;
+  try {
+    const raw = localStorage.getItem('im_connections_cache');
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    if (cache.userId !== userId) return null;
+    return cache.connections ?? null;
+  } catch { return null; }
+}
+
 // ===== STATE SHAPE =====
 // currentSection matches the original:
 //   0 = starsign (birthday, 0 questions)
@@ -648,6 +667,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         return;
       }
       set({ connections: conns, connectionsLoading: false, connectionsFetched: true });
+      if (!error) saveConnectionsCache(userId, conns);
     } catch (err) {
       console.warn('loadConnections failed:', err);
       set({ connectionsLoading: false, connectionsFetched: true });
@@ -665,6 +685,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       // a flash of the landing page between clearing the loading gate and
       // switching to the results screen.
       const { screen: prev, prevScreens } = get();
+      const cachedConns = loadConnectionsCache(userId);
       set({
         results: cached.results,
         userName: cached.userName,
@@ -675,6 +696,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         screen: 'results',
         prevScreens: [...prevScreens, prev],
         restoringState: false,
+        // Restore cached connections instantly so the tab renders without delay
+        ...(cachedConns ? { connections: cachedConns, connectionsFetched: true } : {}),
       });
       // Refresh connections and purchases in the background (non-blocking)
       Promise.all([
