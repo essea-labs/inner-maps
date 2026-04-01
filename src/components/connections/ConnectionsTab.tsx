@@ -10,6 +10,8 @@ export default function ConnectionsTab() {
   const results = useQuizStore((s) => s.results);
   const restoringState = useQuizStore((s) => s.restoringState);
   const connections = useQuizStore((s) => s.connections);
+  const connectionsLoading = useQuizStore((s) => s.connectionsLoading);
+  const connectionsFetched = useQuizStore((s) => s.connectionsFetched);
   const loadConnections = useQuizStore((s) => s.loadConnections);
   const setInviteModalOpen = useQuizStore((s) => s.setInviteModalOpen);
   const setActiveConnection = useQuizStore((s) => s.setActiveConnection);
@@ -35,18 +37,9 @@ export default function ConnectionsTab() {
   // Only show loading while quiz/page.tsx is actively restoring state
   if (!results && restoringState) {
     return (
-      <div style={{ paddingBottom: 80 }}>
-        <div className="connections-page">
-          <div className="connections-page-header">
-            <div className="logo">✦ Inner Maps ✦</div>
-            <h1>Compatibility</h1>
-          </div>
-          <div className="connections-empty">
-            <div className="connections-empty-icon" style={{ animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
-            <h3>Loading…</h3>
-          </div>
-        </div>
-        <TabBar />
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
+        <p style={{ fontSize: 14, color: 'var(--text-light)' }}>Loading your profile…</p>
       </div>
     );
   }
@@ -67,6 +60,19 @@ export default function ConnectionsTab() {
           </div>
         </div>
         <TabBar />
+      </div>
+    );
+  }
+
+  // Connections are being fetched or haven't been loaded yet — show loading
+  // instead of flashing the empty invite-only state. This covers:
+  //   1. Cached restore path: loadConnections fires before tab mounts (connectionsLoading=true)
+  //   2. Direct mount: tab mounts before any fetch (connectionsFetched=false)
+  if ((connectionsLoading || !connectionsFetched) && connections.length === 0) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <div style={{ fontSize: 32, animation: 'pulseGlow 1.5s ease-in-out infinite' }}>✦</div>
+        <p style={{ fontSize: 14, color: 'var(--text-light)' }}>Loading connections…</p>
       </div>
     );
   }

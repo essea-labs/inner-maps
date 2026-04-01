@@ -55,6 +55,7 @@ export function restoreStateFromSession(): Record<string, any> | null {
     if (data.starSign) patch.starSign = data.starSign;
     if (data.activeConnection) patch.activeConnection = data.activeConnection;
     if (data.connections) patch.connections = data.connections;
+    if (data.connectionsFetched != null) patch.connectionsFetched = data.connectionsFetched;
     if (data.currentUserId) patch.currentUserId = data.currentUserId;
     if (data.email) patch.email = data.email;
     if (data.screen) patch.screen = data.screen;
@@ -134,6 +135,8 @@ interface QuizStore {
 
   // Connections / compatibility
   connections: Connection[];
+  connectionsLoading: boolean;
+  connectionsFetched: boolean;
   activeConnection: Connection | null;
   activeTab: 'mymap' | 'compat' | 'profile';
 
@@ -255,6 +258,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   answers: makeDefaultAnswers(),
   results: null,
   connections: process.env.NODE_ENV === 'development' ? MOCK_CONNECTIONS : [],
+  connectionsLoading: false,
+  connectionsFetched: process.env.NODE_ENV === 'development',
   activeConnection: null,
   activeTab: 'mymap',
   inviteModalOpen: false,
@@ -492,6 +497,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       results: null,
       currentUserId: null,
       connections: [],
+      connectionsLoading: false,
+      connectionsFetched: false,
       activeConnection: null,
       activeTab: 'mymap',
       purchasedIndividual: false,
@@ -630,17 +637,20 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   // ===== PHASE 2: SUPABASE =====
 
   loadConnections: async (userId: string) => {
+    set({ connectionsLoading: true });
     try {
       const { data: conns, error } = await fetchConnections(userId);
       // Don't overwrite existing connections with empty on API error —
       // this prevents useAuth.onAuthStateChange, ConnectionsTab remount,
       // and other triggers from wiping valid connection data.
       if (error && conns.length === 0 && get().connections.length > 0) {
+        set({ connectionsLoading: false, connectionsFetched: true });
         return;
       }
-      set({ connections: conns });
+      set({ connections: conns, connectionsLoading: false, connectionsFetched: true });
     } catch (err) {
       console.warn('loadConnections failed:', err);
+      set({ connectionsLoading: false, connectionsFetched: true });
     }
   },
 

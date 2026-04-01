@@ -50,6 +50,40 @@ test.describe('Connections Tab', () => {
   });
 });
 
+test.describe('Connections Tab — Returning User', () => {
+  test('shows loading indicator when connections not yet fetched (prevents empty flash)', async ({ page }) => {
+    await mockSupabase(page);
+
+    // Inject state to connections screen with connections=[] and connectionsFetched=false
+    // to simulate production initial state (no dev-mode MOCK_CONNECTIONS).
+    await injectQuizState(page, GOLDEN_PATH, 'connections', {
+      connections: [],
+      connectionsFetched: false,
+    });
+
+    // Should see "Loading connections…" instead of the empty invite-only state.
+    // This is the critical assertion: before loadConnections resolves, the tab
+    // shows a loading indicator — not the confusing empty state.
+    const loadingIndicator = page.locator('p:has-text("Loading connections")');
+    await expect(loadingIndicator).toBeVisible({ timeout: 5000 });
+
+    // Verify the empty invite-only state is NOT visible
+    const inviteOnlyCard = page.locator('.invite-card button:has-text("Invite")');
+    await expect(inviteOnlyCard).not.toBeVisible();
+  });
+
+  test('shows connections after fetch completes (dev mock data)', async ({ page }) => {
+    await mockSupabase(page);
+
+    // Inject state with dev mock connections present (connectionsFetched=true)
+    // to verify the normal loaded state renders correctly
+    await injectQuizState(page, GOLDEN_PATH, 'connections');
+
+    // Should see connection cards (dev mock data: Maya, Jordan)
+    await expect(page.locator('.connection-person-name').first()).toBeVisible({ timeout: 5000 });
+  });
+});
+
 test.describe('Compatibility View', () => {
   test('renders compatibility cards with scores', async ({ page }) => {
     const connResults = buildMockResults(CONTRASTING_PROFILE);
