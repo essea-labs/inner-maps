@@ -397,7 +397,7 @@ export default function CompatibilityView() {
                 <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips to deepen your connection</div>
                 <div className="upsell-feature"><span className="upsell-check">✓</span> Communication guide based on both your styles</div>
               </div>
-              <div className="upsell-price">$4.99</div>
+              <div className="upsell-price">$4.99 USD</div>
               <div className="upsell-price-note">One-time purchase</div>
               <button className="upsell-cta" onClick={handleUnlock} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
                 {checkoutLoading ? 'Loading checkout…' : 'Unlock Full Compatibility Report ✦'}

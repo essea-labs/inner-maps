@@ -13,9 +13,14 @@ export function initPostHog() {
     api_host: '/ingest',
     ui_host: 'https://us.posthog.com',
     autocapture: false,
-    capture_pageview: false,
-    capture_pageleave: false,
+    capture_pageview: true,
+    capture_pageleave: true,
     persistence: 'localStorage+cookie',
+    disable_session_recording: false,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: '[data-sensitive]',
+    },
     loaded: (ph) => {
       if (process.env.NODE_ENV !== 'production') {
         ph.opt_out_capturing();

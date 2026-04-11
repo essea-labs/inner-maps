@@ -35,6 +35,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ already_purchased: true });
     }
 
+    // Open-session de-duplication: if this user has an OPEN Stripe checkout session
+    // for the same product in the last 30 minutes, return its URL instead of creating
+    // a new one. Prevents the "user clicks buy N times in a burst" pattern where each
+    // click spins up a brand-new Stripe session (observed in real users on Apr 11).
+    const thirtyMinAgo = Math.floor(Date.now() / 1000) - 30 * 60;
+    const recentSessions = await getStripe().checkout.sessions.list({
+      limit: 20,
+      created: { gte: thirtyMinAgo },
+    });
+    const reusable = recentSessions.data.find((s) => {
+      if (s.status !== 'open') return false;
+      const md = s.metadata ?? {};
+      if (md.user_id !== user_id) return false;
+      if (md.product_type !== product_type) return false;
+      if (connection_id && md.connection_id !== connection_id) return false;
+      if (!connection_id && md.connection_id) return false;
+      return !!s.url;
+    });
+    if (reusable) {
+      return NextResponse.json({ url: reusable.url });
+    }
+
     // Build success URL
     const origin = new URL(req.url).origin;
     const successParams = new URLSearchParams({
@@ -49,6 +71,12 @@ export async function POST(req: Request) {
       mode: 'payment',
       line_items: [{ price: PRICES[product_type], quantity: 1 }],
       allow_promotion_codes: true,
+      // Disable adaptive pricing — keeps all users on USD matching the in-app "$9.99 USD" /
+      // "$4.99 USD" labels in PRICE_DISPLAY. Prior behavior auto-converted to local currency
+      // on the Stripe Checkout page (e.g., AU users saw ~AU$15.29), causing price-surprise
+      // bail at the exact moment of intent. Re-enable once there's baseline US revenue and
+      // we can A/B test international conversion separately.
+      adaptive_pricing: { enabled: false },
       metadata: {
         user_id,
         product_type,
