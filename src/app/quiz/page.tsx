@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useQuizStore, restoreStateFromSession, clearSessionState, isReturningUser } from '@/store/quiz-store';
+import { useQuizStore, restoreStateFromSession, clearSessionState, isReturningUser, loadAnonProfileCache } from '@/store/quiz-store';
 import { supabase } from '@/lib/supabase';
 import { analytics } from '@/lib/analytics';
 
@@ -98,6 +98,27 @@ export default function QuizPage() {
       if (user && !user.is_anonymous && useQuizStore.getState().results === null) {
         await restoreUserState(user.id, user.email ?? '');
       } else {
+        // Anonymous / no-user fallback — results aren't in memory. Try the
+        // local anon profile cache (written synchronously at quiz completion)
+        // so a reload after finishing the quiz without signing up still
+        // restores the results screen instead of landing the user back at /.
+        if (useQuizStore.getState().results === null) {
+          const anonCache = loadAnonProfileCache();
+          if (anonCache) {
+            useQuizStore.setState({
+              results: anonCache.results,
+              userName: anonCache.userName,
+              birthMonth: anonCache.birthMonth,
+              birthDay: anonCache.birthDay,
+              starSign: anonCache.starSign,
+              answers: anonCache.answers,
+              screen: 'results',
+              connectionsFetched: true,
+              restoringState: false,
+            });
+            return;
+          }
+        }
         // Not a returning user or already have results — clear loading.
         // Still set currentUserId/email if we have a real user session so
         // the Profile tab's isRealUser check works immediately.

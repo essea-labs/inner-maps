@@ -84,6 +84,63 @@ test.describe('Connections Tab — Returning User', () => {
   });
 });
 
+test.describe('Anonymous user — results survive reload + Compat tab works', () => {
+  // Regression for a bug pair where (1) an unsigned-in user clicking the
+  // Compatibility tab after finishing the quiz got stuck on an infinite
+  // "Loading connections…" spinner because connectionsFetched defaulted to
+  // false and loadConnections was gated on !is_anonymous, and (2) a page
+  // reload dropped the user back on the landing screen because the auto-
+  // restore path in quiz/page.tsx excluded anonymous users. The fix writes
+  // an im_anon_profile_cache synchronously in nextQuestion() and restores
+  // from it on mount in quiz/page.tsx.
+
+  test('reload restores results from anon cache and Compat tab renders immediately', async ({ page }) => {
+    await mockSupabase(page);
+
+    const results = buildMockResults(GOLDEN_PATH);
+
+    // Seed the exact localStorage state that nextQuestion() writes when an
+    // anonymous user finishes the quiz: im_anon_profile_cache + im_returning.
+    // Crucially we do NOT write im_redirect_state (Stripe path) or
+    // im_profile_cache (real-user path) — this test exercises only the new
+    // anonymous-user restore branch.
+    await page.addInitScript((payload) => {
+      localStorage.setItem('im_anon_profile_cache', JSON.stringify({
+        results: payload.results,
+        userName: payload.name,
+        birthMonth: payload.birthMonth,
+        birthDay: payload.birthDay,
+        starSign: payload.results.starSign,
+        answers: {
+          cognitive: Array(15).fill('a'),
+          attachment: Array(8).fill(3),
+          connection: Array(10).fill('a'),
+          enneagram: Array(10).fill(3),
+        },
+      }));
+      localStorage.setItem('im_returning', '1');
+    }, { results, name: GOLDEN_PATH.name, birthMonth: GOLDEN_PATH.birthMonth, birthDay: GOLDEN_PATH.birthDay });
+
+    await page.goto('/quiz');
+
+    // Bug B regression: the page should land on Results, NOT the landing page.
+    await expect(page.locator('.results-page')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.results-page')).toContainText(GOLDEN_PATH.name);
+
+    // Bug A regression: clicking the Compatibility tab must NOT get stuck on
+    // the "Loading connections…" spinner. Because nextQuestion() sets
+    // connectionsFetched: true at completion and the anon cache restore path
+    // does the same, the Compat screen should render synchronously.
+    await page.locator('button.tab-item', { hasText: 'Compatibility' }).click();
+
+    // The Compatibility header should appear immediately
+    await expect(page.locator('h1', { hasText: 'Compatibility' })).toBeVisible({ timeout: 3000 });
+
+    // And the loading spinner should NOT be visible
+    await expect(page.locator('p:has-text("Loading connections")')).not.toBeVisible();
+  });
+});
+
 test.describe('Compatibility View', () => {
   test('renders compatibility cards with scores', async ({ page }) => {
     const connResults = buildMockResults(CONTRASTING_PROFILE);

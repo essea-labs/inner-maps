@@ -103,6 +103,39 @@ function loadProfileCache(userId: string | null | undefined): ProfileCache | nul
   } catch { return null; }
 }
 
+// ===== ANONYMOUS PROFILE CACHE =====
+// Cache quiz results synchronously on completion so an anonymous user who
+// reloads the page (or has their tab evicted by iOS) gets their results back.
+// Written before the async signInAnonymously/DB save so even a fast refresh
+// during the async window restores correctly. Cleared on reset and on signup
+// once the data has been migrated into the userId-keyed profile cache.
+
+const ANON_CACHE_KEY = 'im_anon_profile_cache';
+
+interface AnonProfileCache {
+  results: QuizResults;
+  userName: string;
+  birthMonth: number | null;
+  birthDay: number | null;
+  starSign: StarSign | null;
+  answers: QuizAnswers;
+}
+
+export function saveAnonProfileCache(cache: AnonProfileCache) {
+  try { localStorage.setItem(ANON_CACHE_KEY, JSON.stringify(cache)); } catch { /* non-fatal */ }
+}
+
+export function loadAnonProfileCache(): AnonProfileCache | null {
+  try {
+    const raw = localStorage.getItem(ANON_CACHE_KEY);
+    return raw ? JSON.parse(raw) as AnonProfileCache : null;
+  } catch { return null; }
+}
+
+export function clearAnonProfileCache() {
+  try { localStorage.removeItem(ANON_CACHE_KEY); } catch { /* non-fatal */ }
+}
+
 // ===== CONNECTIONS CACHE =====
 // Cache connections in localStorage so the Compatibility tab renders instantly
 // on return visits, then refresh from the DB in the background.
@@ -403,10 +436,23 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       const { answers, starSign, userName, birthMonth, birthDay } = get();
       const results = calculateResults(answers, starSign);
       markReturningUser();
+      // Cache synchronously BEFORE the async Supabase block so a fast reload
+      // (iOS tab eviction, pull-to-refresh) during the async window still
+      // restores the results via loadAnonProfileCache in quiz/page.tsx.
+      saveAnonProfileCache({ results, userName, birthMonth, birthDay, starSign, answers });
+      // Mark connections as fetched so the Compatibility tab renders the
+      // "Invite Someone" state instead of hanging on the loading spinner.
+      // connectionsFetched defaults to false in production and is only
+      // flipped by loadConnections(), which is gated on !is_anonymous — so
+      // anonymous users would otherwise see an infinite spinner. We don't
+      // touch `connections` here because a real user retaking the quiz may
+      // already have connections loaded, and the async block below will
+      // still call loadConnections for real users that arrived via invite.
       set({
         results,
         screen: 'results',
         prevScreens: [...prevScreens, current],
+        connectionsFetched: true,
       });
       // Persist quiz data — use existing session if signed in, otherwise create anonymous
       (async () => {
@@ -496,6 +542,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     analytics.reset();
     clearReturningUser();
     clearSessionState();
+    clearAnonProfileCache();
     try {
       localStorage.removeItem('im_purchased_individual');
       localStorage.removeItem('im_purchased_compat');
@@ -749,12 +796,14 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         await saveUserProfile(userId, { name: userName || existingData.name || undefined, email, isAnonymous: false });
         set({ results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, starSign: existingData.results.starSign });
         saveProfileCache({ userId, results: existingData.results, userName: existingData.name, birthMonth: existingData.birthMonth, birthDay: existingData.birthDay, email });
+        clearAnonProfileCache();
       } else if (results) {
         // First time saving — persist current in-memory results
         markReturningUser();
         await saveUserProfile(userId, { name: userName, email, birthMonth, birthDay, isAnonymous: false });
         await saveQuizResults(userId, results, answers);
         saveProfileCache({ userId, results, userName, birthMonth, birthDay, email });
+        clearAnonProfileCache();
       } else {
         // No results anywhere — just save profile
         await saveUserProfile(userId, { email, isAnonymous: false });
