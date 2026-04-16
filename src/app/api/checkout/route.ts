@@ -71,11 +71,11 @@ export async function POST(req: Request) {
       mode: 'payment',
       line_items: [{ price: PRICES[product_type], quantity: 1 }],
       allow_promotion_codes: true,
-      // Disable adaptive pricing — keeps all users on USD matching the in-app "$9.99 USD" /
-      // "$4.99 USD" labels in PRICE_DISPLAY. Prior behavior auto-converted to local currency
-      // on the Stripe Checkout page (e.g., AU users saw ~AU$15.29), causing price-surprise
-      // bail at the exact moment of intent. Re-enable once there's baseline US revenue and
-      // we can A/B test international conversion separately.
+      // Disable adaptive pricing — keeps all users on USD matching the in-app "$2.99 USD" /
+      // "$1.99 USD" labels in PRICE_DISPLAY. Prior behavior auto-converted to local currency
+      // on the Stripe Checkout page (e.g., AU users saw local-currency amounts), causing
+      // price-surprise bail at the exact moment of intent. Re-enable once there's baseline
+      // US revenue and we can A/B test international conversion separately.
       adaptive_pricing: { enabled: false },
       metadata: {
         user_id,

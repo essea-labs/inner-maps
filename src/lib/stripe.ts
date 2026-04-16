@@ -22,6 +22,6 @@ export const PRICES: Record<string, string> = {
 };
 
 export const PRICE_DISPLAY: Record<string, string> = {
-  individual_report: '$9.99 USD',
-  compatibility_report: '$4.99 USD',
+  individual_report: '$2.99 USD',
+  compatibility_report: '$1.99 USD',
 };

@@ -308,7 +308,7 @@ export default function Results() {
                 <div className="upsell-feature"><span className="upsell-check">✓</span> How your 5 profiles interact, the full picture of who you are</div>
                 <div className="upsell-feature"><span className="upsell-check">✓</span> Personalised tips you can actually use today</div>
               </div>
-              <div className="upsell-price">$9.99 USD</div>
+              <div className="upsell-price">$2.99 USD</div>
               <div className="upsell-price-note">One-time purchase · Instant access</div>
               <button className="upsell-cta" onClick={handleUpsell} disabled={checkoutLoading} style={{ opacity: checkoutLoading ? 0.6 : 1 }}>
                 {checkoutLoading ? 'Loading checkout…' : 'Get My Full Report ✦'}

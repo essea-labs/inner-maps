@@ -662,7 +662,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   },
 
   startCheckout: async (productType: string, connectionId?: string) => {
-    analytics.checkoutStarted(productType, productType === 'individual_report' ? 9.99 : 4.99);
+    analytics.checkoutStarted(productType, productType === 'individual_report' ? 2.99 : 1.99);
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',

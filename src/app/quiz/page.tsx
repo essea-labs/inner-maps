@@ -181,7 +181,7 @@ export default function QuizPage() {
     }
 
     // Unlock the report and navigate
-    analytics.checkoutCompleted(product, product === 'individual_report' ? 9.99 : 4.99);
+    analytics.checkoutCompleted(product, product === 'individual_report' ? 2.99 : 1.99);
     setPurchased(product, connectionId);
 
     if (product === 'individual_report') {
